@@ -15,22 +15,6 @@ let users = [
     },
 ];
 
-
-const getAllUsers = () => {
-    let arr = [];
-
-    for(let user of users){
-        arr.push({username: user.username, img: user.img})
-    };
-
-    return arr;
-};
-
-const getUserByUsername = (username) => {
-    const user = users.find(user => user.username == username);
-    return {username: user.username, img: user.img};
-} 
-
 const login = (email, password) => {
     const user = users.find(user => user.email == email);
     
@@ -38,11 +22,9 @@ const login = (email, password) => {
         throw new Error("Incorrect email or password");
     }
 
-    return {username:user.username, img: user.img};
+    return {username:user.username, email: user.email};
 }
 
 module.exports = {
-    getAllUsers,
     login,
-    getUserByUsername
 }

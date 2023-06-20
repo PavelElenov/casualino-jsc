@@ -14,7 +14,7 @@ routesConfig(app);
 io.on('connection', socket => {
     console.log('New User');
     socket.on('message', data => {
-        addMessage(data.creator, data.text, data.conversation);
+        addMessage(data.writer, data.text, data.conversation);
         socket.broadcast.emit('message', data);
     })
 })
