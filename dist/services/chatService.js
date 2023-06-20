@@ -1,21 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getConversationByName = exports.addMessage = exports.getAllChats = void 0;
 let conversations = [
     {
         name: '1',
         messages: [
             {
-                writer:'Pavel',
+                writer: 'Pavel',
                 text: "Hi I am Pavel :)"
             },
             {
                 writer: "Plamen",
-                text:`Hi Pavel it's nice to meet you`
+                text: `Hi Pavel it's nice to meet you`
             }
         ]
     },
     {
         name: '2',
-        messages: [
-        ]
+        messages: []
     },
     {
         name: '3',
@@ -26,28 +28,20 @@ let conversations = [
         messages: []
     },
 ];
-
 const getAllChats = () => {
     return conversations;
 };
-
-const addMessage = (creator, text, conversationName) => {
-    let conversation = conversations.find(c => c.name = conversationName);
-    conversation.messages.push({ writer: creator, text });
-}
-
+exports.getAllChats = getAllChats;
+const addMessage = (writer, text, conversationName) => {
+    const conversation = conversations.find(c => c.name = conversationName);
+    conversation === null || conversation === void 0 ? void 0 : conversation.messages.push({ writer, text });
+};
+exports.addMessage = addMessage;
 const getConversationByName = (conversationName) => {
     const conversation = conversations.find(c => c.name == conversationName);
-
     if (conversation) {
         return conversation;
     }
-
     throw new Error(`Conversation with this name doesn't exist!`);
-}
-
-module.exports = {
-    getAllChats,
-    addMessage,
-    getConversationByName
-}
+};
+exports.getConversationByName = getConversationByName;
