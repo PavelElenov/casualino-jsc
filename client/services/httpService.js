@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const APIURL = 'http://localhost:3000';
 
-function get(url, token) {
+async function get(url, token) {
     let fetchInit = {
         method: "GET",
         headers: {}
@@ -11,10 +11,11 @@ function get(url, token) {
         fetchInit.headers['Authorization'] = token;
     };
 
-    fetch(`${APIURL}${url}`, fetchInit).then(res => res.json).then(data => {return data});
+    const res = await fetch(`${APIURL}${url}`, fetchInit);
+    return res;
 };
 
-function post(url, data, token) {
+async function post(url, data, token) {
     let fetchInit = {
         method: "POST",
         headers: {
@@ -26,9 +27,9 @@ function post(url, data, token) {
     if (token) {
         fetchInit.headers['Authorization'] = token;
     }
-    console.log('Hi');
 
-    fetch(`${APIURL}${url}`, fetchInit);
+    const response = await fetch(`${APIURL}${url}`, fetchInit);
+    return response;
 }
 
 module.exports = {
