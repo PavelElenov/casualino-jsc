@@ -10,5 +10,6 @@ const expressConfig = (app) => {
     app.use(express_1.default.urlencoded({ extended: true }));
     app.use(express_1.default.json());
     app.use((0, corsMiddleware_1.addCorsHeaders)());
+    app.use((0, corsMiddleware_1.addUserToRequest)());
 };
 exports.expressConfig = expressConfig;

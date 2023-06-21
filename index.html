@@ -4,11 +4,29 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script defer src="/client/index.js"></script>
     <title>Document</title>
 </head>
 <body>
-    
+    <div class="login-page">
+        <form action="">
+            <header>
+                <h1>LOGIN</h1>
+            </header>
+            <div class="content">
+                <label for="">
+                    <i class="fa-thin fa-envelope"></i>
+                    <input type="text" name="email" placeholder="E-mail">
+                </label>
+                <label for="">
+                    <i class="fa-thin fa-lock"></i>
+                    <input type="password" name="password" placeholder="Password">
+                </label>
+            </div>
+            <button>Login</button>
+        </form>
+    </div>
 </body>
 </html>
