@@ -18,11 +18,10 @@ const io = new socket_io_1.Server(server);
 io.on('connection', socket => {
     console.log('New User');
     socket.on('message', (data) => {
-        const verifiedToken = (0, createJsonToken_1.verifyToken)(data.token);
-        console.log(verifiedToken.username);
-        if (verifiedToken) {
-            (0, chatService_1.addMessage)(data.writer, data.text, data.conversation);
-            socket.broadcast.emit('message', data);
+        const user = (0, createJsonToken_1.verifyToken)(data.token);
+        if (user) {
+            (0, chatService_1.addMessage)(user.username, data.text, data.conversation);
+            socket.broadcast.emit('message', { text: data.text, conversation: data.conversation, writer: user.username });
         }
     });
 });

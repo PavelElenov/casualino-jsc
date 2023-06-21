@@ -5,8 +5,8 @@ import { expressConfig } from "./config/express";
 import { routesConfig } from "./config/routes";
 import { addMessage } from "./services/chatService";
 import { verifyToken } from "./utils/createJsonToken";
-import { IJsonWebToken, IUser } from "./interfaces/user";
-import { JwtPayload } from "jsonwebtoken";
+import { IJsonWebToken } from "./interfaces/user";
+
 
 const app: Express = express();
 const server = http.createServer(app);
@@ -18,13 +18,12 @@ routesConfig(app);
 
 io.on('connection', socket => {
     console.log('New User');
-    socket.on('message', (data: { writer: string; text: string; conversation: string, token: string }) => {
-        const verifiedToken: IJsonWebToken= verifyToken(data.token);
-        console.log(verifiedToken.username);
+    socket.on('message', (data: { text: string; conversation: string, token: string }) => {
+        const user: IJsonWebToken = verifyToken(data.token);
 
-        if (verifiedToken) {
-            addMessage(data.writer, data.text, data.conversation);
-            socket.broadcast.emit('message', data);
+        if (user) {
+            addMessage(user.username, data.text, data.conversation);
+            socket.broadcast.emit('message', { text: data.text, conversation: data.conversation, writer: user.username });
         }
     })
 })

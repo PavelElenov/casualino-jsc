@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { verifyToken } from "../utils/createJsonToken";
 
 export const addCorsHeaders = () => (req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Access-Control-Allow-Origin', "*");
@@ -11,6 +12,9 @@ export const addCorsHeaders = () => (req: Request, res: Response, next: NextFunc
 };
 
 export const addUserToRequest = () => (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body);
+    if(req.headers.authorization){
+        const user = verifyToken(req.headers.authorization);
+        req.body['user'] = user;
+    }
     next();
 }
