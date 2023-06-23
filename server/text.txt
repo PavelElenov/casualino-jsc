@@ -1,2 +1,0 @@
-we have chats variable.
-when the use is send message we add his message to chats with his partner
