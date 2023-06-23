@@ -1,1 +1,68 @@
-/*# sourceMappingURL=login.css.map */
+#login-form {
+  width: 300px;
+  border: 2px solid orange;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  flex-direction: row;
+  display: none;
+}
+
+header {
+  background-color: rgb(103, 16, 63);
+  text-align: center;
+  padding: 0.7rem 0;
+  border-bottom: 1.5px solid orange;
+}
+header span {
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.content {
+  padding: 1.5rem 0.7rem;
+  background-color: rgb(115, 14, 68);
+  text-align: center;
+}
+.content div {
+  margin-bottom: 2rem;
+}
+.content div {
+  position: relative;
+}
+.content div i {
+  position: absolute;
+  font-size: 1.4rem;
+  color: grey;
+  top: 5px;
+  left: 6px;
+}
+.content div input {
+  width: 100%;
+  background-color: rgb(79, 11, 46);
+  border: 1px solid orange;
+  font-size: 1rem;
+  padding: 0.4rem;
+  padding-left: 2rem;
+  border-radius: 10px;
+  color: white;
+}
+.content button {
+  width: 100%;
+  background-color: rgb(37, 185, 37);
+  color: white;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+}/*# sourceMappingURL=login.css.map */
