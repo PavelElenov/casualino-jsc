@@ -11,10 +11,13 @@ export const addCorsHeaders = () => (req: Request, res: Response, next: NextFunc
 	next();
 };
 
-export const addUserToRequest = () => (req: Request, res: Response, next: NextFunction) => {
+export const checkForAuthToken = () => (req: Request, res: Response, next: NextFunction) => {
 	if(req.headers.authorization){
 		const user = verifyToken(req.headers.authorization);
 		req.body['user'] = user;
+		next();
+	}else{
+		res.status(401).json('User is not authenticate');
 	}
-	next();
+	
 };

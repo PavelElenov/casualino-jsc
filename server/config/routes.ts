@@ -1,9 +1,9 @@
-const loginController = require("../controllers/loginController");
-const usersController = require("../controllers/usersController");
-const chatController = require("../controllers/chatController");
+import { checkForAuthToken } from "../middlewares/corsMiddleware";
+import { Express } from "express";
+import {router as loginController} from "../controllers/loginController";
+import {router as chatController} from "../controllers/chatController";
 
-export const routesConfig = (app): void => {
+export const routesConfig = (app: Express): void => {
     app.use("/login", loginController);
-    app.use("/conversations", chatController);
-    app.use("/", usersController);
+    app.use("/conversations", checkForAuthToken(), chatController);
 }

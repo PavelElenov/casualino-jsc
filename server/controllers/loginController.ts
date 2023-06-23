@@ -2,7 +2,7 @@ import express from 'express';
 import { login } from '../services/userService';
 import { createToken } from '../utils/createJsonToken';
 
-const router = express.Router();
+export const router = express.Router();
 
 router.post("/", (req, res) => {
     try{

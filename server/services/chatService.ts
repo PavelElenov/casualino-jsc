@@ -1,7 +1,7 @@
 import { IConversation } from "../interfaces/conversation";
 
 
-let conversations: IConversation[] = [
+const conversations: IConversation[] = [
     {
         name: '1',
         messages: [
