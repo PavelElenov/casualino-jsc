@@ -32,7 +32,15 @@ io.on("connection", (socket) => {
 
 io.use(function(socket, next){
   if (socket.handshake.query.token){
-      const token = verifyToken(socket.handshake.query.['token']);
+      const { token } = socket.handshake.auth;
+
+      try{
+        verifyToken(token);
+        next();
+      }catch(err){
+        next(new Error('Authentication error'));
+      }
+      
   }
   else {
     next(new Error('Authentication error'));
