@@ -1,13 +1,13 @@
 import { JwtPayload } from "jsonwebtoken";
 
 
-export interface IUser {
+export type IUser = {
     email: string,
     username: string,
     password: string
 }
 
-export interface IJsonWebToken extends JwtPayload {
+export type IJsonWebToken = {
     username: string,
     email: string,
-}
+} & JwtPayload

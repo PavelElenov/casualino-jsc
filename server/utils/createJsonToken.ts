@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { IJsonWebToken } from "../interfaces/user";
+import { IJsonWebToken } from "../../interfaces/user";
 
 const key = "fjdakf1i312313"
 

@@ -1,4 +1,4 @@
-import { IConversation } from "../interfaces/conversation";
+import { IConversation } from "../../interfaces/conversation";
 
 
 const conversations: IConversation[] = [
