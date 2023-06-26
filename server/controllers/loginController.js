@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 var express_1 = require("express");
+var tokenService_1 = require("../services/tokenService");
 var userService_1 = require("../services/userService");
 var createJsonToken_1 = require("../utils/createJsonToken");
 exports.router = (0, express_1.Router)();
@@ -9,6 +10,7 @@ exports.router.post("/", function (req, res) {
     try {
         var user = (0, userService_1.login)(req.body.email, req.body.password);
         var token = (0, createJsonToken_1.createToken)(user);
+        (0, tokenService_1.addToken)({ user: user.username, token: token });
         res.status(200);
         res.json({ user: user, token: token });
     }

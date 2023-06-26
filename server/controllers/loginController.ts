@@ -1,4 +1,4 @@
-import { Router } from "express";
+import {Router} from "express";
 import { addToken } from "../services/tokenService";
 import { login } from "../services/userService";
 import { createToken } from "../utils/createJsonToken";

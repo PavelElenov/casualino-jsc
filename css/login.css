@@ -64,4 +64,10 @@ header span {
   border-radius: 10px;
   font-size: 1rem;
   font-weight: bold;
+}
+
+.error {
+  color: red;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
 }/*# sourceMappingURL=login.css.map */

@@ -3,18 +3,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = void 0;
 var users = [
     {
-        email: 'pavel@gmail.com',
-        password: '12345',
-        username: 'Pavel'
+        email: "pavel@gmail.com",
+        password: "12345",
+        username: "Pavel",
     },
     {
-        email: 'plamen@gmail.com',
-        password: '12345',
-        username: 'Plamen'
-    }, {
-        email: 'marto@gmail.com',
-        password: '12345',
-        username: 'Marto'
+        email: "plamen@gmail.com",
+        password: "12345",
+        username: "Plamen",
+    },
+    {
+        email: "marto@gmail.com",
+        password: "12345",
+        username: "Marto",
     },
 ];
 var login = function (email, password) {

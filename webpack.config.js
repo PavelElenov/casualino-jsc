@@ -11,7 +11,11 @@ module.exports = {
       },
     ],
   },
+  resolve: {
+    extensions: [".ts", '.js']
+  },
   output: {
+    publicPath: path.resolve(__dirname, 'client'),
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'client'),
   },
