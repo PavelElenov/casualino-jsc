@@ -5,6 +5,7 @@
   width: 75%;
   margin: 0 auto;
   gap: 0.3rem;
+  display: none;
 }
 .chats-page .wrapper,
 .chats-page .current-chat {

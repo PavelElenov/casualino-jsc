@@ -9,10 +9,12 @@ console.log('Hi');
 // socket.on("message", (data: IMessageInfo) => {
 //   console.log(data);
 // });
+
 const form = document.getElementById('login-form') as HTMLFormElement;
 form.addEventListener('submit', (event) => {
   event.preventDefault();
+  const formData = new FormData(form);
   
-  console.log('Hiiii');
+  console.log(formData);
 })
 
