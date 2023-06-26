@@ -1,4 +1,4 @@
-export interface IToken{
+interface IToken{
     user: string,
     token: string
 }

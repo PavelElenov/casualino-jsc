@@ -1,11 +1,14 @@
 export type IMessage = {
     writer: string,
-    text: string
+    text: string,
+    time: number
 }
 
 export type IConversation = {
     name: string,
-    messages: IMessage[]
+    messages: IMessage[],
+    img: string,
+    level: number;
 }
 
 export type IMessageInfo = {

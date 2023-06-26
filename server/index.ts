@@ -6,8 +6,7 @@ import { routesConfig } from "./config/routes";
 import { addMessage } from "./services/chatService";
 import { IMessageInfo } from "../interfaces/conversation";
 import { verifyToken } from "./utils/createJsonToken";
-import { compareToken, IToken } from "./services/tokenService";
-import { IJsonWebToken } from "../interfaces/user";
+import { compareToken } from "./services/tokenService";
 
 const app: Express = express();
 const server = http.createServer(app);
@@ -20,12 +19,11 @@ routesConfig(app);
 
 io.use(function (socket, next) {
   if (socket.handshake.query.token) {
-    const jwtToken:string | string[] = socket.handshake.query.token;
-    console.log(jwtToken);
-    
+    const { token } = socket.handshake.auth;
+
     try {
-      const parsedToken: IJsonWebToken = verifyToken(jwtToken as string);
-      compareToken({user:parsedToken.username, token:jwtToken as string});
+      verifyToken(token);
+      compareToken(token);
       next();
     } catch (err) {
       next(new Error("Authentication error"));

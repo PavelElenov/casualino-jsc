@@ -15,11 +15,10 @@ var io = new socket_io_1.Server(server);
 (0, routes_1.routesConfig)(app);
 io.use(function (socket, next) {
     if (socket.handshake.query.token) {
-        var jwtToken = socket.handshake.query.token;
-        console.log(jwtToken);
+        var token = socket.handshake.auth.token;
         try {
-            var parsedToken = (0, createJsonToken_1.verifyToken)(jwtToken);
-            (0, tokenService_1.compareToken)({ user: parsedToken.username, token: jwtToken });
+            (0, createJsonToken_1.verifyToken)(token);
+            (0, tokenService_1.compareToken)(token);
             next();
         }
         catch (err) {
