@@ -18,7 +18,7 @@ expressConfig(app);
 routesConfig(app);
 
 
-io.use(function (socket, next) {
+io.use(function (socket, next) {  
   if (socket.handshake.query.token) {
     const token:string | string[]  = socket.handshake.query.token;
 
@@ -39,8 +39,6 @@ io.use(function (socket, next) {
   socket.on("message", (data: IMessageInfo) => {
     addMessage(data.writer.username, data.text, data.conversation, data.time);
     socket.broadcast.emit("message", data);
-    console.log('Message');
-    
   });
 });
 

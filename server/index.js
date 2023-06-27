@@ -33,7 +33,6 @@ io.use(function (socket, next) {
     socket.on("message", function (data) {
         (0, chatService_1.addMessage)(data.writer.username, data.text, data.conversation, data.time);
         socket.broadcast.emit("message", data);
-        console.log('Message');
     });
 });
 server.listen(3000, function () { return console.log("Server listening on port 3000"); });
