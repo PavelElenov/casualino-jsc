@@ -1,5 +1,9 @@
 export type IMessage = {
-    writer: string;
+    writer: {
+        username: string;
+        level: number;
+        img: string;
+    };
     text: string;
     time: number;
 };
