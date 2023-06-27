@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getConversationByName = exports.addMessage = exports.getAllChats = void 0;
+var userService_1 = require("./userService");
 var conversations = [
     {
         name: '1',
@@ -31,8 +32,9 @@ var getAllChats = function () {
     return conversations;
 };
 exports.getAllChats = getAllChats;
-var addMessage = function (writer, text, conversationName) {
+var addMessage = function (writerUsername, text, conversationName) {
     var conversation = conversations.find(function (c) { return c.name = conversationName; });
+    var writer = (0, userService_1.getUserByUsername)(writerUsername);
     var date = new Date();
     var hours = date.getHours();
     var minutes = date.getMinutes();

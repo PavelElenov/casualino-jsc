@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
 
 router.get("/:name", (req, res) => {
   try {
-    const conversation = getConversationByName(req.params.name);
+    const conversation:IConversation | Error = getConversationByName(req.params.name);
     res.status(200).json(conversation);
   } catch (error: any) {
     res.status(404);

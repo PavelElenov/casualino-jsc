@@ -1,4 +1,6 @@
 import { IConversation } from "../../interfaces/conversation";
+import { IUserSomeInfo } from "../../interfaces/user";
+import { getUserByUsername } from "./userService";
 
 
 const conversations: IConversation[] = [
@@ -34,8 +36,9 @@ export const getAllChats = (): IConversation[] => {
     return conversations;
 };
 
-export const addMessage = (writer:string, text:string, conversationName:string): void => {
+export const addMessage = (writerUsername:string, text:string, conversationName:string): void => {
     const conversation: IConversation | undefined = conversations.find(c => c.name = conversationName);
+    const writer:IUserSomeInfo = getUserByUsername(writerUsername);
     const date = new Date();
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -44,7 +47,7 @@ export const addMessage = (writer:string, text:string, conversationName:string):
 }
 
 export const getConversationByName = (conversationName: string): IConversation | Error => {
-    const conversation = conversations.find(c => c.name == conversationName);
+    const conversation:IConversation | undefined = conversations.find(c => c.name == conversationName);
 
     if (conversation) {
         return conversation;
