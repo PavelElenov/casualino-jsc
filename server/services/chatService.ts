@@ -36,14 +36,10 @@ export const getAllChats = (): IConversation[] => {
     return conversations;
 };
 
-export const addMessage = (writerUsername:string, text:string, conversationName:string): void => {
+export const addMessage = (writerUsername:string, text:string, conversationName:string, time:number): void => {
     const conversation: IConversation | undefined = conversations.find(c => c.name = conversationName);
     const writer:IUserSomeInfo = getUserByUsername(writerUsername);
-    const date = new Date();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const totalTime = hours * 60 + minutes;
-    conversation?.messages.push({ writer, text, time: totalTime });
+    conversation?.messages.push({ writer, text, time });
 }
 
 export const getConversationByName = (conversationName: string): IConversation | Error => {

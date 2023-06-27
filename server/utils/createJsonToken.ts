@@ -1,9 +1,9 @@
 import * as jwt from "jsonwebtoken";
-import { IJsonWebToken } from "../../interfaces/user";
+import { IJsonWebToken, IUserSomeInfo } from "../../interfaces/user";
 
 const key = "fjdakf1i312313"
 
-export function createToken(data: any){
+export function createToken(data: IUserSomeInfo){
     return jwt.sign(data, key);
 }
 

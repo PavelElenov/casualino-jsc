@@ -31,12 +31,9 @@ io.use(function (socket, next) {
 }).on("connection", function (socket) {
     console.log("New User");
     socket.on("message", function (data) {
-        (0, chatService_1.addMessage)(data.writer, data.text, data.conversation);
-        socket.broadcast.emit("message", {
-            text: data.text,
-            conversation: data.conversation,
-            writer: data.writer,
-        });
+        (0, chatService_1.addMessage)(data.writer.username, data.text, data.conversation, data.time);
+        socket.broadcast.emit("message", data);
+        console.log('Message');
     });
 });
 server.listen(3000, function () { return console.log("Server listening on port 3000"); });

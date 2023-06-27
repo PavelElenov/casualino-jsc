@@ -37,12 +37,10 @@ io.use(function (socket, next) {
   console.log("New User");
 
   socket.on("message", (data: IMessageInfo) => {
-    addMessage(data.writer, data.text, data.conversation);
-    socket.broadcast.emit("message", {
-      text: data.text,
-      conversation: data.conversation,
-      writer: data.writer,
-    });
+    addMessage(data.writer.username, data.text, data.conversation, data.time);
+    socket.broadcast.emit("message", data);
+    console.log('Message');
+    
   });
 });
 

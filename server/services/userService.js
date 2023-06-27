@@ -29,14 +29,11 @@ var login = function (email, password) {
     if (!user || user.password !== password) {
         throw new Error("Incorrect email or password");
     }
-    return { username: user.username, email: user.email };
-};
-exports.login = login;
-module.exports = {
-    login: exports.login,
-};
-var getUserByUsername = function (username) {
-    var user = users.find(function (u) { return u.username = username; });
     return { username: user.username, level: user.level, img: user.img };
 };
+exports.login = login;
+function getUserByUsername(username) {
+    var user = users.find(function (u) { return u.username = username; });
+    return { username: user.username, level: user.level, img: user.img };
+}
 exports.getUserByUsername = getUserByUsername;
