@@ -17,5 +17,6 @@ export interface IUserSomeInfo{
 
 export type IJsonWebToken = {
     username: string,
-    email: string,
+    level: number,
+    img: string
 } & JwtPayload

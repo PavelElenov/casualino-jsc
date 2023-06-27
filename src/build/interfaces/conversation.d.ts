@@ -14,7 +14,12 @@ export type IConversation = {
     level: number;
 };
 export type IMessageInfo = {
-    writer: string;
+    writer: {
+        username: string;
+        level: number;
+        img: string;
+    };
     text: string;
     conversation: string;
+    time: number;
 };

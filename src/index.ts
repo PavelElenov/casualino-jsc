@@ -1,14 +1,17 @@
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import {
   IConversation,
   IMessage,
   IMessageInfo,
 } from "../interfaces/conversation";
-import { IUser, IUserData } from "./interfaces/user";
+import { IUser } from "./interfaces/user";
 import { HttpService } from "./services/httpService";
 
-let token: string | null = sessionStorage.getItem("auth-token");
+const token: string | null = sessionStorage.getItem("auth-token");
 let user: IUser;
+let conversationName: string;
+let socket: Socket;
+
 const httpService: HttpService = new HttpService();
 const loginPage: HTMLElement = document.querySelector(
   ".login-page"
@@ -20,16 +23,22 @@ const chatPage: HTMLElement = document.querySelector(
 if (token) {
   chatPage.style.display = "flex";
   loginPage.style.display = "none";
+
+  httpService
+    .get("/user", sessionStorage.getItem("auth-token") as string)
+    .then((res) => res.json())
+    .then((u) => (user = u));
+
+  connectToSocketServer();
   getAllChats();
 } else {
   chatPage.style.display = "none";
-  loginPage.style.display = "block";
+  loginPage.style.display = "flex";
 
   const form = document.getElementById("login-form") as HTMLFormElement;
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const formData = Object.fromEntries(new FormData(form));
-    console.log(formData);
 
     await login(formData.email as string, formData.password as string);
   });
@@ -60,7 +69,7 @@ async function login(email: string, password: string): Promise<void> {
 }
 
 function connectToSocketServer(): void {
-  const socket = io("http://localhost:3000", {
+  socket = io("http://localhost:3000", {
     transports: ["websocket"],
     query: {
       token: sessionStorage.getItem("auth-token"),
@@ -68,8 +77,26 @@ function connectToSocketServer(): void {
   });
 
   socket.on("message", (data: IMessageInfo) => {
+    console.log("Hi");
     console.log(data);
+  
+    if (data.conversation === conversationName) {
+      addMessageDiv(data);
+    }
   });
+}
+
+function addMessageDiv(data: IMessageInfo) {
+  const messagesContainer: HTMLDivElement = document.querySelector(
+    ".messages"
+  ) as HTMLDivElement;
+  const messageDiv: HTMLDivElement = createMessageContainer({
+    writer: data.writer,
+    text: data.text,
+    time: data.time,
+  });
+
+  messagesContainer?.appendChild(messageDiv);
 }
 
 async function getAllChats(): Promise<void> {
@@ -145,7 +172,10 @@ function createChatInfoContainer(chat: IConversation): HTMLDivElement {
   return chatInfoDiv;
 }
 
-function createImageContainer(data: {level: number, img: string}): HTMLDivElement {
+function createImageContainer(data: {
+  level: number;
+  img: string;
+}): HTMLDivElement {
   const imageContainer: HTMLDivElement = document.createElement("div");
   imageContainer.className = "img-container";
   const span: HTMLSpanElement = document.createElement("span");
@@ -182,12 +212,16 @@ function getHowLongAgoMessageWasWritten(
 }
 
 async function getCurrentChat(name: string) {
+  console.log('Hi');
+  
+  conversationName = name;
   const res = await httpService.get(
     `/conversations/${name}`,
     sessionStorage.getItem("auth-token")!
   );
   const currentChat: IConversation = await res.json();
   console.log(currentChat);
+  
   const currentChatDiv: HTMLDivElement = document.querySelector(
     ".current-chat"
   ) as HTMLDivElement;
@@ -204,22 +238,61 @@ async function getCurrentChat(name: string) {
   }
 
   currentChatDiv.style.display = "block";
+
+  document
+    .querySelector(".write-message")
+    ?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input: HTMLInputElement = document.querySelector(
+        ".write-message input"
+      ) as HTMLInputElement;
+      const messageText: string = input.value;
+
+      socket.emit("message", {
+        writer: user,
+        text: messageText,
+        conversation: name,
+        time: getCurrentTimeInMinutes(),
+      });
+
+      input.value = "";
+      addMessageDiv({
+        writer: user,
+        text: messageText,
+        conversation: name,
+        time: getCurrentTimeInMinutes(),
+      });
+    });
 }
 
 function createMessageContainer(message: IMessage): HTMLDivElement {
-  const messageDiv:HTMLDivElement = document.createElement('div');
-  const imgContainer:HTMLDivElement = createImageContainer({level: message.writer.level, img: message.writer.img});
+  const messageDiv: HTMLDivElement = document.createElement("div");
+  message.writer.username === user.username
+    ? (messageDiv.className = "message my-message")
+    : (messageDiv.className = "message");
+  const imgContainer: HTMLDivElement = createImageContainer({
+    level: message.writer.level,
+    img: message.writer.img,
+  });
 
-  const wrapperMessagesContainer: HTMLDivElement = document.createElement('div')
-  const messageInfoDiv: HTMLDivElement = document.createElement('div');
-  const span:HTMLSpanElement = document.createElement("span");
+  const wrapperMessagesContainer: HTMLDivElement =
+    document.createElement("div");
+  wrapperMessagesContainer.className = "wrapper-messages";
+  const messageInfoDiv: HTMLDivElement = document.createElement("div");
+  messageInfoDiv.className = "message-info";
+  const span: HTMLSpanElement = document.createElement("span");
+  span.className = "user-username";
   span.innerText = message.writer.username;
-  const p: HTMLParagraphElement = document.createElement('p');
+  const p: HTMLParagraphElement = document.createElement("p");
   p.innerText = message.text;
   messageInfoDiv.appendChild(span);
   messageInfoDiv.appendChild(p);
-  const pTimeDiv:HTMLParagraphElement = document.createElement('p');
-  pTimeDiv.innerText = getHowLongAgoMessageWasWritten(message.time, getCurrentTimeInMinutes());
+  const pTimeDiv: HTMLParagraphElement = document.createElement("p");
+  pTimeDiv.className = "time";
+  pTimeDiv.innerText = getHowLongAgoMessageWasWritten(
+    message.time,
+    getCurrentTimeInMinutes()
+  );
   wrapperMessagesContainer.appendChild(messageInfoDiv);
   wrapperMessagesContainer.appendChild(pTimeDiv);
 

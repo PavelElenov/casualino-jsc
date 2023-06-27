@@ -185,7 +185,7 @@ header span {
   width: 100%;
 }
 .message .wrapper-messages {
-  width: 50%;
+  max-width: 50%;
   padding: 0;
 }
 .message .wrapper-messages .message-info {
