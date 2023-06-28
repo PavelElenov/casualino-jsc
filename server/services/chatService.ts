@@ -1,5 +1,5 @@
-import { IConversation } from "../../interfaces/conversation";
-import { IUserSomeInfo } from "../../interfaces/user";
+import { IConversation } from "../../shared/interfaces/conversation";
+import { IUserSomeInfo } from "../../shared/interfaces/user";
 import { getUserByUsername } from "./userService";
 
 
