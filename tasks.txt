@@ -1,0 +1,4 @@
+httpService - false
+localStorage - false
+hover and click effects - true
+addMessage fix - true

@@ -65,6 +65,9 @@ header span {
   font-size: 1rem;
   font-weight: bold;
 }
+.content button:hover {
+  transform: scale(1.03);
+}
 
 .error {
   color: red;
@@ -150,6 +153,9 @@ header span {
 .more-features i {
   font-size: 2.5rem;
   color: orange;
+}
+.more-features i:hover {
+  transform: scale(1.1);
 }
 
 .time {

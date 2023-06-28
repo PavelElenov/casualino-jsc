@@ -37,7 +37,7 @@ export const getAllChats = (): IConversation[] => {
 };
 
 export const addMessage = (writerUsername:string, text:string, conversationName:string, time:number): void => {
-    const conversation: IConversation | undefined = conversations.find(c => c.name = conversationName);
+    const conversation: IConversation | undefined = conversations.find(c => c.name == conversationName);
     const writer:IUserSomeInfo = getUserByUsername(writerUsername);
     conversation?.messages.push({ writer, text, time });
 }

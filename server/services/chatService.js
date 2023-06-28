@@ -33,7 +33,7 @@ var getAllChats = function () {
 };
 exports.getAllChats = getAllChats;
 var addMessage = function (writerUsername, text, conversationName, time) {
-    var conversation = conversations.find(function (c) { return c.name = conversationName; });
+    var conversation = conversations.find(function (c) { return c.name == conversationName; });
     var writer = (0, userService_1.getUserByUsername)(writerUsername);
     conversation === null || conversation === void 0 ? void 0 : conversation.messages.push({ writer: writer, text: text, time: time });
 };
