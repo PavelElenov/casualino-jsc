@@ -3,16 +3,19 @@ import {
   IConversation,
   IMessage,
   IMessageInfo,
-} from "../interfaces/conversation";
+} from "../shared/interfaces/conversation";
 import { IUser } from "./interfaces/user";
 import { HttpService } from "./services/httpService";
+import { AppStorage } from "./services/appStorageService";
 
-const token: string | null = sessionStorage.getItem("auth-token");
+const httpService: HttpService = new HttpService();
+const appStorage: AppStorage = new AppStorage();
+
+const token: string | null = appStorage.getToken('auth-token');
 let user: IUser;
 let conversationName: string;
 let socket: Socket;
 
-const httpService: HttpService = new HttpService();
 const loginPage: HTMLElement = document.querySelector(
   ".login-page"
 ) as HTMLElement;
@@ -25,7 +28,7 @@ if (token) {
   loginPage.style.display = "none";
 
   httpService
-    .get("/user", sessionStorage.getItem("auth-token") as string)
+    .get("/user", appStorage.getToken("auth-token") as string)
     .then((res) => res.json())
     .then((u) => (user = u));
 
@@ -50,7 +53,7 @@ async function login(email: string, password: string): Promise<void> {
 
   if (res.status === 200) {
     user = data.user;
-    sessionStorage.setItem("auth-token", data.token);
+    appStorage.setToken("auth-token", data.token);
 
     connectToSocketServer();
 
@@ -72,7 +75,7 @@ function connectToSocketServer(): void {
   socket = io("http://localhost:3000", {
     transports: ["websocket"],
     query: {
-      token: sessionStorage.getItem("auth-token"),
+      token: appStorage.getToken('auth-token'),
     },
   });
 
