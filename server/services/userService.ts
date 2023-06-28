@@ -1,4 +1,4 @@
-import { IUser, IUserSomeInfo } from "../../interfaces/user";
+import { IUser, IUserSomeInfo } from "../../shared/interfaces/user";
 
 
 let users: IUser[] = [
