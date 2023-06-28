@@ -29,8 +29,7 @@ if (token) {
 
   httpService
     .get("/user", appStorage.getToken("auth-token") as string)
-    .then((res) => res.json())
-    .then((u) => (user = u));
+    .then((u) => user = u );
 
   connectToSocketServer();
   getAllChats();
@@ -45,10 +44,12 @@ if (token) {
 
     await login(formData.email as string, formData.password as string);
   });
+
+
 }
 
 async function login(email: string, password: string): Promise<void> {
-  try{
+  try {
     const data: any = await httpService.post("/login", { email, password });
     user = data.user;
     appStorage.setToken("auth-token", data.token);
@@ -59,13 +60,23 @@ async function login(email: string, password: string): Promise<void> {
     chatPage.style.display = "flex";
 
     getAllChats();
-  } catch(error){
+  } catch (error) {
     const p = document.getElementsByClassName("error")[0] as HTMLElement;
     p.innerText = 'Incorrect password or email!';
     const passwordInput: HTMLInputElement = document.getElementById(
       "password"
     ) as HTMLInputElement;
     passwordInput.value = "";
+
+    const inputs: NodeListOf<HTMLInputElement> = document.querySelectorAll('input');
+    for (let input of inputs) {
+      input.addEventListener('focus', () => {
+        const loginErrorDiv: HTMLElement = document.querySelector('#login-form .content .error')!;
+        if (loginErrorDiv.style.display != 'none') {
+          loginErrorDiv.style.display = 'none';
+        }
+      })
+    }
   }
 }
 
@@ -80,7 +91,7 @@ function connectToSocketServer(): void {
   socket.on("message", (data: IMessageInfo) => {
     console.log("Hi");
     console.log(data);
-  
+
     if (data.conversation === conversationName) {
       addMessageDiv(data);
     }
@@ -101,34 +112,34 @@ function addMessageDiv(data: IMessageInfo) {
 }
 
 async function getAllChats(): Promise<void> {
-  try{
+  try {
     const chats: IConversation[] = await httpService.get(
       "/conversations",
       appStorage.getToken('auth-token')!
     );
-   
+
     const chatsContainer: HTMLDivElement = document.querySelector(
       ".chats"
     ) as HTMLDivElement;
-  
+
     for (let chat of chats) {
       const chatDiv: HTMLDivElement = document.createElement("div");
       chatDiv.className = "chat";
-  
+
       const imgContainer: HTMLDivElement = createImageContainer(chat);
       const chatInfoContainer: HTMLDivElement = createChatInfoContainer(chat);
       const moreFeatureContainer: HTMLDivElement =
         createMoreFeatureContainer(chat);
-  
+
       chatDiv.appendChild(imgContainer);
       chatDiv.appendChild(chatInfoContainer);
       chatDiv.appendChild(moreFeatureContainer);
-  
+
       chatsContainer.appendChild(chatDiv);
     }
-  
+
     const listOfI = document.querySelectorAll(".more-features i");
-  
+
     for (let i of listOfI) {
       i.addEventListener("click", (event: Event) => {
         const currentI: HTMLElement = event.target as HTMLElement;
@@ -138,16 +149,16 @@ async function getAllChats(): Promise<void> {
         getCurrentChat(chatName);
       });
     }
-  }catch(error: any){
+  } catch (error: any) {
     displayError(error)
   }
 }
 
-function displayError(error: string){
+function displayError(error: string) {
   loginPage.style.display = 'none';
   chatPage.style.display = 'none';
 
-  const errorDiv:HTMLDivElement = document.getElementById('error') as HTMLDivElement;
+  const errorDiv: HTMLDivElement = document.getElementById('error') as HTMLDivElement;
   errorDiv.innerText = error;
 }
 
@@ -226,19 +237,19 @@ function getHowLongAgoMessageWasWritten(
 
 async function getCurrentChat(name: string) {
   conversationName = name;
-  try{
+  try {
     const currentChat: IConversation = await httpService.get(
       `/conversations/${name}`,
       appStorage.getToken("auth-token")!
     );
-    
+
     const currentChatDiv: HTMLDivElement = document.querySelector(
       ".current-chat"
     ) as HTMLDivElement;
     const messagesContainer: HTMLDivElement = document.querySelector(
       ".messages"
     ) as HTMLDivElement;
-  
+
     if (currentChat.messages.length > 0) {
       for (let messageInfo of currentChat.messages) {
         const messageContainer: HTMLDivElement =
@@ -246,9 +257,9 @@ async function getCurrentChat(name: string) {
         messagesContainer.appendChild(messageContainer);
       }
     }
-  
+
     currentChatDiv.style.display = "block";
-  
+
     document
       .querySelector(".write-message")
       ?.addEventListener("submit", (event) => {
@@ -257,14 +268,14 @@ async function getCurrentChat(name: string) {
           ".write-message input"
         ) as HTMLInputElement;
         const messageText: string = input.value;
-  
+
         socket.emit("message", {
           writer: user,
           text: messageText,
           conversation: name,
           time: getCurrentTimeInMinutes(),
         });
-  
+
         input.value = "";
         addMessageDiv({
           writer: user,
@@ -273,10 +284,10 @@ async function getCurrentChat(name: string) {
           time: getCurrentTimeInMinutes(),
         });
       });
-  }catch(error: any){
+  } catch (error: any) {
     displayError(error);
   }
-  
+
 }
 
 function createMessageContainer(message: IMessage): HTMLDivElement {
