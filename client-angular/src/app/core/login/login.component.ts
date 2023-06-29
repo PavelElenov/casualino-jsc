@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IUserData } from 'src/app/shared/interfaces/user';
-import { SocketService } from 'src/app/shared/socket.service';
-import { StorageTokenService } from 'src/app/shared/storage-token.service';
-import { UserService } from 'src/app/shared/user.service';
+import { SocketService } from 'src/app/shared/services/socket/socket.service';
+import { StorageTokenService } from 'src/app/shared/services/storage/storage-token.service';
+import { UserService } from 'src/app/shared/services/user/user.service';
+
 
 @Component({
   selector: 'app-login',

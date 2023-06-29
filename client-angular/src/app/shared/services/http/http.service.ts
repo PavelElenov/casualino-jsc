@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { throwError, Observable } from 'rxjs';
-import { catchError } from "rxjs/operators";
-import { IUserData } from './interfaces/user';
+import { IUserData } from '../../interfaces/user';
+
 
 interface IHeaders {
   headers: {
@@ -32,14 +32,6 @@ export class HttpService {
       console.log(response);
       
     })
-    // const res = await fetch(`${this.APIURL}${url}`, fetchInit);
-    // const data = await res.json();
-
-    // if (res.ok) {
-    //   return data;
-    // } else {
-    //   return this.checkResStatus(res.status);
-    // }
   }
 
   post(url: string, data: any, token?: string){
@@ -54,15 +46,6 @@ export class HttpService {
     }
 
     return this.http.post<IUserData>(`${this.APIURL}${url}`, data, {headers: fetchInit.headers});
-
-    // const res = await fetch(`${this.APIURL}${url}`, fetchInit);
-    // const resData = await res.json();
-
-    // if (res.ok) {
-    //   return resData;
-    // } else {
-    //   return this.checkResStatus(res.status);
-    // }
   }
 
   checkForErrorStatus(status: number){

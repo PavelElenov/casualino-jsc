@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
-import { StorageTokenService } from './storage-token.service';
-import { IMessageInfo } from './interfaces/message';
+import { IMessageInfo } from '../../interfaces/message';
+import { StorageTokenService } from '../storage/storage-token.service';
 
 @Injectable({
   providedIn: 'root'
