@@ -4,10 +4,10 @@ import http from "http";
 import { expressConfig } from "./config/express";
 import { routesConfig } from "./config/routes";
 import { addMessage } from "./services/chatService";
-import { IMessageInfo } from "../interfaces/conversation";
+import { IMessageInfo } from "../shared/interfaces/conversation";
 import { verifyToken } from "./utils/createJsonToken";
 import { compareToken } from "./services/tokenService";
-import { IJsonWebToken } from "../interfaces/user";
+import { IJsonWebToken } from "../shared/interfaces/user";
 
 const app: Express = express();
 const server = http.createServer(app);
