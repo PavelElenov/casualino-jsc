@@ -21,9 +21,18 @@
 .my-message {
     justify-content: end;
     flex-direction: row-reverse;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
 
     .wrapper-messages {
+        max-width: 50%;
+        padding: 0;
+
         .message-info {
+            border: 1px solid orange;
+            padding: 0.5rem;
             border-top-right-radius: 0;
             border-top-left-radius: 15px;
             border-bottom-left-radius: 15px;

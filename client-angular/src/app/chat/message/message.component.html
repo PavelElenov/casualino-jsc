@@ -1,4 +1,4 @@
-<div [ngClass]="{'message my-message': message.writer.username == user.username}">
+<div [ngClass]="{'my-message': message.writer.username == user.username, 'message': message.writer.username !== user.username}">
     <div class="img-container">
         <span class="level">{{message.writer.level}}</span>
         <img src={{message.writer.img}} alt="">

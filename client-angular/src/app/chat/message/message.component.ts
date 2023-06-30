@@ -19,5 +19,8 @@ export class MessageComponent {
   ngOnInit(){
     this.time = this.timeService.getHowLongAgoMessageWasWritten(this.message.time, this.timeService.getCurrentTimeInMinutes());
     this.user = this.userService.user!;
+
+    console.log(this.message, this.user);
+    
   }
 }

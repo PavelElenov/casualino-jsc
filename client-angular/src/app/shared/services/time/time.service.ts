@@ -27,7 +27,7 @@ export class TimeService {
     } else if (difference < 60) {
       return `${difference} minutes ago`;
     } else {
-      return `${difference % 60} hours ago`;
+      return `${Math.floor(difference / 60)} hours ago`;
     }
   }
 }
