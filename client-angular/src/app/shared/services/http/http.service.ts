@@ -45,7 +45,7 @@ export class HttpService {
       fetchInit.headers["Authorization"] = token;
     }
 
-    return this.http.post<IUserData>(`${this.APIURL}${url}`, data, {headers: fetchInit.headers});
+    return this.http.post(`${this.APIURL}${url}`, data, {headers: fetchInit.headers});
   }
 
   checkForErrorStatus(status: number){

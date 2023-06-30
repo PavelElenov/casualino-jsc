@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { IUser } from '../../interfaces/user';
+import { IUser, IUserData } from '../../interfaces/user';
 import { HttpService } from '../http/http.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 
 @Injectable({
@@ -9,9 +11,9 @@ import { HttpService } from '../http/http.service';
 export class UserService {
   user: IUser | undefined;
   
-  constructor(private httpService: HttpService) { }
+  constructor(private http: HttpClient) { }
 
-  login(data: {email: string, password: string}){
-    return this.httpService.post('/login', data);
+  login(data: {email: string, password: string}): Observable<IUserData>{
+    return this.http.post<IUserData>('/login', data,);
   }
 }

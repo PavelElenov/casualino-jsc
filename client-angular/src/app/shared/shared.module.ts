@@ -5,6 +5,7 @@ import { HttpService } from './services/http/http.service';
 import { UserService } from './services/user/user.service';
 import { SocketService } from './services/socket/socket.service';
 import { StorageTokenService } from './services/storage/storage-token.service';
+import { AuthGuard } from './guards/auth-guard.guard';
 
 
 @NgModule({
@@ -13,6 +14,6 @@ import { StorageTokenService } from './services/storage/storage-token.service';
     CommonModule,
     HttpClientModule
   ],
-  providers: [UserService, HttpService, SocketService, StorageTokenService]
+  providers: [UserService, HttpService, SocketService, StorageTokenService, AuthGuard]
 })
 export class SharedModule { }

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './core/login/login.component';
 import { ChatsListComponent } from './chat/chats-list/chats-list.component';
+import { AuthGuard } from './shared/guards/auth-guard.guard';
 
 const routes: Routes = [
   {
@@ -15,7 +16,8 @@ const routes: Routes = [
   },
   {
     path: "chats",
-    component: ChatsListComponent
+    component: ChatsListComponent,
+    canActivate: [AuthGuard]
   }
 ];
 
