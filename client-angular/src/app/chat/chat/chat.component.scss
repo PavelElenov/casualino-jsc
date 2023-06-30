@@ -1,0 +1,56 @@
+.current-chat,
+.chat {
+    background-color: white;
+}
+
+.chat {
+    padding: 0.7rem 0.7rem 0.2rem 0.7rem;
+    border-radius: 10px;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.img-container {
+    padding-bottom: 0.5rem;
+    position: relative;
+    width: 70px;
+    height: 70px;
+
+    .level {
+        position: absolute;
+        bottom: 9px;
+        right: 4px;
+        color: white;
+        font-weight: bold;
+    }
+}
+
+.chat-info {
+    width: 70%;
+    padding-bottom: 0.5rem;
+}
+
+.user-username {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.more-features {
+    width: 15%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: end;
+    gap: 0.5rem;
+
+    i {
+        font-size: 2.5rem;
+        color: orange;
+    }
+}
+
+.time {
+    color: grey;
+}

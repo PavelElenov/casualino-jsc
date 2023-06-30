@@ -1,0 +1,14 @@
+<div class="chat">
+    <div class="img-container">
+        <span class="level">{{chat.level}}</span>
+        <img src={{chat.img}} alt="">
+    </div>
+    <div class="chat-info">
+        <span class="user-username">{{chat.name}}</span>
+        <p *ngIf="chat.messages.length > 0">{{chat.messages[chat.messages.length - 1].text}}</p>
+    </div>
+    <div class="more-features">
+        <i class="fa-solid fa-greater-than" (click)="getCurrentChat(chat.name)"></i>
+        <p *ngIf="time">{{time}}</p>
+    </div>
+</div>

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { IUserSomeInfo } from "../../interfaces/user";
+import { IUserSomeInfo } from "../../shared/interfaces/user";
 import { addToken } from "../services/tokenService";
 import { login } from "../services/userService";
 import { createToken } from "../utils/createJsonToken";

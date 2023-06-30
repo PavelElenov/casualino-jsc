@@ -1,0 +1,13 @@
+<div [ngClass]="{'message my-message': message.writer.username == user.username}">
+    <div class="img-container">
+        <span class="level">{{message.writer.level}}</span>
+        <img src="" alt="">
+    </div>
+    <div class="wrapper-messages">
+        <div class="message-info">
+            <span class="user-username">{{message.writer.username}}</span>
+            <p>{{message.text}}</p>
+        </div>
+        <p class="time">{{time}}</p>
+    </div>
+</div>

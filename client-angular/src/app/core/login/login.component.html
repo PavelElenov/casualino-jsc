@@ -1,0 +1,20 @@
+<div class="login-page">
+    <form id="login-form" #form="ngForm" (ngSubmit)="loginUser(form)">
+      <header>
+        <span>LOGIN</span>
+      </header>
+      <div class="content">
+        <div>
+          <i class="fa-solid fa-envelope"></i>
+          <input id="email" type="text" name="email" placeholder="E-mail" ngModel required (ngModelChange)="changeHandler()"/>
+        </div>
+        <div>
+          <i class="fa-solid fa-lock"></i>
+          <input id="password" type="password" name="password" placeholder="Password" ngModel required (ngModelChange)="changeHandler()"/>
+        </div>
+
+        <p class="error" *ngIf="error">{{error}}</p>
+        <button>Login</button>
+      </div>
+    </form>
+  </div>
