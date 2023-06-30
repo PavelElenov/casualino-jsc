@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChatService } from '../chat.service';
 import { Observable } from 'rxjs';
-import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
+import { IConversation, IMessage, IMessageInfo } from 'src/app/shared/interfaces/message';
 import { NgForm } from '@angular/forms';
 import { SocketService } from 'src/app/shared/services/socket/socket.service';
 import { UserService } from 'src/app/shared/services/user/user.service';
@@ -34,6 +34,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   changeCurrentChat(chat: Observable<IConversation>) {
     chat.subscribe((chat) => {
       this.currentChat = chat;
+      this.chatService.currentChat = chat;
 
       if (this.currentChat!.messages.length > 0) {
         this.messages = this.currentChat!.messages;
@@ -46,7 +47,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     form.reset();
     console.log(this.userService.user);
     
-    const messageInfo: IMessage = {
+    const messageInfo: IMessageInfo = {
       writer: {
         username: this.userService.user!.username,
         level: this.userService.user!.level,
@@ -54,6 +55,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
       },
       text: message,
       time: this.timeService.getCurrentTimeInMinutes(),
+      conversation: this.currentChat!.name
     };
 
     this.socketService.emitMessage(messageInfo);

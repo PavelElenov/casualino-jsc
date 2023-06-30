@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpService } from '../shared/services/http/http.service';
 import { StorageTokenService } from '../shared/services/storage/storage-token.service';
-import { HttpClient } from '@angular/common/http';
 import { IConversation } from '../shared/interfaces/message';
 import { Observable } from 'rxjs';
 
@@ -9,6 +8,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ChatService {
+  currentChat: IConversation | undefined;
   constructor(private httpService: HttpService, private storage: StorageTokenService,) { }
 
   getAllChats(): Observable<IConversation[]>{
@@ -19,5 +19,5 @@ export class ChatService {
     return this.httpService.get<IConversation>(`/conversations/${chatName}`, this.storage.getToken('auth-token')!);
   }
 
-  
+
 }

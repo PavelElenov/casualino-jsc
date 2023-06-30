@@ -6,13 +6,15 @@ import { UserService } from './services/user/user.service';
 import { SocketService } from './services/socket/socket.service';
 import { StorageTokenService } from './services/storage/storage-token.service';
 import { AuthGuard } from './guards/auth-guard.guard';
+import { ChatModule } from '../chat/chat.module';
 
 
 @NgModule({
   declarations: [],
   imports: [
     CommonModule,
-    HttpClientModule
+    HttpClientModule,
+    ChatModule
   ],
   providers: [UserService, HttpService, SocketService, StorageTokenService, AuthGuard]
 })

@@ -36,7 +36,7 @@ io.use(function (socket, next) {
 }).on("connection", function (socket) {
   console.log("New User");
 
-  socket.on("message", (data: IMessageInfo) => {
+  socket.on("message", (data: IMessageInfo) => {    
     addMessage(data.writer.username, data.text, data.conversation, data.time);
     socket.broadcast.emit("message", data);
   });
