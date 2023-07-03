@@ -1,13 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IConversation } from 'src/app/shared/interfaces/message';
-import { TimeService } from 'src/app/shared/services/time/time.service';
-import { ChatService } from '../chat.service';
-import { Observable } from 'rxjs';
+import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { IConversation } from "src/app/shared/interfaces/message";
+import { TimeService } from "src/app/shared/services/time/time.service";
+import { ChatService } from "../chat.service";
+import { Observable } from "rxjs";
 
 @Component({
-  selector: 'app-chat',
-  templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss']
+  selector: "app-chat",
+  templateUrl: "./chat.component.html",
+  styleUrls: ["./chat.component.scss"]
 })
 export class ChatComponent {
   @Input() chat!:IConversation;
@@ -20,8 +20,6 @@ export class ChatComponent {
     if(this.chat.messages.length > 0){
       const lastMessageTime: number = this.chat.messages[this.chat.messages.length - 1].time;
       this.time = this.timeService.getHowLongAgoMessageWasWritten(lastMessageTime, this.timeService.getCurrentTimeInMinutes());
-      console.log(this.time);
-      
     }
   }
 

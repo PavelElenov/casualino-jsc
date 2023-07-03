@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { throwError, Observable } from 'rxjs';
-import { IUserData } from '../../interfaces/user';
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { throwError, Observable } from "rxjs";
+import { IUserData } from "../../interfaces/user";
 
 
 interface IHeaders {
@@ -12,10 +12,10 @@ interface IHeaders {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class HttpService {
-  APIURL: string = 'http://localhost:3000';
+  APIURL: string = "http://localhost:3000";
 
   constructor(private http: HttpClient) { }
 
@@ -47,11 +47,11 @@ export class HttpService {
 
   checkForErrorStatus(status: number){
     if(status == 400){
-      throwError(() => 'Not Found');
+      throwError(() => "Not Found");
     }else if(status == 401){
-      throwError(() => 'Unauthorized');
+      throwError(() => "Unauthorized");
     }else{
-      throwError(() => 'Server Error');
+      throwError(() => "Server Error");
     }
   }
 

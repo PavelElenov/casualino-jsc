@@ -1,35 +1,38 @@
-import { Component } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
-import { IUserData } from 'src/app/shared/interfaces/user';
-import { StorageTokenService } from 'src/app/shared/services/storage/storage-token.service';
-import { UserService } from 'src/app/shared/services/user/user.service';
+import { Component, OnDestroy } from "@angular/core";
+import { NgForm } from "@angular/forms";
+import { Router } from "@angular/router";
+import { Subscription } from "rxjs";
+import { IUserData } from "src/app/shared/interfaces/user";
+import { StorageTokenService } from "src/app/shared/services/storage/storage-token.service";
+import { UserService } from "src/app/shared/services/user/user.service";
 
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  selector: "app-login",
+  templateUrl: "./login.component.html",
+  styleUrls: ["./login.component.scss"]
 })
-export class LoginComponent {
+export class LoginComponent{
   error:string | undefined;
+  subscription: Subscription[] = [];
 
   constructor(private userService: UserService, private storage: StorageTokenService, private router: Router) { }
 
   loginUser(form: NgForm) {
     if (form.valid) {
-      this.userService.login(form.value).subscribe({
+      const subscription = this.userService.login(form.value).subscribe({
         next: (data: IUserData) => {
           this.userService.user = data.user;
-          this.storage.storeToken('auth-token', data.token);
-          this.router.navigate(['/chats']);
+          this.storage.storeToken("auth-token", data.token);
+          this.router.navigate(["/chats"]);
         },
         error: (error) => {
           if(error.status == 400){
             this.error = error.error;
           }
         }
-      })
+      });
+      
     };
   }
 

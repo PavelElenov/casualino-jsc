@@ -1,8 +1,8 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { LoginComponent } from './core/login/login.component';
-import { ChatsListComponent } from './chat/chats-list/chats-list.component';
-import { AuthGuard } from './shared/guards/auth-guard.guard';
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
+import { LoginComponent } from "./core/login/login.component";
+import { ChatsListComponent } from "./chat/chats-list/chats-list.component";
+import { AuthGuard } from "./shared/guards/auth-guard.guard";
 
 const routes: Routes = [
   {
@@ -11,7 +11,7 @@ const routes: Routes = [
     redirectTo: "/chats"
   },
   {
-    path:'login',
+    path:"login",
     component:LoginComponent,
   },
   {

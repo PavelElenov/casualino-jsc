@@ -14,7 +14,7 @@
 
     <section *ngIf="currentChat" class="current-chat">
       <section class="messages">
-        <ng-container *ngIf="messages">
+        <ng-container *ngIf="messages$ | async">
           <app-message *ngFor="let message of messages$ | async" [message]="message"></app-message>
         </ng-container>
       </section>

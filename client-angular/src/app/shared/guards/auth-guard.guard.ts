@@ -8,10 +8,10 @@ export class AuthGuard{
   constructor(private storage: StorageTokenService, private router: Router) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    if(this.storage.getToken('auth-token')){
+    if(this.storage.getToken("auth-token")){
       return true;
     }else{
-      return this.router.navigate(['/login']);
+      return this.router.navigate(["/login"]);
     }
   }
 }

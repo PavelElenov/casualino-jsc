@@ -1,6 +1,6 @@
-import { createReducer, on } from '@ngrx/store';
-import { IMessage } from '../shared/interfaces/message';
-import { addMessage, setMessages } from './actions';
+import { createReducer, on } from "@ngrx/store";
+import { IMessage } from "../shared/interfaces/message";
+import { addMessage, setMessages } from "./actions";
 
 export interface IGlobalState {
   messages: IMessage[];

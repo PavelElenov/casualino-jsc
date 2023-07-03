@@ -1,5 +1,5 @@
 import { IState } from ".";
-import {createSelector} from '@ngrx/store';
+import {createSelector} from "@ngrx/store";
 
 export const selectGlobal = (state: IState) => state.global;
 

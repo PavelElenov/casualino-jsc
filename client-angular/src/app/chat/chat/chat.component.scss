@@ -48,6 +48,10 @@
     i {
         font-size: 2.5rem;
         color: orange;
+        
+        &:hover{
+            transform: scale(1.03);
+        }
     }
 }
 

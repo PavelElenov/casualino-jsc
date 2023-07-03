@@ -51,11 +51,11 @@ export class HttpService {
 
   checkResStatus(status: number) {
     if (status == 400) {
-      throw new Error('Not found');
+      throw new Error("Not found");
     } else if (status == 401) {
-      throw new Error('Unauthorized');
+      throw new Error("Unauthorized");
     } else {
-      throw new Error('Server Error'); 
+      throw new Error("Server Error"); 
     }
   }
 }

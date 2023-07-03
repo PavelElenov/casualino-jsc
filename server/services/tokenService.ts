@@ -6,7 +6,7 @@ interface IToken{
 let tokens:IToken[] = []
 
 
-export function compareToken(data: IToken): boolean{
+export function compareToken(data: IToken): boolean{    
     const userData = tokens.find(t => t.user == data.user);
     if(userData?.token == data.token){
         return true;

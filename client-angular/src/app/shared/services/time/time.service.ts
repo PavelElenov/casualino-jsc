@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class TimeService {
 
@@ -19,8 +19,6 @@ export class TimeService {
     currentTime: number
   ): string {
     const difference = currentTime - messageTime;
-    console.log(currentTime, messageTime);
-    
 
     if (difference < 1) {
       return "less than a minute ago";
