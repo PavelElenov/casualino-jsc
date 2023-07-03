@@ -15,7 +15,7 @@
     <section *ngIf="currentChat" class="current-chat">
       <section class="messages">
         <ng-container *ngIf="messages">
-          <app-message *ngFor="let message of messages" [message]="message"></app-message>
+          <app-message *ngFor="let message of messages$ | async" [message]="message"></app-message>
         </ng-container>
       </section>
       <form #form="ngForm" class="write-message" (ngSubmit)="submitMessage(form)">

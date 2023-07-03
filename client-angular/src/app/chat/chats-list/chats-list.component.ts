@@ -1,11 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChatService } from '../chat.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { IConversation, IMessage, IMessageInfo } from 'src/app/shared/interfaces/message';
 import { NgForm } from '@angular/forms';
 import { SocketService } from 'src/app/shared/services/socket/socket.service';
 import { UserService } from 'src/app/shared/services/user/user.service';
 import { TimeService } from 'src/app/shared/services/time/time.service';
+import { IState } from 'src/app/+store';
+import {Store} from '@ngrx/store';
+import { addMessage, setMessages } from 'src/app/+store/actions';
+import { selectMessages } from 'src/app/+store/selectors';
 
 @Component({
   selector: 'app-chats-list',
@@ -15,37 +19,41 @@ import { TimeService } from 'src/app/shared/services/time/time.service';
 export class ChatsListComponent implements OnInit, OnDestroy {
   chats$: Observable<IConversation[]> | undefined;
   currentChat: IConversation | undefined;
-  messages: IMessage[] | undefined;
+  messages$: Observable<IMessage[]> = this.store.select(selectMessages);
+  subscription!: Subscription;
 
   constructor(
     private chatService: ChatService,
     private socketService: SocketService,
 
     private userService: UserService,
-    private timeService: TimeService
+    private timeService: TimeService,
+    private store: Store<IState>
   ) {}
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 
   ngOnInit() {
     this.chats$ = this.chatService.getAllChats();
-    this.socketService.connectToServer();
   }
 
   changeCurrentChat(chat: Observable<IConversation>) {
-    chat.subscribe((chat) => {
+    const subscription$ = chat.subscribe((chat) => {
       this.currentChat = chat;
       this.chatService.currentChat = chat;
 
       if (this.currentChat!.messages.length > 0) {
-        this.messages = this.currentChat!.messages;
+        this.store.dispatch(setMessages({messages: this.currentChat!.messages}));
       }
     });
+
+    this.subscription.add(subscription$);
   }
 
   submitMessage(form: NgForm) {
     const { message } = form.value;
     form.reset();
-    console.log(this.userService.user);
     
     const messageInfo: IMessageInfo = {
       writer: {
@@ -59,6 +67,10 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     };
 
     this.socketService.emitMessage(messageInfo);
-    this.messages = this.messages ? [...this.messages!, messageInfo] : [messageInfo];
+    this.store.dispatch(addMessage({message: {
+      writer: messageInfo.writer,
+      text: message,
+      time: messageInfo.time
+    }}));
   }
 }
