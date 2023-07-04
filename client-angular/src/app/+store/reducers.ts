@@ -1,7 +1,8 @@
+import { state } from "@angular/animations";
 import { createReducer, on } from "@ngrx/store";
 import { IConversation, IMessage } from "../shared/interfaces/message";
 import { IUser } from "../shared/interfaces/user";
-import { addMessage, deleteChat, setChats, setCurrentChat, setMessages, setUser } from "./actions";
+import { addChat, addMessage, deleteChat, deleteMessage, setChats, setCurrentChat, setMessages, setUser } from "./actions";
 
 export interface IGlobalState {
   messages: IMessage[];
@@ -38,5 +39,7 @@ export const globalReducer = createReducer(
   on(setChats, (state, {chats}) => ({...state, chats})),
   on(setCurrentChat, (state, {currentChat}) => ({...state, currentChat})),
   on(setUser, (state, {user}) => ({...state, user})),
-  on(deleteChat, (state, {name}) => ({...state, chats: state.chats.filter(c => c.name != name)}))
+  on(deleteChat, (state, {name}) => ({...state, chats: state.chats.filter(c => c.name != name)})),
+  on(deleteMessage, (state, {messageText}) => ({...state, messages: state.messages.filter(m => m.text !== messageText)})),
+  on(addChat, (state, {chat}) => ({...state, chats: [...state.chats, chat]}))
 );

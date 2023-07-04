@@ -35,7 +35,6 @@ export class ChatComponent implements OnDestroy{
 
   deleteChat(name: string){
     const subsctiption = this.chatService.deleteChat(name).subscribe(() => {
-      console.log('hi');
       this.store.dispatch(deleteChat({name}));
     });
     this.subscriptions$.push(subsctiption);

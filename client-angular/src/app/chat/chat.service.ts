@@ -21,4 +21,10 @@ export class ChatService {
   deleteChat(name: string): Observable<any>{
     return this.httpService.delete(`/conversations/${name}`, this.storage.getToken("auth-token")!)
   }
+  deleteMessage(currentChatName:string, messageText: string): Observable<any>{
+    return this.httpService.delete(`/conversations/${currentChatName}/messages/${messageText}`, this.storage.getToken("auth-token")!);
+  }
+  addChat(chat:IConversation): Observable<any>{
+    return this.httpService.post("/conversations", {chat}, this.storage.getToken("auth-token")!);
+  }
 }

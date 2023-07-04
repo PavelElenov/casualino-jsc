@@ -9,7 +9,7 @@ import { NgForm } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { IState } from 'src/app/+store';
-import { addMessage } from 'src/app/+store/actions';
+import { addChat, addMessage, setCurrentChat } from 'src/app/+store/actions';
 import { selectCurrentChat, selectUser } from 'src/app/+store/selectors';
 import {
   IConversation,
@@ -19,6 +19,7 @@ import {
 import { IUser } from 'src/app/shared/interfaces/user';
 import { SocketService } from 'src/app/shared/services/socket/socket.service';
 import { TimeService } from 'src/app/shared/services/time/time.service';
+import { ChatService } from '../chat.service';
 
 @Component({
   selector: 'app-current-chat',
@@ -34,9 +35,9 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   user!: IUser;
 
   constructor(
-    private timeService: TimeService,
     private socketService: SocketService,
-    private store: Store<IState>
+    private store: Store<IState>,
+    private chatService: ChatService
   ) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe);
@@ -70,8 +71,25 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       conversation: this.currentChat!.name,
     };
 
-    this.socketService.emitMessage(messageInfo);
-    this.goBottomOfMessages();
+    if(this.currentChat.name == ""){
+      const chat: IConversation = {
+        name: this.user.username,
+        messages: [],
+        img: this.user.img,
+        level: this.user.level,
+      }
+      const subscription = this.chatService.addChat(chat).subscribe(() => {
+        this.store.dispatch(setCurrentChat({currentChat: chat }));
+        this.store.dispatch(addChat({chat}));
+        messageInfo.conversation = chat.name;
+        this.socketService.emitMessage(messageInfo);
+        this.goBottomOfMessages();
+      });
+      this.subscriptions$.push(subscription);
+    }else{
+      this.socketService.emitMessage(messageInfo);
+      this.goBottomOfMessages();
+    }
   }
   goBottomOfMessages(): void {
     const messagesDiv: HTMLDivElement = document.getElementById(

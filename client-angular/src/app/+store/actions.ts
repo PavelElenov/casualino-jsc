@@ -1,4 +1,5 @@
 import { createAction, props } from "@ngrx/store";
+import { createEmitAndSemanticDiagnosticsBuilderProgram } from "typescript";
 import { IConversation, IMessage } from "../shared/interfaces/message";
 import { IUser } from "../shared/interfaces/user";
 export const addMessage = createAction(
@@ -29,4 +30,14 @@ export const setUser = createAction(
 export const deleteChat = createAction(
   "Delete Chat",
   props<{name: string}>()
+);
+
+export const deleteMessage = createAction(
+  "Delete Message",
+  props<{messageText: string}>()
+);
+
+export const addChat = createAction(
+  "Add Chat",
+  props<{chat: IConversation}>()
 )

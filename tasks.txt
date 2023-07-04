@@ -1,2 +1,1 @@
-delete message and chat - false
 new topic - false

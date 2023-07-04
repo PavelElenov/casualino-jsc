@@ -65,5 +65,15 @@ export class ChatsListComponent implements OnInit, OnDestroy {
 
     this.subscriptions$.push(subscription$);
   }
+  createNewConversation(): void{
+    this.currentChat = {
+      name: "",
+      messages: [],
+      img: "",
+      level: 0,
+    };
+
+    this.store.dispatch(setCurrentChat({currentChat: this.currentChat}));
+  }
 
 }
