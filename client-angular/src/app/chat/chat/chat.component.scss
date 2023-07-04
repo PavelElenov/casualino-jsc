@@ -50,11 +50,23 @@
         color: orange;
         
         &:hover{
-            transform: scale(1.03);
+            transform: scale(1.05);
         }
     }
 }
 
 .time {
     color: grey;
+}
+
+#deleteChat{
+    color:red;
+    font-size: 1.2rem;
+    top:3px;
+    right:20px;
+    font-weight: bold;
+
+    &:hover{
+        transform: scale(1.03);
+    }
 }

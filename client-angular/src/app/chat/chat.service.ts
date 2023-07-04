@@ -14,9 +14,11 @@ export class ChatService {
     return this.httpService.get<IConversation[]>("/conversations", this.storage.getToken("auth-token")!);
   };
 
-  getChatByName(chatName: string){
+  getChatByName(chatName: string): Observable<IConversation>{
     return this.httpService.get<IConversation>(`/conversations/${chatName}`, this.storage.getToken("auth-token")!);
   }
 
-
+  deleteChat(name: string): Observable<any>{
+    return this.httpService.delete(`/conversations/${name}`, this.storage.getToken("auth-token")!)
+  }
 }

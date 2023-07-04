@@ -25,3 +25,8 @@ export const setUser = createAction(
   "Set User",
   props<{user: IUser}>()
 );
+
+export const deleteChat = createAction(
+  "Delete Chat",
+  props<{name: string}>()
+)

@@ -9,6 +9,7 @@
         padding: 0;
 
         .message-info {
+            position: relative;
             border: 1px solid orange;
             padding: 0.5rem;
             border-top-right-radius: 15px;
@@ -31,6 +32,7 @@
         padding: 0;
 
         .message-info {
+            position: relative;
             border: 1px solid orange;
             padding: 0.5rem;
             border-top-right-radius: 0;
@@ -53,5 +55,23 @@
         right: 4px;
         color: white;
         font-weight: bold;
+    }
+}
+
+.user-username{
+    font-weight: bold;
+}
+
+i{
+    color:red;
+    position:absolute;
+    top:5px;
+    right:5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: transform 0.5s;
+
+    &:hover{
+        transform: rotate(180deg);
     }
 }
