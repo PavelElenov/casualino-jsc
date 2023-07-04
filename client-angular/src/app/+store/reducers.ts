@@ -27,6 +27,7 @@ const initialState: IGlobalState = {
   }
 };
 
+
 export const globalReducer = createReducer(
   initialState,
   on(addMessage, (state, { message }) => ({

@@ -1,24 +1,29 @@
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { Store } from "@ngrx/store";
-import { Observable } from "rxjs";
+import { Subscription } from "rxjs";
 import { Socket, io } from "socket.io-client";
 import { IState } from "src/app/+store";
 import { addMessage } from "src/app/+store/actions";
-import { ChatService } from "src/app/chat/chat.service";
-import { IMessageInfo } from "../../interfaces/message";
+import { selectCurrentChat } from "src/app/+store/selectors";
+import { IConversation, IMessageInfo, IFullMessageInfo } from "../../interfaces/message";
 import { StorageTokenService } from "../storage/storage-token.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class SocketService {
+export class SocketService implements OnDestroy{
   socket: Socket | undefined;
+  currentChat!: IConversation;
+
+  subscriptions$: Subscription[] = [];
 
   constructor(
     private storage: StorageTokenService,
-    private chatService: ChatService,
     private store: Store<IState>
   ) {}
+  ngOnDestroy(): void {
+    this.subscriptions$.map(s => s.unsubscribe());
+  }
 
   connectToServer() {
     this.socket = io("http://localhost:3000", {
@@ -28,21 +33,23 @@ export class SocketService {
       },
     });
 
-    this.socket.on("message", (data: IMessageInfo) => {
-      console.log("Hi");
-      console.log(data);
+    this.socket.on("message", (data: IFullMessageInfo) => {
+      const subscription = this.store.select(selectCurrentChat).subscribe(currentChat => {
+        if (data.conversation == currentChat.name) {
+          this.store.dispatch(
+            addMessage({
+              message: {
+                writer: data.writer,
+                text: data.text,
+                time: data.time,
+              },
+            })
+          );
+        }
+      });
 
-      if (data.conversation == this.chatService.currentChat?.name) {
-        this.store.dispatch(
-          addMessage({
-            message: {
-              writer: data.writer,
-              text: data.text,
-              time: data.time,
-            },
-          })
-        );
-      }
+      this.subscriptions$.push(subscription);
+      
     });
   }
 

@@ -8,7 +8,6 @@ import { Observable } from "rxjs";
   providedIn: "root"
 })
 export class ChatService {
-  currentChat: IConversation | undefined;
   constructor(private httpService: HttpService, private storage: StorageTokenService,) { }
 
   getAllChats(): Observable<IConversation[]>{

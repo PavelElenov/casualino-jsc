@@ -23,5 +23,15 @@ export type IMessageInfo = {
     },
     text:string,
     conversation: string;
+}
+
+export interface IFullMessageInfo{
+    writer: {
+        username: string,
+        level: number,
+        img: string,
+    },
+    text:string,
+    conversation: string;
     time: number;
 }

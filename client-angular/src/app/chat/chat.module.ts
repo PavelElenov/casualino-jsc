@@ -5,7 +5,7 @@ import { RouterModule } from "@angular/router";
 import { ChatComponent } from "./chat/chat.component";
 import { FormsModule } from "@angular/forms";
 import { MessageComponent } from "./message/message.component";
-import { CurrentChatComponent } from './current-chat/current-chat.component';
+import { CurrentChatComponent } from "./current-chat/current-chat.component";
 
 @NgModule({
   declarations: [

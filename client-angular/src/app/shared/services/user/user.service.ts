@@ -18,8 +18,8 @@ export class UserService{
     }
    }
 
-  getUserByToken(token: string){
-    this.httpService.get<IUser>("/user", token).subscribe(user => this.user = user);
+  getUserByToken(token: string): Observable<IUser>{
+    return this.httpService.get<IUser>("/user", token);
   }
 
   login(data: {email: string, password: string}): Observable<IUserData>{
