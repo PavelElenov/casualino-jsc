@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { AfterViewInit, Component, OnDestroy, OnInit } from "@angular/core";
 import { ChatService } from "../chat.service";
 import { Observable, Subscription } from "rxjs";
 import { IConversation, IMessage, IMessageInfo } from "src/app/shared/interfaces/message";
@@ -8,8 +8,8 @@ import { UserService } from "src/app/shared/services/user/user.service";
 import { TimeService } from "src/app/shared/services/time/time.service";
 import { IState } from "src/app/+store";
 import {Store} from "@ngrx/store";
-import { addMessage, setMessages } from "src/app/+store/actions";
-import { selectMessages } from "src/app/+store/selectors";
+import { addMessage, setChats, setMessages } from "src/app/+store/actions";
+import { selectChats, selectMessages } from "src/app/+store/selectors";
 
 @Component({
   selector: "app-chats-list",
@@ -30,16 +30,22 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private timeService: TimeService,
     private store: Store<IState>
   ) {}
+
   ngOnDestroy(): void {
     this.subscription.map(s => s.unsubscribe());
   }
 
   ngOnInit() {
-    this.chats$ = this.chatService.getAllChats();
+    const subscription = this.chatService.getAllChats().subscribe(chats => {
+      this.store.dispatch(setChats({chats}));
+      this.chats$ = this.store.select(selectChats);
+    });
+
+    this.subscription.push(subscription);
     this.socketService.connectToServer();
   }
 
-  changeCurrentChat(chat: Observable<IConversation>) {
+  getCurrentChat(chat: Observable<IConversation>) {
     const subscription$ = chat.subscribe((chat) => {
       this.currentChat = chat;
       this.chatService.currentChat = chat;
@@ -52,26 +58,4 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.subscription.push(subscription$);
   }
 
-  submitMessage(form: NgForm) {
-    const { message } = form.value;
-    form.reset();
-    
-    const messageInfo: IMessageInfo = {
-      writer: {
-        username: this.userService.user!.username,
-        level: this.userService.user!.level,
-        img: this.userService.user!.img,
-      },
-      text: message,
-      time: this.timeService.getCurrentTimeInMinutes(),
-      conversation: this.currentChat!.name
-    };
-
-    this.socketService.emitMessage(messageInfo);
-    this.store.dispatch(addMessage({message: {
-      writer: messageInfo.writer,
-      text: message,
-      time: messageInfo.time
-    }}));
-  }
 }

@@ -1,0 +1,18 @@
+<section class="current-chat">
+  <section *ngIf="messages" class="messages" id="messages">
+    <ng-container *ngIf="messages">
+      <app-message
+        *ngFor="let message of messages"
+        [message]="message"
+      ></app-message>
+    </ng-container>
+  </section>
+  <form #form="ngForm" class="write-message" (ngSubmit)="submitMessage(form)">
+    <input
+      type="text"
+      name="message"
+      ngModel
+      placeholder="Write a new message"
+    />
+  </form>
+</section>

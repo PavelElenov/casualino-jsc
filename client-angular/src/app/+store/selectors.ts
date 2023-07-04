@@ -6,4 +6,19 @@ export const selectGlobal = (state: IState) => state.global;
 export const selectMessages = createSelector(
     selectGlobal,
     state => state.messages
+);
+
+export const selectChats = createSelector(
+    selectGlobal,
+    state => state.chats
+);
+
+export const selectUser = createSelector(
+    selectGlobal,
+    state => state.user
+);
+
+export const selectCurrentChat = createSelector(
+    selectGlobal,
+    state => state.currentChat
 )

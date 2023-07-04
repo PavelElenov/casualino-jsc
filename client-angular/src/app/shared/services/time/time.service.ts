@@ -1,17 +1,22 @@
 import { Injectable } from "@angular/core";
 
+
 @Injectable({
   providedIn: "root"
 })
 export class TimeService {
-
-  constructor() { }
+  time: number = 0;
+  constructor() { 
+    
+    setInterval(() => this.setTime(), 60 * 1000);
+    
+  }
+  setTime(): void{
+    this.time += 1;
+  }
 
   getCurrentTimeInMinutes(): number {
-    const date = new Date();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    return hours * 60 + minutes;
+    return this.time;
   }
 
   getHowLongAgoMessageWasWritten(

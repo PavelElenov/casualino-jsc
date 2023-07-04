@@ -20,6 +20,8 @@
     "@angular/router": "^16.0.0",
     "@ngrx/store": "^16.0.1",
     "@ngrx/store-devtools": "^16.0.1",
+    "file-system": "^2.2.2",
+    "fs": "^0.0.1-security",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.7.1",
     "tslib": "^2.3.0",
