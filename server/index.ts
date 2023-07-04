@@ -4,7 +4,7 @@ import http from "http";
 import { expressConfig } from "./config/express";
 import { routesConfig } from "./config/routes";
 import { addMessage } from "./services/chatService";
-import { IMessageInfo } from "../shared/interfaces/conversation";
+import { IMessage, IMessageInfo } from "../shared/interfaces/conversation";
 import { verifyToken } from "./utils/createJsonToken";
 import { compareToken } from "./services/tokenService";
 import { IJsonWebToken } from "../shared/interfaces/user";
@@ -37,8 +37,8 @@ io.use(function (socket, next) {
   console.log("New User");
 
   socket.on("message", (data: IMessageInfo) => {    
-    addMessage(data.writer.username, data.text, data.conversation, data.time);
-    socket.broadcast.emit("message", data);
+    const message:IMessage = addMessage(data.writer.username, data.text, data.conversation);
+    io.sockets.emit("message", {writer: message.writer, text: message.text, time: message.time, conversation: data.conversation});
   });
 });
 

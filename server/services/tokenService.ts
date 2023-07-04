@@ -3,7 +3,7 @@ interface IToken{
     token: string
 }
 
-let tokens:IToken[] = []
+export let tokens:IToken[] = []
 
 
 export function compareToken(data: IToken): boolean{    

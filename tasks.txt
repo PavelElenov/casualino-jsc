@@ -1,5 +1,2 @@
 delete message and chat - false
-auto scroll and messages notification - false
-time - false
 new topic - false
-chats in store - true

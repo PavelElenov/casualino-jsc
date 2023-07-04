@@ -28,7 +28,8 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private socketService: SocketService,
     private store: Store<IState>,
     private userService: UserService,
-    private storage: StorageTokenService
+    private storage: StorageTokenService,
+    private timeService: TimeService,
   ) {}
 
   ngOnDestroy(): void {
@@ -36,6 +37,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.timeService.getServerTime();
     const authToken = this.storage.getToken('auth-token');
 
     if(authToken){

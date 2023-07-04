@@ -1,5 +1,6 @@
-import { IConversation } from "../../shared/interfaces/conversation";
+import { IConversation, IMessage } from "../../shared/interfaces/conversation";
 import { IUserSomeInfo } from "../../shared/interfaces/user";
+import { getCurrentTimeInMinutes } from "./timeService";
 import { getUserByUsername } from "./userService";
 
 
@@ -36,10 +37,12 @@ export const getAllChats = (): IConversation[] => {
     return conversations;
 };
 
-export const addMessage = (writerUsername:string, text:string, conversationName:string, time:number): void => {
+export const addMessage = (writerUsername:string, text:string, conversationName:string): IMessage => {
     const conversation: IConversation | undefined = conversations.find(c => c.name == conversationName);
     const writer:IUserSomeInfo = getUserByUsername(writerUsername);
-    conversation?.messages.push({ writer, text, time });
+    const message: IMessage = {writer: writer, text, time: getCurrentTimeInMinutes()};
+    conversation?.messages.push(message);
+    return message;
 }
 
 export const getConversationByName = (conversationName: string): IConversation | Error => {
