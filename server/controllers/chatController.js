@@ -20,14 +20,17 @@ exports.router.get("/:name", function (req, res) {
 });
 exports.router.delete("/:name", function (req, res) {
     var chatName = req.params.name;
-    console.log(chatName);
     (0, chatService_1.deleteChatByName)(chatName);
     res.status(204).json();
 });
 //conversations/1/messages/hi
 exports.router.delete("/:name/messages/:messageText", function (req, res) {
     var _a = req.params, name = _a.name, messageText = _a.messageText;
-    console.log(name, messageText);
     (0, chatService_1.deleteMessage)(name, messageText);
-    res.status(204);
+    res.status(204).json();
+});
+exports.router.post("/", function (req, res) {
+    var newChat = req.body.chat;
+    (0, chatService_1.addChat)(newChat);
+    res.status(204).json();
 });

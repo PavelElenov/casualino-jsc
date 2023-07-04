@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConversationByName = exports.addMessage = exports.getAllChats = exports.deleteChatByName = exports.deleteMessage = void 0;
+exports.getConversationByName = exports.addMessage = exports.getAllChats = exports.deleteChatByName = exports.deleteMessage = exports.addChat = void 0;
 var timeService_1 = require("./timeService");
 var userService_1 = require("./userService");
 var conversations = [
@@ -29,6 +29,10 @@ var conversations = [
         level: 50
     },
 ];
+var addChat = function (newChat) {
+    conversations.push(newChat);
+};
+exports.addChat = addChat;
 var deleteMessage = function (chatName, messageText) {
     var chat = conversations.find(function (c) { return c.name == chatName; });
     var messageInfo = chat.messages.find(function (m) { return m.text == messageText; });

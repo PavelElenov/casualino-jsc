@@ -33,6 +33,9 @@ const conversations: IConversation[] = [
     },
 ];
 
+export const addChat = (newChat:IConversation) => {
+    conversations.push(newChat);
+}
 export const deleteMessage = (chatName:string, messageText: string): void => {
     const chat:IConversation = conversations.find(c => c.name == chatName)!;
     const messageInfo:IMessage = chat.messages.find(m => m.text == messageText)!
