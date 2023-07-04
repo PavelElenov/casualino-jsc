@@ -45,6 +45,20 @@ export class HttpService {
     return this.http.post<T>(`${this.APIURL}${url}`, data, {headers: fetchInit.headers});
   }
 
+  delete(url: string, token?: string): Observable<any>{
+    const fetchInit: IHeaders = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    if (token) {
+      fetchInit.headers["Authorization"] = token;
+    }
+
+    return this.http.delete(`${this.APIURL}${url}`, {headers: fetchInit.headers});
+  }
+
   checkForErrorStatus(status: number){
     if(status == 400){
       throwError(() => "Not Found");
