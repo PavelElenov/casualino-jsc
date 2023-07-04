@@ -33,6 +33,17 @@ const conversations: IConversation[] = [
     },
 ];
 
+export const deleteMessage = (chatName:string, messageText: string): void => {
+    const chat:IConversation = conversations.find(c => c.name == chatName)!;
+    const messageInfo:IMessage = chat.messages.find(m => m.text == messageText)!
+    const messageIndex = chat.messages.indexOf(messageInfo);;
+    chat.messages.splice(messageIndex, 1);
+}
+export const deleteChatByName = (name: string): void => {
+    const chat:IConversation = conversations.find(c => c.name == name)!;
+    const index:number = conversations.indexOf(chat!);
+    conversations.splice(index, 1);
+}
 export const getAllChats = (): IConversation[] => {
     return conversations;
 };
