@@ -5,7 +5,7 @@ import { Socket, io } from "socket.io-client";
 import { IState } from "src/app/+store";
 import { addMessage } from "src/app/+store/actions";
 import { selectCurrentChat } from "src/app/+store/selectors";
-import { IConversation, IMessageInfo, IFullMessageInfo } from "../../interfaces/message";
+import { IConversation, IMessageInfo, IFullMessageInfo } from "../../../../shared/interfaces/message";
 import { StorageTokenService } from "../storage/storage-token.service";
 
 @Injectable({
@@ -31,25 +31,6 @@ export class SocketService implements OnDestroy{
       query: {
         token: this.storage.getToken("auth-token"),
       },
-    });
-
-    this.socket.on("message", (data: IFullMessageInfo) => {
-      const subscription = this.store.select(selectCurrentChat).subscribe(currentChat => {
-        if (data.conversation == currentChat.name) {
-          this.store.dispatch(
-            addMessage({
-              message: {
-                writer: data.writer,
-                text: data.text,
-                time: data.time,
-              },
-            })
-          );
-        }
-      });
-
-      this.subscriptions$.push(subscription);
-      
     });
   }
 

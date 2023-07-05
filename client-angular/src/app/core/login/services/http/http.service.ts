@@ -4,7 +4,7 @@ import { Store } from "@ngrx/store";
 import { throwError, Observable, catchError } from "rxjs";
 import { IState } from "src/app/+store";
 import { setError } from "src/app/+store/actions";
-import { IUserData } from "../../interfaces/user";
+import { IUserData } from "../../../../shared/interfaces/user";
 import { ErrorService } from "../error/error.service";
 
 interface IHeaders {

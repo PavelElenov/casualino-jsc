@@ -1,35 +1,28 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from "@angular/core";
-import { ChatService } from "../chat.service";
-import { Observable, Subscription } from "rxjs";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChatService } from '../chat.service';
+import { Observable, Subscription } from 'rxjs';
+import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
+
+import { SocketService } from 'src/app/core/login/services/socket/socket.service';
+import { UserService } from 'src/app/core/login/services/user/user.service';
+import { TimeService } from 'src/app/core/login/services/time/time.service';
+import { IState } from 'src/app/+store';
+import { Store } from '@ngrx/store';
 import {
-  IConversation,
-  IMessage,
-  IMessageInfo,
-} from "src/app/shared/interfaces/message";
-import { NgForm } from "@angular/forms";
-import { SocketService } from "src/app/shared/services/socket/socket.service";
-import { UserService } from "src/app/shared/services/user/user.service";
-import { TimeService } from "src/app/shared/services/time/time.service";
-import { IState } from "src/app/+store";
-import { Store } from "@ngrx/store";
-import {
-  addMessage,
   setChats,
   setCurrentChat,
   setError,
   setMessages,
   setUser,
-} from "src/app/+store/actions";
-import { selectChats, selectMessages } from "src/app/+store/selectors";
-import { StorageTokenService } from "src/app/shared/services/storage/storage-token.service";
-import { Router } from "@angular/router";
-import { ErrorService } from "src/app/shared/services/error/error.service";
-import { HttpErrorResponse } from "@angular/common/http";
+} from 'src/app/+store/actions';
+import { selectChats, selectMessages } from 'src/app/+store/selectors';
+import { StorageTokenService } from 'src/app/core/login/services/storage/storage-token.service';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: "app-chats-list",
-  templateUrl: "./chats-list.component.html",
-  styleUrls: ["./chats-list.component.scss"],
+  selector: 'app-chats-list',
+  templateUrl: './chats-list.component.html',
+  styleUrls: ['./chats-list.component.scss'],
 })
 export class ChatsListComponent implements OnInit, OnDestroy {
   chats$: Observable<IConversation[]> | undefined;
@@ -44,7 +37,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private storage: StorageTokenService,
     private timeService: TimeService,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnDestroy(): void {
@@ -53,7 +46,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.timeService.getServerTime();
-    const authToken = this.storage.getToken("auth-token");
+    const authToken = this.storage.getToken('auth-token');
 
     if (authToken) {
       const subscription = this.userService
@@ -66,14 +59,15 @@ export class ChatsListComponent implements OnInit, OnDestroy {
         this.store.dispatch(setChats({ chats }));
         this.chats$ = this.store.select(selectChats);
       },
-      error: (err: any) => {  
-        this.store.dispatch(setError({error: err}));
-        this.router.navigate(["/error"]);
-      }
+      error: (err: any) => {
+        this.store.dispatch(setError({ error: err }));
+        this.router.navigate(['/error']);
+      },
     });
 
     this.subscriptions$.push(subscription);
     this.socketService.connectToServer();
+    this.chatService.listenForMessages();
   }
 
   getCurrentChat(chat: Observable<IConversation>) {
@@ -94,9 +88,9 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   }
   createNewConversation(): void {
     this.currentChat = {
-      name: "",
+      name: '',
       messages: [],
-      img: "",
+      img: '',
       level: 0,
     };
 

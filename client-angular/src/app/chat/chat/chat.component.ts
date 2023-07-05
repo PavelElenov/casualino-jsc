@@ -6,7 +6,7 @@ import {
   Output,
 } from "@angular/core";
 import { IConversation } from "src/app/shared/interfaces/message";
-import { TimeService } from "src/app/shared/services/time/time.service";
+import { TimeService } from "src/app/core/login/services/time/time.service";
 import { ChatService } from "../chat.service";
 import { Observable, Subscription } from "rxjs";
 import { Store } from "@ngrx/store";

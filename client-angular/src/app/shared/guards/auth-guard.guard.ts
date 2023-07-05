@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { Observable } from "rxjs";
-import { StorageTokenService } from "../services/storage/storage-token.service";
+import { StorageTokenService } from "../../core/login/services/storage/storage-token.service";
 
 @Injectable()
 export class AuthGuard{
