@@ -1,6 +1,4 @@
 import { createAction, props } from "@ngrx/store";
-import { createEmitAndSemanticDiagnosticsBuilderProgram } from "typescript";
-import { IError } from "../shared/interfaces/error";
 import { IConversation, IMessage } from "../shared/interfaces/message";
 import { IUser } from "../shared/interfaces/user";
 export const addMessage = createAction(

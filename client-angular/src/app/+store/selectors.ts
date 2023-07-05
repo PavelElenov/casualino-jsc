@@ -1,29 +1,32 @@
 import { IState } from ".";
 import {createSelector} from "@ngrx/store";
 
-export const selectGlobal = (state: IState) => state.global;
+export const chatsSelector = (state: IState) => state.chats;
+export const currentChatSelector = (state: IState) => state.currentChat;
+export const userSelector = (state: IState) => state.user;
+export const errorSelector = (state: IState) => state.error
 
 export const selectMessages = createSelector(
-    selectGlobal,
+    currentChatSelector,
     state => state.messages
 );
 
 export const selectChats = createSelector(
-    selectGlobal,
+    chatsSelector,
     state => state.chats
 );
 
 export const selectUser = createSelector(
-    selectGlobal,
+    userSelector,
     state => state.user
 );
 
 export const selectCurrentChat = createSelector(
-    selectGlobal,
+    currentChatSelector,
     state => state.currentChat
 );
 
 export const selectError = createSelector(
-    selectGlobal,
+    errorSelector,
     state => state.error
 )
