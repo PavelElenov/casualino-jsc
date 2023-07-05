@@ -4,27 +4,26 @@ import {
   Input,
   OnDestroy,
   OnInit,
-} from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
-import { IState } from 'src/app/+store';
-import { addChat, addMessage, setCurrentChat } from 'src/app/+store/actions';
-import { selectCurrentChat, selectUser } from 'src/app/+store/selectors';
+} from "@angular/core";
+import { NgForm } from "@angular/forms";
+import { Store } from "@ngrx/store";
+import { Subscription } from "rxjs";
+import { IState } from "src/app/+store";
+import { addChat, setCurrentChat } from "src/app/+store/actions";
+import { selectCurrentChat, selectUser } from "src/app/+store/selectors";
 import {
   IConversation,
   IMessage,
   IMessageInfo,
-} from 'src/app/shared/interfaces/message';
-import { IUser } from 'src/app/shared/interfaces/user';
-import { SocketService } from 'src/app/shared/services/socket/socket.service';
-import { TimeService } from 'src/app/shared/services/time/time.service';
-import { ChatService } from '../chat.service';
+} from "src/app/shared/interfaces/message";
+import { IUser } from "src/app/shared/interfaces/user";
+import { SocketService } from "src/app/shared/services/socket/socket.service";
+import { ChatService } from "../chat.service";
 
 @Component({
-  selector: 'app-current-chat',
-  templateUrl: './current-chat.component.html',
-  styleUrls: ['./current-chat.component.scss'],
+  selector: "app-current-chat",
+  templateUrl: "./current-chat.component.html",
+  styleUrls: ["./current-chat.component.scss"],
 })
 export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input()
@@ -78,7 +77,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
         img: this.user.img,
         level: this.user.level,
       }
-      const subscription = this.chatService.addChat(chat).subscribe(() => {
+      const subscription = this.chatService.addChat(chat)!.subscribe(() => {
         this.store.dispatch(setCurrentChat({currentChat: chat }));
         this.store.dispatch(addChat({chat}));
         messageInfo.conversation = chat.name;
@@ -93,7 +92,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   goBottomOfMessages(): void {
     const messagesDiv: HTMLDivElement = document.getElementById(
-      'messages'
+      "messages"
     ) as HTMLDivElement;
 
     messagesDiv.scrollTop = messagesDiv.scrollHeight;

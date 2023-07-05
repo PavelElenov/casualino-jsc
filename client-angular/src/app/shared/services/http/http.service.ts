@@ -1,8 +1,11 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { throwError, Observable } from "rxjs";
+import { Store } from "@ngrx/store";
+import { throwError, Observable, catchError } from "rxjs";
+import { IState } from "src/app/+store";
+import { setError } from "src/app/+store/actions";
 import { IUserData } from "../../interfaces/user";
-
+import { ErrorService } from "../error/error.service";
 
 interface IHeaders {
   headers: {
@@ -12,14 +15,14 @@ interface IHeaders {
 }
 
 @Injectable({
-  providedIn: "root"
+  providedIn: "root",
 })
 export class HttpService {
   APIURL: string = "http://localhost:3000";
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private errorService: ErrorService) {}
 
-  get<T>(url: string, token?: string): Observable<T>{
+  get<T>(url: string, token?: string): Observable<T> {
     const fetchInit: IHeaders = {
       headers: {},
     };
@@ -28,10 +31,18 @@ export class HttpService {
       fetchInit.headers["Authorization"] = token;
     }
 
-    return this.http.get<T>(`${this.APIURL}${url}`, { headers: fetchInit.headers });
+    return this.http
+      .get<T>(`${this.APIURL}${url}`, { headers: fetchInit.headers })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          return throwError(
+            () => new Error(this.errorService.checkForErrorStatus(error.status))
+          );
+        })
+      );
   }
 
-  post<T>(url: string, data: any, token?: string): Observable<T>{
+  post<T>(url: string, data: any, token?: string): Observable<T> {
     const fetchInit: IHeaders = {
       headers: {
         "Content-Type": "application/json",
@@ -42,10 +53,18 @@ export class HttpService {
       fetchInit.headers["Authorization"] = token;
     }
 
-    return this.http.post<T>(`${this.APIURL}${url}`, data, {headers: fetchInit.headers});
+    return this.http
+      .post<T>(`${this.APIURL}${url}`, data, { headers: fetchInit.headers })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          return throwError(
+            () => new Error(this.errorService.checkForErrorStatus(error.status))
+          );
+        })
+      );
   }
 
-  delete(url: string, token?: string): Observable<any>{
+  delete(url: string, token?: string): Observable<any> {
     const fetchInit: IHeaders = {
       headers: {
         "Content-Type": "application/json",
@@ -56,17 +75,14 @@ export class HttpService {
       fetchInit.headers["Authorization"] = token;
     }
 
-    return this.http.delete(`${this.APIURL}${url}`, {headers: fetchInit.headers});
+    return this.http
+      .delete(`${this.APIURL}${url}`, { headers: fetchInit.headers })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          return throwError(
+            () => new Error(this.errorService.checkForErrorStatus(error.status))
+          );
+        })
+      );
   }
-
-  checkForErrorStatus(status: number){
-    if(status == 400){
-      throwError(() => "Not Found");
-    }else if(status == 401){
-      throwError(() => "Unauthorized");
-    }else{
-      throwError(() => "Server Error");
-    }
-  }
-
 }

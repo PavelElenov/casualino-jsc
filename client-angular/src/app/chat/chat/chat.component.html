@@ -1,7 +1,7 @@
 <div class="chat">
     <div class="img-container">
         <span class="level">{{chat.level}}</span>
-        <img src={{chat.img}} alt="">
+        <img [src]="chat.img" alt="">
     </div>
     <div class="chat-info">
         <span class="user-username">{{chat.name}}</span>
@@ -11,5 +11,5 @@
         <i class="fa-solid fa-greater-than" (click)="getCurrentChat(chat.name)"></i>
         <p *ngIf="time">{{time}}</p>
     </div>
-    <i class="fa-solid fa-xmark" id="deleteChat" (click)="deleteChat(chat.name)"></i>
+    <i class="fa-solid fa-xmark" (click)="deleteChat(chat.name)"></i>
 </div>

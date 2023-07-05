@@ -7,6 +7,9 @@ import { SocketService } from "./services/socket/socket.service";
 import { StorageTokenService } from "./services/storage/storage-token.service";
 import { AuthGuard } from "./guards/auth-guard.guard";
 import { ChatModule } from "../chat/chat.module";
+import { RouterModule } from "@angular/router";
+import { TimeService } from "./services/time/time.service";
+import { ErrorService } from "./services/error/error.service";
 
 
 @NgModule({
@@ -14,8 +17,8 @@ import { ChatModule } from "../chat/chat.module";
   imports: [
     CommonModule,
     HttpClientModule,
-    ChatModule
+    RouterModule
   ],
-  providers: [UserService, HttpService, SocketService, StorageTokenService, AuthGuard]
+  providers: [UserService, HttpService, SocketService, StorageTokenService, AuthGuard, TimeService, ErrorService]
 })
 export class SharedModule { }

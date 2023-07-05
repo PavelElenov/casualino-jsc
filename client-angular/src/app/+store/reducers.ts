@@ -9,7 +9,7 @@ export interface IGlobalState {
   chats: IConversation[];
   currentChat: IConversation,
   user: IUser;
-  error: IError
+  error: string
 }
 
 const initialState: IGlobalState = {
@@ -27,10 +27,7 @@ const initialState: IGlobalState = {
     img: "",
     level: 0
   },
-  error: {
-    status: 0,
-    message: ""
-  }
+  error: ""
 };
 
 

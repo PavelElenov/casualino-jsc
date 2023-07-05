@@ -6,6 +6,9 @@ import { ChatComponent } from "./chat/chat.component";
 import { FormsModule } from "@angular/forms";
 import { MessageComponent } from "./message/message.component";
 import { CurrentChatComponent } from "./current-chat/current-chat.component";
+import { SharedModule } from "../shared/shared.module";
+import { ChatService } from "./chat.service";
+
 
 @NgModule({
   declarations: [
@@ -17,8 +20,10 @@ import { CurrentChatComponent } from "./current-chat/current-chat.component";
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    SharedModule
   ],
-  exports:[ChatsListComponent]
+  providers: [ChatService]
+
 })
 export class ChatModule { }

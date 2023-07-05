@@ -45,5 +45,5 @@ export const addChat = createAction(
 
 export const setError = createAction(
   "Set Data",
-  props<{error: IError}>()
+  props<{error: string}>()
 )
