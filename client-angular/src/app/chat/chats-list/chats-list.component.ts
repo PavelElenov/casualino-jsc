@@ -60,6 +60,8 @@ export class ChatsListComponent implements OnInit, OnDestroy {
 
       if (this.currentChat!.messages.length > 0) {
         this.store.dispatch(setMessages({messages: this.currentChat!.messages}));
+      }else{
+        this.store.dispatch(setMessages({messages:[]}));
       }
     });
 
@@ -74,6 +76,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     };
 
     this.store.dispatch(setCurrentChat({currentChat: this.currentChat}));
+    this.store.dispatch(setMessages({messages:[]}));
   }
 
 }

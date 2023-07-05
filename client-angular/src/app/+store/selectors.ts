@@ -21,4 +21,9 @@ export const selectUser = createSelector(
 export const selectCurrentChat = createSelector(
     selectGlobal,
     state => state.currentChat
+);
+
+export const selectError = createSelector(
+    selectGlobal,
+    state => state.error
 )
