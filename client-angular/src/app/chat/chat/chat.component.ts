@@ -11,7 +11,6 @@ import { ChatService } from "../chat.service";
 import { Observable, Subscription } from "rxjs";
 import { Store } from "@ngrx/store";
 import { IState } from "src/app/+store";
-import { selectChats } from "src/app/+store/selectors";
 import { deleteChat, setError } from "src/app/+store/actions";
 import { Router } from "@angular/router";
 

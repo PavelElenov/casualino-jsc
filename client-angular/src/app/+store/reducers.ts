@@ -13,6 +13,7 @@ import {
   setError,
   setMessages,
   setUser,
+  substractOneNewMessage,
 } from './actions';
 
 export interface IChats {
@@ -88,7 +89,8 @@ export const currentChatReducer = createReducer(
     messages: state.messages.filter((m) => m.text !== messageText),
   })),
   on(addNewMessage, (state) => ({...state, newMessagesCount: state.newMessagesCount + 1})),
-  on(clearNewMessages, state => ({...state, newMessagesCount: 0}))
+  on(clearNewMessages, state => ({...state, newMessagesCount: 0})),
+  on(substractOneNewMessage, (state) => ({...state, newMessagesCount: state.newMessagesCount - 1}))
 )
 
 export const userReducer = createReducer(

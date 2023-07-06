@@ -52,6 +52,10 @@ export const addNewMessage = createAction(
 
 export const clearNewMessages = createAction(
   "Clear new messages"
+);
+
+export const substractOneNewMessage = createAction(
+  "Substract new message"
 )
 
 

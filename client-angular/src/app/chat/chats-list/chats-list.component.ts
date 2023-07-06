@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChatService } from '../chat.service';
 import { Observable, Subscription } from 'rxjs';
-import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
+import { IConversation } from 'src/app/shared/interfaces/message';
 
 import { SocketService } from 'src/app/shared/services/socket/socket.service';
 import { UserService } from 'src/app/shared/services/user/user.service';
@@ -15,7 +15,7 @@ import {
   setMessages,
   setUser,
 } from 'src/app/+store/actions';
-import { selectChats, selectMessages } from 'src/app/+store/selectors';
+import { selectChats, } from 'src/app/+store/selectors';
 import { StorageTokenService } from 'src/app/shared/services/storage/storage-token.service';
 import { Router } from '@angular/router';
 
@@ -37,7 +37,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private storage: StorageTokenService,
     private timeService: TimeService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
@@ -86,14 +86,6 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(subscription$);
   }
   createNewConversation(): void {
-    this.currentChat = {
-      name: '',
-      messages: [],
-      img: '',
-      level: 0,
-    };
-
-    this.store.dispatch(setCurrentChat({ currentChat: this.currentChat }));
-    this.store.dispatch(setMessages({ messages: [] }));
+    this.chatService.createNewConversation();
   }
 }
