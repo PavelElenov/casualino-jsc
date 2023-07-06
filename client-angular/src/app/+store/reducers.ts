@@ -4,6 +4,8 @@ import { IUser } from '../shared/interfaces/user';
 import {
   addChat,
   addMessage,
+  addNewMessage,
+  clearNewMessages,
   deleteChat,
   deleteMessage,
   setChats,
@@ -13,14 +15,6 @@ import {
   setUser,
 } from './actions';
 
-export interface IGlobalState {
-  messages: IMessage[];
-  chats: IConversation[];
-  currentChat: IConversation;
-  user: IUser;
-  error: string;
-}
-
 export interface IChats {
   chats: IConversation[];
 }
@@ -28,6 +22,7 @@ export interface IChats {
 export interface ICurrentChat {
   currentChat: IConversation;
   messages: IMessage[];
+  newMessagesCount: number
 }
 
 export interface IUserState {
@@ -50,6 +45,7 @@ const currentChatState: ICurrentChat = {
     level: 0,
   },
   messages: [],
+  newMessagesCount: 0,
 };
 
 const userState: IUserState = {
@@ -91,6 +87,8 @@ export const currentChatReducer = createReducer(
     ...state,
     messages: state.messages.filter((m) => m.text !== messageText),
   })),
+  on(addNewMessage, (state) => ({...state, newMessagesCount: state.newMessagesCount + 1})),
+  on(clearNewMessages, state => ({...state, newMessagesCount: 0}))
 )
 
 export const userReducer = createReducer(

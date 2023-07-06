@@ -29,4 +29,9 @@ export const selectCurrentChat = createSelector(
 export const selectError = createSelector(
     errorSelector,
     state => state.error
+);
+
+export const selectNewMessages = createSelector(
+    currentChatSelector,
+    state => state.newMessagesCount
 )

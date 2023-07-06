@@ -1,11 +1,14 @@
 <section class="current-chat">
-  <section *ngIf="messages" class="messages" id="messages">
+  <section *ngIf="messages.length > 0" class="messages" id="messages">
     <ng-container *ngIf="messages">
       <app-message
         *ngFor="let message of messages"
         [message]="message"
       ></app-message>
     </ng-container>
+    <div class="div--new-message" *ngIf="newMessages">
+      <i class="fa-solid fa-arrow-down"></i>{{newMessages}}
+    </div>
   </section>
   <form #form="ngForm" class="write-message" (ngSubmit)="submitMessage(form)">
     <input

@@ -5,7 +5,7 @@ import { Socket, io } from "socket.io-client";
 import { IState } from "src/app/+store";
 import { addMessage } from "src/app/+store/actions";
 import { selectCurrentChat } from "src/app/+store/selectors";
-import { IConversation, IMessageInfo, IFullMessageInfo } from "../../../../shared/interfaces/message";
+import { IConversation, IMessageInfo, IFullMessageInfo } from "../../interfaces/message";
 import { StorageTokenService } from "../storage/storage-token.service";
 
 @Injectable({
@@ -36,5 +36,9 @@ export class SocketService implements OnDestroy{
 
   emitMessage(message: IMessageInfo) {
     this.socket?.emit("message", message);
+  }
+
+  on(event: string, listener:(data: any) => void): void {
+    this.socket?.on(event, listener);
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { IUser, IUserData } from "../../../../shared/interfaces/user";
+import { IUser, IUserData } from "../../interfaces/user";
 import { HttpService } from "../http/http.service";
 import { Observable } from "rxjs";
 import { StorageTokenService } from "../storage/storage-token.service";

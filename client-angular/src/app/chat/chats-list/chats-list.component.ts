@@ -3,9 +3,9 @@ import { ChatService } from '../chat.service';
 import { Observable, Subscription } from 'rxjs';
 import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
 
-import { SocketService } from 'src/app/core/login/services/socket/socket.service';
-import { UserService } from 'src/app/core/login/services/user/user.service';
-import { TimeService } from 'src/app/core/login/services/time/time.service';
+import { SocketService } from 'src/app/shared/services/socket/socket.service';
+import { UserService } from 'src/app/shared/services/user/user.service';
+import { TimeService } from 'src/app/shared/services/time/time.service';
 import { IState } from 'src/app/+store';
 import { Store } from '@ngrx/store';
 import {
@@ -16,7 +16,7 @@ import {
   setUser,
 } from 'src/app/+store/actions';
 import { selectChats, selectMessages } from 'src/app/+store/selectors';
-import { StorageTokenService } from 'src/app/core/login/services/storage/storage-token.service';
+import { StorageTokenService } from 'src/app/shared/services/storage/storage-token.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -27,7 +27,6 @@ import { Router } from '@angular/router';
 export class ChatsListComponent implements OnInit, OnDestroy {
   chats$: Observable<IConversation[]> | undefined;
   currentChat: IConversation | undefined;
-  messages$: Observable<IMessage[]> = this.store.select(selectMessages);
   subscriptions$: Subscription[] = [];
 
   constructor(

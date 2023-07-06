@@ -7,7 +7,7 @@ import { deleteMessage, setError } from "src/app/+store/actions";
 import { selectCurrentChat, selectUser } from "src/app/+store/selectors";
 import { IConversation, IMessage } from "src/app/shared/interfaces/message";
 import { IUser } from "src/app/shared/interfaces/user";
-import { TimeService } from "src/app/core/login/services/time/time.service";
+import { TimeService } from "src/app/shared/services/time/time.service";
 import { ChatService } from "../chat.service";
 
 @Component({

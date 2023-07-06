@@ -1,27 +1,47 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { HttpService } from '../core/login/services/http/http.service';
-import { StorageTokenService } from '../core/login/services/storage/storage-token.service';
-import { IConversation, IFullMessageInfo } from '../shared/interfaces/message';
+import { HttpService } from '../shared/services/http/http.service';
+import { StorageTokenService } from '../shared/services/storage/storage-token.service';
+import {
+  IConversation,
+  IFullMessageInfo,
+  IMessage,
+} from '../shared/interfaces/message';
 import { Observable, Subscription } from 'rxjs';
-import { SocketService } from '../core/login/services/socket/socket.service';
-import { selectCurrentChat } from '../+store/selectors';
+import { SocketService } from '../shared/services/socket/socket.service';
+import {
+  selectCurrentChat,
+  selectMessages,
+  selectUser,
+} from '../+store/selectors';
 import { Store } from '@ngrx/store';
 import { IState } from '../+store';
-import { addMessage } from '../+store/actions';
+import { addMessage, addNewMessage } from '../+store/actions';
+import { IUser } from '../shared/interfaces/user';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ChatService implements OnDestroy{
-  subscriptions$: Subscription[] = []
+export class ChatService implements OnDestroy {
+  subscriptions$: Subscription[] = [];
+  user!: IUser;
+  messages!: IMessage[];
   constructor(
     private httpService: HttpService,
     private storage: StorageTokenService,
     private socketService: SocketService,
     private store: Store<IState>
-  ) {}
+  ) {
+    const subscription = this.store
+      .select(selectUser)
+      .subscribe((user) => (this.user = user));
+    const subscription2 = this.store
+      .select(selectMessages)
+      .subscribe((messages) => (this.messages = messages));
+    this.subscriptions$.push(subscription2);
+    this.subscriptions$.push(subscription);
+  }
   ngOnDestroy(): void {
-    this.subscriptions$.map(s => s.unsubscribe());
+    this.subscriptions$.map((s) => s.unsubscribe());
   }
 
   getAllChats(): Observable<IConversation[]> {
@@ -59,12 +79,12 @@ export class ChatService implements OnDestroy{
   }
 
   listenForMessages(): void {
-    this.socketService.socket?.on('message', (data: IFullMessageInfo) => {
+    this.socketService.on('message', (data: IFullMessageInfo) => {
       const subscription = this.store
         .select(selectCurrentChat)
         .subscribe(async (currentChat) => {
           if (data.conversation == currentChat.name) {
-            await this.store.dispatch(
+            this.store.dispatch(
               addMessage({
                 message: {
                   writer: data.writer,
@@ -73,20 +93,14 @@ export class ChatService implements OnDestroy{
                 },
               })
             );
-            this.goToTheBottomOfTheMessages();
+
+            if (data.writer.username !== this.user.username) {
+              this.messages.length > 4 && this.store.dispatch(addNewMessage());
+            }
           }
-          
         });
 
       this.subscriptions$.push(subscription);
     });
-  }
-
-  goToTheBottomOfTheMessages(): void {
-    const messagesDiv: HTMLDivElement = document.getElementById(
-      "messages"
-    ) as HTMLDivElement;
-
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 }

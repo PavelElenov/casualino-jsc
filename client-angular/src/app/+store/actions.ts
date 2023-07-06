@@ -44,4 +44,14 @@ export const addChat = createAction(
 export const setError = createAction(
   "Set Data",
   props<{error: string}>()
+);
+
+export const addNewMessage = createAction(
+  "Add new message",
+);
+
+export const clearNewMessages = createAction(
+  "Clear new messages"
 )
+
+

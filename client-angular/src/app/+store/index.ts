@@ -1,4 +1,4 @@
-import { chatsReducer, currentChatReducer, errorReducer, IChats, ICurrentChat, IError, IGlobalState, IUserState, userReducer } from "./reducers";
+import { chatsReducer, currentChatReducer, errorReducer, IChats, ICurrentChat, IError, IUserState, userReducer } from "./reducers";
 import { ActionReducerMap } from "@ngrx/store";
 
 export interface IState {
