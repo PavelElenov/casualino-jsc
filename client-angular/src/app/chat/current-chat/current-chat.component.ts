@@ -56,8 +56,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const subscription4 = this.store.select(selectMessages).subscribe(messages => {
       this.messages = messages;
-      console.log("Change");
-
+      requestAnimationFrame(() => this.goToTheBottomOfTheMessages()) 
     });
 
     this.subscriptions$.push(subscription4);
@@ -71,8 +70,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   submitMessage(form: NgForm) {
     const { message } = form.value;
     form.reset();
-    this.chatService.sumbitMessage(message);
-    this.goToTheBottomOfTheMessages();
+    this.chatService.submitMessage(message);
   }
   goToTheBottomOfTheMessages(): void {
     const messagesDiv: HTMLDivElement = document.getElementById(
@@ -103,4 +101,6 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
   }
+
+  
 }

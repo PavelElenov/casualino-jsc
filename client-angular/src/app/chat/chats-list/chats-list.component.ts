@@ -9,6 +9,7 @@ import { TimeService } from 'src/app/shared/services/time/time.service';
 import { IState } from 'src/app/+store';
 import { Store } from '@ngrx/store';
 import {
+  addChat,
   setChats,
   setCurrentChat,
   setError,
@@ -18,6 +19,7 @@ import {
 import { selectChats, } from 'src/app/+store/selectors';
 import { StorageTokenService } from 'src/app/shared/services/storage/storage-token.service';
 import { Router } from '@angular/router';
+import { ChatFactory } from 'src/app/shared/factories/chatFactory';
 
 @Component({
   selector: 'app-chats-list',
@@ -36,7 +38,8 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private storage: StorageTokenService,
     private timeService: TimeService,
-    private router: Router
+    private router: Router,
+    private chatFactory: ChatFactory
   ) { }
 
   ngOnDestroy(): void {
@@ -48,12 +51,12 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     const authToken = this.storage.getToken('auth-token');
 
     if (authToken) {
-      const subscription = this.userService
+      const userSubscription = this.userService
         .getUserByToken(authToken)!
         .subscribe((user) => this.store.dispatch(setUser({ user })));
-      this.subscriptions$.push(subscription);
+      this.subscriptions$.push(userSubscription);
     }
-    const subscription = this.chatService.getAllChats().subscribe({
+    const getAllChatsSubscription = this.chatService.getAllChats().subscribe({
       next: (chats) => {
         this.store.dispatch(setChats({ chats }));
         this.chats$ = this.store.select(selectChats);
@@ -64,7 +67,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
       },
     });
 
-    this.subscriptions$.push(subscription);
+    this.subscriptions$.push(getAllChatsSubscription);
     this.socketService.connectToServer();
     this.chatService.listenForMessages();
   }
@@ -86,6 +89,9 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(subscription$);
   }
   createNewConversation(): void {
-    this.chatService.createNewConversation();
+    const conversation: IConversation = this.chatFactory.createConversation({name: "", img: "", level: 0});
+    this.store.dispatch(addChat({chat: conversation}));
+    this.store.dispatch(setCurrentChat({currentChat: conversation}));
+    this.currentChat = conversation;
   }
 }

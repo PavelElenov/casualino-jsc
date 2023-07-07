@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy} from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpService } from '../shared/services/http/http.service';
 import { StorageTokenService } from '../shared/services/storage/storage-token.service';
 import {
@@ -16,35 +16,45 @@ import {
 } from '../+store/selectors';
 import { Store } from '@ngrx/store';
 import { IState } from '../+store';
-import { addChat, addMessage, addNewMessage, setCurrentChat, setMessages } from '../+store/actions';
+import {
+  addChat,
+  addMessage,
+  addNewMessage,
+  setCurrentChat,
+} from '../+store/actions';
 import { IUser } from '../shared/interfaces/user';
-
+import { ChatFactory } from '../shared/factories/chatFactory';
+import { MessageFactroy } from '../shared/factories/messageFactory';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ChatService implements OnDestroy{
+export class ChatService implements OnDestroy {
   subscriptions$: Subscription[] = [];
   user!: IUser;
   messages!: IMessage[];
-  currentChat!: IConversation
+  currentChat!: IConversation;
   constructor(
     private httpService: HttpService,
     private storage: StorageTokenService,
     private socketService: SocketService,
-    private store: Store<IState>
+    private store: Store<IState>,
+    private chatFactory: ChatFactory,
+    private messageFactory: MessageFactroy
   ) {
-    const subscription = this.store
+    const userSubscription = this.store
       .select(selectUser)
       .subscribe((user) => (this.user = user));
-    const subscription2 = this.store
+    const messagesSubscription = this.store
       .select(selectMessages)
       .subscribe((messages) => (this.messages = messages));
-    const subscription3 = this.store.select(selectCurrentChat).subscribe(currentChat => this.currentChat = currentChat);
+    const currentChatSubscription = this.store
+      .select(selectCurrentChat)
+      .subscribe((currentChat) => (this.currentChat = currentChat));
 
-    this.subscriptions$.push(subscription3);
-    this.subscriptions$.push(subscription2);
-    this.subscriptions$.push(subscription);
+    this.subscriptions$.push(currentChatSubscription);
+    this.subscriptions$.push(messagesSubscription);
+    this.subscriptions$.push(userSubscription);
   }
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
@@ -60,17 +70,6 @@ export class ChatService implements OnDestroy{
       `/conversations/${chatName}`,
       this.storage.getToken('auth-token')!
     );
-  }
-  createNewConversation(): void{
-    this.currentChat = {
-      name: '',
-      messages: [],
-      img: '',
-      level: 0,
-    };
-
-    this.store.dispatch(setCurrentChat({ currentChat: this.currentChat }));
-    this.store.dispatch(setMessages({ messages: [] }));
   }
   deleteChat(name: string): Observable<any> {
     return this.httpService.delete(
@@ -93,19 +92,16 @@ export class ChatService implements OnDestroy{
   }
   listenForMessages(): void {
     this.socketService.on('message', (data: IFullMessageInfo) => {
-      const subscription = this.store
+      const currentChatSubscription = this.store
         .select(selectCurrentChat)
         .subscribe(async (currentChat) => {
           if (data.conversation == currentChat.name) {
-            this.store.dispatch(
-              addMessage({
-                message: {
-                  writer: data.writer,
-                  text: data.text,
-                  time: data.time,
-                },
-              })
+            const message: IMessage = this.messageFactory.createMessage(
+              data.writer,
+              data.text,
+              data.time
             );
+            this.store.dispatch(addMessage({message}));
 
             if (data.writer.username !== this.user.username) {
               this.messages.length > 4 && this.store.dispatch(addNewMessage());
@@ -113,36 +109,34 @@ export class ChatService implements OnDestroy{
           }
         });
 
-      this.subscriptions$.push(subscription);
+      this.subscriptions$.push(currentChatSubscription);
     });
   }
-  sumbitMessage(message: string): void {
-    const messageInfo: IMessageInfo = {
-      writer: {
-        username: this.user.username,
-        level: this.user.level,
-        img: this.user.img,
-      },
-      text: message,
-      conversation: this.currentChat!.name,
-    };
+  async submitMessage(message: string): Promise<void> {
+    const messageInfo: IMessageInfo = this.chatFactory.createMessageInfoObject(
+      this.user,
+      message,
+      this.currentChat!.name
+    );
 
     if (this.currentChat.name == '') {
-      const chat: IConversation = {
+      const chat = this.chatFactory.createConversation({
         name: this.user.username,
-        messages: [],
         img: this.user.img,
         level: this.user.level,
-      };
-      const subscription = this.addChat(chat)!.subscribe(() => {
-        this.store.dispatch(setCurrentChat({ currentChat: chat }));
-        this.store.dispatch(addChat({ chat }));
-        messageInfo.conversation = chat.name;
-        this.socketService.emitMessage(messageInfo);
       });
-      this.subscriptions$.push(subscription);
-    } else {
-      this.socketService.emitMessage(messageInfo);
+      this.addNewConversation(chat);
+      messageInfo.conversation = chat.name;
     }
+
+    this.socketService.emitMessage(messageInfo);
+  }
+
+  addNewConversation(chat: IConversation): void {
+    const addChatSubscription = this.addChat(chat)!.subscribe(() => {
+      this.store.dispatch(setCurrentChat({ currentChat: chat }));
+      this.store.dispatch(addChat({ chat }));
+    });
+    this.subscriptions$.push(addChatSubscription);
   }
 }
