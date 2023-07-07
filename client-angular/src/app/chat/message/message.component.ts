@@ -40,7 +40,7 @@ export class MessageComponent implements OnDestroy {
       .subscribe((user) => (this.user = user));
     const subscription2 = this.store
       .select(selectCurrentChat)
-      .subscribe((currentChat) => (this.currentChat = currentChat));
+      .subscribe((currentChat) => (this.currentChat = currentChat!));
 
     this.subscriptions$.push(subscription2);
     this.subscriptions$.push(subscription);

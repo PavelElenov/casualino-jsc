@@ -33,7 +33,7 @@ export class ChatService implements OnDestroy {
   subscriptions$: Subscription[] = [];
   user!: IUser;
   messages!: IMessage[];
-  currentChat!: IConversation;
+  currentChat: IConversation | undefined;
   constructor(
     private httpService: HttpService,
     private storage: StorageTokenService,
@@ -95,7 +95,7 @@ export class ChatService implements OnDestroy {
       const currentChatSubscription = this.store
         .select(selectCurrentChat)
         .subscribe(async (currentChat) => {
-          if (data.conversation == currentChat.name) {
+          if (data.conversation == currentChat?.name) {
             const message: IMessage = this.messageFactory.createMessage(
               data.writer,
               data.text,
@@ -119,7 +119,7 @@ export class ChatService implements OnDestroy {
       this.currentChat!.name
     );
 
-    if (this.currentChat.name == '') {
+    if (this.currentChat?.name == '') {
       const chat = this.chatFactory.createConversation({
         name: this.user.username,
         img: this.user.img,

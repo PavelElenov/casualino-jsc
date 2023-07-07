@@ -1,8 +1,10 @@
 import {
   AfterViewInit,
   Component,
+  EventEmitter,
   OnDestroy,
   OnInit,
+  Output,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -14,13 +16,14 @@ import {
   selectNewMessages,
   selectUser,
 } from 'src/app/+store/selectors';
-import {
-  IConversation,
-  IMessage,
-} from 'src/app/shared/interfaces/message';
+import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
 import { IUser } from 'src/app/shared/interfaces/user';
 import { ChatService } from '../chat.service';
-import { clearNewMessages, substractOneNewMessage } from 'src/app/+store/actions';
+import {
+  clearNewMessages,
+  setCurrentChat,
+  substractOneNewMessage,
+} from 'src/app/+store/actions';
 
 @Component({
   selector: 'app-current-chat',
@@ -28,23 +31,21 @@ import { clearNewMessages, substractOneNewMessage } from 'src/app/+store/actions
   styleUrls: ['./current-chat.component.scss'],
 })
 export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
+  @Output() closeCurrentChatEmitter = new EventEmitter();
   messages!: IMessage[];
   currentChat!: IConversation;
   subscriptions$: Subscription[] = [];
   user!: IUser;
   newMessages!: number;
 
-  constructor(
-    private store: Store<IState>,
-    private chatService: ChatService
-  ) { }
+  constructor(private store: Store<IState>, private chatService: ChatService) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe);
   }
   ngOnInit(): void {
     const subscription = this.store
       .select(selectCurrentChat)
-      .subscribe((currentChat) => (this.currentChat = currentChat));
+      .subscribe((currentChat) => (this.currentChat = currentChat!));
 
     const subscription2 = this.store
       .select(selectUser)
@@ -54,10 +55,14 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .select(selectNewMessages)
       .subscribe((newMessages) => (this.newMessages = newMessages));
 
-    const subscription4 = this.store.select(selectMessages).subscribe(messages => {
-      this.messages = messages;
-      requestAnimationFrame(() => this.goToTheBottomOfTheMessages()) 
-    });
+    const subscription4 = this.store
+      .select(selectMessages)
+      .subscribe((messages) => {
+        this.messages = messages;
+        
+        messages[messages.length - 1].writer.username == this.user.username &&
+          requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
+      });
 
     this.subscriptions$.push(subscription4);
     this.subscriptions$.push(subscription3);
@@ -86,21 +91,24 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   scrolling(): void {
     if (this.newMessages > 0) {
-      const messagesDiv: HTMLElement = document.getElementById("messages")!;
-      const element: HTMLElement = messagesDiv.childNodes[messagesDiv.childNodes.length - this.newMessages - 5] as HTMLElement;
-      
+      const messagesDiv: HTMLElement = document.getElementById('messages')!;
+      const element: HTMLElement = messagesDiv.childNodes[
+        messagesDiv.childNodes.length - this.newMessages - 5
+      ] as HTMLElement;
+
       const eleTop = element.offsetTop;
       const eleBottom = eleTop + element.offsetHeight;
-  
-      const containerTop = messagesDiv.scrollTop;
-      const containerBottom = containerTop + messagesDiv.clientHeight;  
 
-      if(eleTop >= containerTop && eleBottom <= containerBottom){
+      const containerTop = messagesDiv.scrollTop;
+      const containerBottom = containerTop + messagesDiv.clientHeight;
+
+      if (eleTop >= containerTop && eleBottom <= containerBottom) {
         this.store.dispatch(substractOneNewMessage());
       }
     }
-
   }
 
-  
+  emitCloseCurrentChat(): void {
+    this.closeCurrentChatEmitter.emit();
+  }
 }

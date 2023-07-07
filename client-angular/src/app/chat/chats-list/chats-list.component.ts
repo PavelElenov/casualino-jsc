@@ -94,4 +94,9 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.store.dispatch(setCurrentChat({currentChat: conversation}));
     this.currentChat = conversation;
   }
+
+  closeCurrentChat(): void{
+    this.currentChat = undefined;
+    this.store.dispatch(setCurrentChat({currentChat: undefined}))
+  }
 }

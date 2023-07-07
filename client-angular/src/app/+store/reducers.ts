@@ -21,7 +21,7 @@ export interface IChats {
 }
 
 export interface ICurrentChat {
-  currentChat: IConversation;
+  currentChat: IConversation | undefined;
   messages: IMessage[];
   newMessagesCount: number
 }
@@ -39,12 +39,7 @@ const chatsState: IChats = {
 };
 
 const currentChatState: ICurrentChat = {
-  currentChat: {
-    name: '',
-    messages: [],
-    img: '',
-    level: 0,
-  },
+  currentChat: undefined,
   messages: [],
   newMessagesCount: 0,
 };

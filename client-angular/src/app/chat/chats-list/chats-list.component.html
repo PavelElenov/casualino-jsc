@@ -12,5 +12,5 @@
       </section>
     </section>
 
-    <app-current-chat *ngIf="currentChat"  class="current-chat-container"></app-current-chat>
+    <app-current-chat *ngIf="currentChat"  class="current-chat-container" (closeCurrentChatEmitter)="closeCurrentChat()"></app-current-chat>
   </div>

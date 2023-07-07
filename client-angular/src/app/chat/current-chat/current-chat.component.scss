@@ -37,6 +37,7 @@
   height: calc(100% - 4rem);
   overflow: auto;
   position:relative;
+  scroll-behavior: smooth;
 }
 
 .write-message {

@@ -18,7 +18,7 @@ export const setChats = createAction(
 
 export const setCurrentChat = createAction(
   "Set current chat",
-  props<{currentChat: IConversation}>()
+  props<{currentChat: IConversation | undefined}>()
 );
 
 export const setUser = createAction(
