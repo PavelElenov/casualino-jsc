@@ -7,7 +7,7 @@ import { StorageTokenService } from '../storage/storage-token.service';
   providedIn: 'root',
 })
 export class SocketService {
-  socket: Socket | undefined;
+  socket!: Socket;
   constructor(private storage: StorageTokenService) {}
   connectToServer() {
     this.socket = io('http://localhost:3000', {
@@ -19,10 +19,14 @@ export class SocketService {
   }
 
   emitMessage(message: IMessageInfo) {
-    this.socket?.emit('message', message);
+    this.socket.emit('message', message);
   }
 
   on(event: string, listener: (data: any) => void): void {
-    this.socket?.on(event, listener);
+    this.socket.on(event, listener);
+  }
+
+  disconnect(){
+    this.socket.emit("disconnect", "");
   }
 }
