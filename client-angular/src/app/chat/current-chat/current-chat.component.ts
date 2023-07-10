@@ -109,6 +109,13 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   emitCloseCurrentChat(): void {
-    this.closeCurrentChatEmitter.emit();
+    const currentChatContainer: HTMLElement = document.getElementById('current-chat')!;
+    currentChatContainer.setAttribute("closing", "");
+    console.log("Close current chat");
+    
+    currentChatContainer.addEventListener('animationend', () => {
+      currentChatContainer.removeAttribute("closing");
+      this.closeCurrentChatEmitter.emit();
+    }, {once: true});
   }
 }
