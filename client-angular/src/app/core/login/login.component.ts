@@ -38,9 +38,7 @@ export class LoginComponent implements OnDestroy{
           this.router.navigate(["/chats"]);
         },
         error: (error) => {
-          if (error.status == 400) {
-            this.error = error.error;
-          }
+          this.error = "Incorrect password or email!";
         },
       });
 

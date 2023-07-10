@@ -41,6 +41,9 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(private store: Store<IState>, private chatService: ChatService) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe);
+    const currentChatMessages: HTMLElement =
+      document.getElementById('messages')!;
+    currentChatMessages.style.removeProperty("scroll-behaviour");
   }
   ngOnInit(): void {
     const subscription = this.store
@@ -59,7 +62,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .select(selectMessages)
       .subscribe((messages) => {
         this.messages = messages;
-        
+
         messages[messages.length - 1].writer.username == this.user.username &&
           requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
       });
@@ -71,6 +74,9 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   ngAfterViewInit(): void {
     this.goToTheBottomOfTheMessages();
+    const currentChatMessages: HTMLElement =
+          document.getElementById('messages')!;
+        currentChatMessages.style.scrollBehavior = 'smooth';
   }
   submitMessage(form: NgForm) {
     const { message } = form.value;
@@ -109,13 +115,18 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   emitCloseCurrentChat(): void {
-    const currentChatContainer: HTMLElement = document.getElementById('current-chat')!;
-    currentChatContainer.setAttribute("closing", "");
-    console.log("Close current chat");
-    
-    currentChatContainer.addEventListener('animationend', () => {
-      currentChatContainer.removeAttribute("closing");
-      this.closeCurrentChatEmitter.emit();
-    }, {once: true});
+    const currentChatContainer: HTMLElement =
+      document.getElementById('current-chat')!;
+    currentChatContainer.setAttribute('closing', '');
+    console.log('Close current chat');
+
+    currentChatContainer.addEventListener(
+      'animationend',
+      () => {
+        currentChatContainer.removeAttribute('closing');
+        this.closeCurrentChatEmitter.emit();
+      },
+      { once: true }
+    );
   }
 }

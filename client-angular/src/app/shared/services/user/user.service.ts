@@ -32,4 +32,9 @@ export class UserService{
   login(data: {email: string, password: string}): Observable<IUserData>{
     return this.httpService.post<IUserData>("/login", data,);
   }
+
+  logout(){
+    this.storage.deleteToken("auth-token");
+    this.router.navigate(["/login"]);
+  }
 }

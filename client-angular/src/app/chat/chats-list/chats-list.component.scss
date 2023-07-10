@@ -73,4 +73,75 @@
   width:50%;
 }
 
+.div--drop-down-menu{
+  position: relative;
+  padding:1rem;
+  width: 20%;
+  margin: 0 auto;
+
+  button{
+    padding:0.5rem 1rem;
+    color:black;
+    background-color: white;
+    border: none;
+    font-weight: bold;
+
+    &:hover{
+      background-color: rgb(233, 222, 222);
+    }
+  }
+
+  ul{
+    height: 0;
+    list-style: none;
+    background-color: rgb(222, 209, 209);
+    width: 150px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+
+    li{
+      padding: 0.5rem;
+      color:black;
+    
+      &:hover{
+        background-color: rgb(192, 178, 178);
+      }
+    }
+  }
+
+  ul[open]{
+    animation: open 500ms forwards;
+  }
+
+  ul[closing]{
+    animation: close 500ms forwards;
+  }
+
+  @keyframes open{
+    from{
+      height: 0;
+    }to{
+      height: 34px;
+    }
+  }
+
+  @keyframes close {
+    from{
+      height: 34px;
+    }
+    to{
+      height: 0;
+    }
+  }
+
+  i{
+    position: absolute;
+    top:27px;
+    left:88px;
+    font-size: 0.7rem;
+  }
+
+}
+
+
 

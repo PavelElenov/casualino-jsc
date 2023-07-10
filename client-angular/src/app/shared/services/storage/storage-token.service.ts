@@ -14,4 +14,8 @@ export class StorageTokenService {
   getToken(name:string): string | null{
     return localStorage.getItem(name);
   }
+
+  deleteToken(tokenName: string){
+    localStorage.removeItem(tokenName);
+  }
 }

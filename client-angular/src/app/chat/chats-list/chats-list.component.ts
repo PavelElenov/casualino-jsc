@@ -16,7 +16,7 @@ import {
   setMessages,
   setUser,
 } from 'src/app/+store/actions';
-import { selectChats, } from 'src/app/+store/selectors';
+import { selectChats } from 'src/app/+store/selectors';
 import { StorageTokenService } from 'src/app/shared/services/storage/storage-token.service';
 import { Router } from '@angular/router';
 import { ChatFactory } from 'src/app/shared/factories/chatFactory';
@@ -40,7 +40,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private timeService: TimeService,
     private router: Router,
     private chatFactory: ChatFactory
-  ) { }
+  ) {}
 
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
@@ -89,14 +89,39 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(subscription$);
   }
   createNewConversation(): void {
-    const conversation: IConversation = this.chatFactory.createConversation({name: "", img: "", level: 0});
-    this.store.dispatch(addChat({chat: conversation}));
-    this.store.dispatch(setCurrentChat({currentChat: conversation}));
+    const conversation: IConversation = this.chatFactory.createConversation({
+      name: '',
+      img: '',
+      level: 0,
+    });
+    this.store.dispatch(addChat({ chat: conversation }));
+    this.store.dispatch(setCurrentChat({ currentChat: conversation }));
     this.currentChat = conversation;
   }
 
-  closeCurrentChat(): void{
+  closeCurrentChat(): void {
     this.currentChat = undefined;
-    this.store.dispatch(setCurrentChat({currentChat: undefined}))
+    this.store.dispatch(setCurrentChat({ currentChat: undefined }));
+  }
+
+  doDropDownListVisible() {
+    const dropDownList: HTMLElement =
+      document.getElementById('drop-down-list')!;
+    const isVisible = dropDownList.getAttribute('open');
+
+    if (!isVisible) {
+      dropDownList.setAttribute('open', 'true');
+    } else {
+      dropDownList.removeAttribute('open');
+      dropDownList.setAttribute('closing', '');
+
+      dropDownList.addEventListener('animationend', () => {
+        dropDownList.removeAttribute('closing');
+      });
+    }
+  }
+
+  logoutUser(){
+    this.userService.logout();
   }
 }
