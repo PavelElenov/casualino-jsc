@@ -40,6 +40,10 @@ io.use(function (socket, next) {
     const message:IMessage = addMessage(data.writer.username, data.text, data.conversation);
     io.sockets.emit("message", {writer: message.writer, text: message.text, time: message.time, conversation: data.conversation});
   });
+
+  socket.on("disconnect", () => {
+    socket.disconnect();
+  })
 });
 
 server.listen(3000, () => console.log("Server listening on port 3000"));
