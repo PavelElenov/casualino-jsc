@@ -43,7 +43,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscriptions$.map((s) => s.unsubscribe);
     const currentChatMessages: HTMLElement =
       document.getElementById('messages')!;
-    currentChatMessages.style.removeProperty("scroll-behaviour");
+    currentChatMessages.style.removeProperty('scroll-behaviour');
   }
   ngOnInit(): void {
     const subscription = this.store
@@ -75,8 +75,8 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     this.goToTheBottomOfTheMessages();
     const currentChatMessages: HTMLElement =
-          document.getElementById('messages')!;
-        currentChatMessages.style.scrollBehavior = 'smooth';
+      document.getElementById('messages')!;
+    currentChatMessages.style.scrollBehavior = 'smooth';
   }
   submitMessage(form: NgForm) {
     const { message } = form.value;

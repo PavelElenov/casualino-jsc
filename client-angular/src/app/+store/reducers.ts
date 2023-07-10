@@ -5,7 +5,10 @@ import {
   addChat,
   addMessage,
   addNewMessage,
+  clearChats,
+  clearCurrentChat,
   clearNewMessages,
+  clearUser,
   deleteChat,
   deleteMessage,
   setChats,
@@ -23,7 +26,7 @@ export interface IChats {
 export interface ICurrentChat {
   currentChat: IConversation | undefined;
   messages: IMessage[];
-  newMessagesCount: number
+  newMessagesCount: number;
 }
 
 export interface IUserState {
@@ -54,8 +57,8 @@ const userState: IUserState = {
 };
 
 const errorState: IError = {
-  error: ""
-}
+  error: '',
+};
 
 export const chatsReducer = createReducer(
   chatsState,
@@ -68,7 +71,8 @@ export const chatsReducer = createReducer(
     ...state,
     chats: state.chats.filter((c) => c.name != name),
   })),
-)
+  on(clearChats, () => ({ chats: [] }))
+);
 
 export const currentChatReducer = createReducer(
   currentChatState,
@@ -77,24 +81,42 @@ export const currentChatReducer = createReducer(
     messages: [...state.messages, message],
   })),
   on(setMessages, (state, { messages }) => ({ ...state, messages })),
-  
+
   on(setCurrentChat, (state, { currentChat }) => ({ ...state, currentChat })),
   on(deleteMessage, (state, { messageText }) => ({
     ...state,
     messages: state.messages.filter((m) => m.text !== messageText),
   })),
-  on(addNewMessage, (state) => ({...state, newMessagesCount: state.newMessagesCount + 1})),
-  on(clearNewMessages, state => ({...state, newMessagesCount: 0})),
-  on(substractOneNewMessage, (state) => ({...state, newMessagesCount: state.newMessagesCount - 1}))
-)
+  on(addNewMessage, (state) => ({
+    ...state,
+    newMessagesCount: state.newMessagesCount + 1,
+  })),
+  on(clearNewMessages, (state) => ({ ...state, newMessagesCount: 0 })),
+  on(substractOneNewMessage, (state) => ({
+    ...state,
+    newMessagesCount: state.newMessagesCount - 1,
+  })),
+  on(clearCurrentChat, () => ({
+    currentChat: undefined,
+    messages: [],
+    newMessagesCount: 0,
+  }))
+);
 
 export const userReducer = createReducer(
   userState,
   on(setUser, (state, { user }) => ({ ...state, user })),
-)
+  on(clearUser, () => ({
+    user: {
+      username: '',
+      email: '',
+      img: '',
+      level: 0,
+    },
+  }))
+);
 
 export const errorReducer = createReducer(
   errorState,
   on(setError, (state, { error }) => ({ ...state, error }))
-)
-
+);

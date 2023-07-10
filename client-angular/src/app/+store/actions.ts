@@ -56,6 +56,18 @@ export const clearNewMessages = createAction(
 
 export const substractOneNewMessage = createAction(
   "Substract new message"
-)
+);
+
+export const clearCurrentChat = createAction(
+  "Clear current chat"
+);
+
+export const clearUser = createAction(
+  "Clear user"
+);
+
+export const clearChats = createAction(
+  "Clear chats"
+);
 
 
