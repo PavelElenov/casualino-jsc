@@ -104,21 +104,22 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.store.dispatch(setCurrentChat({ currentChat: undefined }));
   }
 
-  doDropDownListVisible() {
-    const dropDownList: HTMLElement =
-      document.getElementById('drop-down-list')!;
-    const isVisible = dropDownList.getAttribute('open');
+  showPopup() {
+    const popup:HTMLDialogElement = document.getElementById("popup")! as HTMLDialogElement;
+    popup.showModal();
+    popup.setAttribute("open", "");
+    console.log(popup);
+  }
 
-    if (!isVisible) {
-      dropDownList.setAttribute('open', 'true');
-    } else {
-      dropDownList.removeAttribute('open');
-      dropDownList.setAttribute('closing', '');
+  closePopup(){
+    const popup:HTMLDialogElement = document.getElementById("popup")! as HTMLDialogElement;
+    popup.removeAttribute("open");
+    popup.setAttribute("close", "");
 
-      dropDownList.addEventListener('animationend', () => {
-        dropDownList.removeAttribute('closing');
-      });
-    }
+    popup.addEventListener("animationend", () => {
+      popup.removeAttribute("close");
+      popup.close();
+    }, {once: true})
   }
 
   logoutUser(){

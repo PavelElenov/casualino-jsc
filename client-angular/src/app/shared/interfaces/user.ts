@@ -5,6 +5,12 @@ export interface IUser{
     img:string
 }
 
+export interface ISmallUserInfo{
+    username:string,
+    level:number,
+    img:string
+}
+
 export interface IUserData{
     user: IUser,
     token:string,

@@ -1,10 +1,10 @@
-<div class="div--drop-down-menu" >
-  <i class="fa-solid fa-arrow-down"></i>
-  <button (click)="doDropDownListVisible()">Settings</button>
-  <ul id="drop-down-list">
-    <li (click)="logoutUser()">Logout</li>
-  </ul>
+<div class="div--settings" >
+  <button (click)="showPopup()">Settings</button>
 </div>
+<dialog class="div--popup" id="popup">
+  <button (click)="logoutUser()" class="button--logout">Logout</button>
+  <button class="button--back" (click)="closePopup()">Close</button>
+</dialog>
 <div class="chats-page">
     <section class="wrapper">
       <section class="chats">

@@ -7,13 +7,13 @@
   gap: 0.3rem;
 }
 
-.wrapper{
-    width: 50%;
-    height: 30rem;
-    padding: 0.5rem;
-  }
+.wrapper {
+  width: 50%;
+  height: 30rem;
+  padding: 0.5rem;
+}
 
-.chats{
+.chats {
   overflow: auto;
   width: 100%;
 }
@@ -42,7 +42,7 @@
   background-color: #07264f;
   position: relative;
 
-  &:hover{
+  &:hover {
     transform: scale(1);
   }
 
@@ -69,79 +69,118 @@
   background-color: white;
 }
 
-.current-chat-container{
-  width:50%;
+.current-chat-container {
+  width: 50%;
 }
 
-.div--drop-down-menu{
+.div--settings {
   position: relative;
-  padding:1rem;
+  padding: 1rem;
   width: 20%;
   margin: 0 auto;
 
-  button{
-    padding:0.5rem 1rem;
-    color:black;
+  button {
+    padding: 0.5rem 1rem;
+    color: black;
     background-color: white;
     border: none;
     font-weight: bold;
 
-    &:hover{
+    &:hover {
       background-color: rgb(233, 222, 222);
     }
   }
-
-  ul{
-    height: 0;
-    list-style: none;
-    background-color: rgb(222, 209, 209);
-    width: 150px;
-    overflow: hidden;
-    margin-bottom: 0.5rem;
-
-    li{
-      padding: 0.5rem;
-      color:black;
-    
-      &:hover{
-        background-color: rgb(192, 178, 178);
-      }
-    }
-  }
-
-  ul[open]{
-    animation: open 500ms forwards;
-  }
-
-  ul[closing]{
-    animation: close 500ms forwards;
-  }
-
-  @keyframes open{
-    from{
-      height: 0;
-    }to{
-      height: 34px;
-    }
-  }
-
-  @keyframes close {
-    from{
-      height: 34px;
-    }
-    to{
-      height: 0;
-    }
-  }
-
-  i{
-    position: absolute;
-    top:27px;
-    left:88px;
-    font-size: 0.7rem;
-  }
-
 }
 
+.div--popup {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  background-color: rgb(255, 255, 255);
+  gap: 3rem;
+  width: 250px;
+  height: 150px;
+  border: 1px solid rgb(224, 216, 216);
+  box-sizing: border-box;
 
+  button {
+    padding: 0.5rem 1rem;
 
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+
+  .button--logout {
+    border: 1px solid black;
+    background-color: red;
+    color: black;
+  }
+
+  .button--back {
+    border: 1px solid white;
+    background-color: black;
+    color: white;
+  }
+}
+
+.div--popup[open] {
+  display: flex;
+  animation: open 1s forwards;
+
+  &::backdrop {
+    animation: fade-in 500ms forwards;
+  }
+}
+
+.div--popup[close] {
+  display: flex;
+  animation: close 1s forwards;
+
+  &::backdrop {
+    animation: fade-out 500ms forwards;
+  }
+}
+
+@keyframes open {
+  from {
+    left: -10%;
+  }
+  to {
+    left: 50%;
+  }
+}
+
+@keyframes close {
+  from {
+    width: 250px;
+    height: 150px;
+  }
+  to {
+    width: 0;
+    height: 0;
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

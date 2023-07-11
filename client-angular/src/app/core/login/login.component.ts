@@ -7,7 +7,7 @@ import { IState } from "src/app/+store";
 import { setUser } from "src/app/+store/actions";
 import { IUserData } from "src/app/shared/interfaces/user";
 import { StorageTokenService } from "src/app/shared/services/storage/storage-token.service";
-import { UserService } from "src/app/shared/services/user/user.service";
+import {UserService} from "src/app/shared/services/user/user.service";
 
 @Component({
   selector: "app-login",

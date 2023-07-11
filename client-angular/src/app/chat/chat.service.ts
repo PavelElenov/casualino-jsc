@@ -101,7 +101,7 @@ export class ChatService implements OnDestroy {
               data.text,
               data.time
             );
-            this.store.dispatch(addMessage({message}));
+            this.store.dispatch(addMessage({ message }));
 
             if (data.writer.username !== this.user.username) {
               this.messages.length > 4 && this.store.dispatch(addNewMessage());
