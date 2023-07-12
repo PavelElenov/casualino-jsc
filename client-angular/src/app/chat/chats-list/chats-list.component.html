@@ -1,15 +1,16 @@
-<div class="div--settings" >
-  <button (click)="showPopup()">Settings</button>
-</div>
-<dialog class="div--popup" id="popup">
-  <button (click)="logoutUser()" class="button--logout">Logout</button>
-  <button class="button--back" (click)="closePopup()">Close</button>
-</dialog>
-<div class="chats-page">
+<section #chatListPage>
+  <div class="div--settings">
+    <button (click)="showPopup()">Settings</button>
+  </div>
+  <div class="chats-page">
     <section class="wrapper">
       <section class="chats">
         <ng-container *ngIf="chats$ | async">
-            <app-chat *ngFor="let chat of chats$ | async" [chat]="chat" (currentChatEvent)="getCurrentChat($event)"></app-chat>
+          <app-chat
+            *ngFor="let chat of chats$ | async"
+            [chat]="chat"
+            (currentChatEvent)="getCurrentChat($event)"
+          ></app-chat>
         </ng-container>
         <p *ngIf="!chats$">Loading...</p>
       </section>
@@ -19,5 +20,10 @@
       </section>
     </section>
 
-    <app-current-chat *ngIf="currentChat"  class="current-chat-container" (closeCurrentChatEmitter)="closeCurrentChat()"></app-current-chat>
+    <app-current-chat
+      *ngIf="currentChat"
+      class="current-chat-container"
+      (closeCurrentChatEmitter)="closeCurrentChat()"
+    ></app-current-chat>
   </div>
+</section>

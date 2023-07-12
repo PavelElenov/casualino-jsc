@@ -11,10 +11,14 @@ import { ErrorService } from './services/error/error.service';
 import { ChatFactory } from './factories/chatFactory';
 import { MessageFactroy } from './factories/messageFactory';
 import { UserService } from './services/user/user.service';
+import { PopupComponent } from './popup/popup.component';
+import { PopupService } from './services/popup/popup.service';
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    PopupComponent
+  ],
   imports: [CommonModule, HttpClientModule, RouterModule],
   providers: [
     UserService,
@@ -26,6 +30,8 @@ import { UserService } from './services/user/user.service';
     ErrorService,
     ChatFactory,
     MessageFactroy,
+    PopupService
   ],
+  exports: [PopupComponent]
 })
 export class SharedModule {}

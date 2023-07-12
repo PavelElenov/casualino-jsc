@@ -1,0 +1,9 @@
+<section class="section--popup" id="popup">
+  <div class="div--overlay"></div>
+  <div class="div--popup" id="popup">
+    <p>{{text}}</p>
+    <div class="div--buttons">
+        <button *ngFor="let button of buttons" (click)="buttonClickHandler(button.onClickFunc, button.text)">{{button.text}}</button>
+    </div>
+  </div>
+</section>

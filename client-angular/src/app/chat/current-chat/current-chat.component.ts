@@ -41,9 +41,6 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(private store: Store<IState>, private chatService: ChatService) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe);
-    const currentChatMessages: HTMLElement =
-      document.getElementById('messages')!;
-    currentChatMessages.style.removeProperty('scroll-behaviour');
   }
   ngOnInit(): void {
     const subscription = this.store
@@ -62,9 +59,10 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .select(selectMessages)
       .subscribe((messages) => {
         this.messages = messages;
-
-        messages[messages.length - 1].writer.username == this.user.username &&
-          requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
+        if (messages.length > 0) {
+          messages[messages.length - 1].writer.username == this.user.username &&
+            requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
+        }
       });
 
     this.subscriptions$.push(subscription4);
@@ -118,12 +116,14 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const currentChatContainer: HTMLElement =
       document.getElementById('current-chat')!;
     currentChatContainer.setAttribute('closing', '');
-    console.log('Close current chat');
 
     currentChatContainer.addEventListener(
       'animationend',
       () => {
         currentChatContainer.removeAttribute('closing');
+        const currentChatMessages: HTMLElement =
+          document.getElementById('messages')!;
+        currentChatMessages.style.removeProperty('scroll-behaviour');
         this.closeCurrentChatEmitter.emit();
       },
       { once: true }

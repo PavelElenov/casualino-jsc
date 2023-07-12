@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import { ChatService } from '../chat.service';
 import { Observable, Subscription } from 'rxjs';
 import { IConversation } from 'src/app/shared/interfaces/message';
@@ -20,6 +26,7 @@ import { selectChats } from 'src/app/+store/selectors';
 import { StorageTokenService } from 'src/app/shared/services/storage/storage-token.service';
 import { Router } from '@angular/router';
 import { ChatFactory } from 'src/app/shared/factories/chatFactory';
+import { PopupService } from 'src/app/shared/services/popup/popup.service';
 
 @Component({
   selector: 'app-chats-list',
@@ -30,6 +37,8 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   chats$: Observable<IConversation[]> | undefined;
   currentChat: IConversation | undefined;
   subscriptions$: Subscription[] = [];
+  @ViewChild('chatListPage', { read: ViewContainerRef })
+  chatListRef!: ViewContainerRef;
 
   constructor(
     private chatService: ChatService,
@@ -39,7 +48,8 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private storage: StorageTokenService,
     private timeService: TimeService,
     private router: Router,
-    private chatFactory: ChatFactory
+    private chatFactory: ChatFactory,
+    private popupService: PopupService
   ) {}
 
   ngOnDestroy(): void {
@@ -105,24 +115,18 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   }
 
   showPopup() {
-    const popup:HTMLDialogElement = document.getElementById("popup")! as HTMLDialogElement;
-    popup.showModal();
-    popup.setAttribute("open", "");
-    console.log(popup);
-  }
-
-  closePopup(){
-    const popup:HTMLDialogElement = document.getElementById("popup")! as HTMLDialogElement;
-    popup.removeAttribute("open");
-    popup.setAttribute("close", "");
-
-    popup.addEventListener("animationend", () => {
-      popup.removeAttribute("close");
-      popup.close();
-    }, {once: true})
-  }
-
-  logoutUser(){
-    this.userService.logout();
+    this.popupService.showPopup(this.chatListRef, {
+      text: "Are you sure you want to logout",
+      buttons:[
+        {
+          text: "Logout",
+          onClickFunc: () => this.userService.logout()
+        },
+        {
+          text: "Close",
+          onClickFunc: () => this.popupService.closePopup()
+        }
+      ]
+  })
   }
 }

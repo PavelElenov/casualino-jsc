@@ -46,8 +46,6 @@ export class MessageComponent implements OnDestroy {
     this.subscriptions$.push(subscription);
   }
   deleteMessage(messageText: string) {
-    console.log("hi");
-    
     const subscription = this.chatService
       .deleteMessage(this.currentChat.name, messageText)
       .subscribe({
