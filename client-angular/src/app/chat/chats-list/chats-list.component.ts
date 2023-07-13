@@ -37,6 +37,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   chats$: Observable<IConversation[]> | undefined;
   currentChat: IConversation | undefined;
   subscriptions$: Subscription[] = [];
+
   @ViewChild('chatListPage', { read: ViewContainerRef })
   chatListRef!: ViewContainerRef;
 
@@ -49,7 +50,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     private timeService: TimeService,
     private router: Router,
     private chatFactory: ChatFactory,
-    private popupService: PopupService
+    private popupService: PopupService,
   ) {}
 
   ngOnDestroy(): void {
@@ -115,7 +116,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   }
 
   showPopup() {
-    this.popupService.showPopup(this.chatListRef, {
+    this.popupService.showPopup({
       text: "Are you sure you want to logout",
       buttons:[
         {
@@ -127,6 +128,6 @@ export class ChatsListComponent implements OnInit, OnDestroy {
           onClickFunc: () => this.popupService.closePopup()
         }
       ]
-  })
+  }, this.chatListRef)
   }
 }

@@ -8,6 +8,7 @@ import { CoreModule } from "./core/core.module";
 import { StoreModule } from "@ngrx/store";
 import { StoreDevtoolsModule } from "@ngrx/store-devtools";
 import { reducers } from "./+store";
+import { SharedModule } from "./shared/shared.module";
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { reducers } from "./+store";
     AppRoutingModule,
     StoreModule.forRoot(reducers),
     StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() }),
+    SharedModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -6,7 +6,7 @@ import { IButton } from '../interfaces/button';
   templateUrl: './popup.component.html',
   styleUrls: ['./popup.component.scss'],
 })
-export class PopupComponent implements OnInit, OnDestroy {
+export class PopupComponent implements OnInit {
   @Input() text!: string;
   @Input() buttons!: IButton[];
 
@@ -17,20 +17,12 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.popup.classList.add('open');
   }
 
-  ngOnDestroy(): void {}
-
-  buttonClickHandler(listener: Function, buttonText: string) {
-    if (buttonText == 'Close') {
-      this.popup.classList.remove('open');
-      this.popup.classList.add('close');
-
-      this.popup.addEventListener('animationend', () => {
-        this.popup.classList.remove('close');
-        listener();
-      });
-    }else{
+  buttonClickHandler(listener: Function) {
+    this.popup.classList.remove('open');
+    this.popup.classList.add('close');
+    this.popup.addEventListener('animationend', () => {
+      this.popup.classList.remove('close');
       listener();
-    }
-    
+    });
   }
 }

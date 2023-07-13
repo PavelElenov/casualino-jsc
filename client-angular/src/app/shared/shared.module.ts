@@ -13,6 +13,7 @@ import { MessageFactroy } from './factories/messageFactory';
 import { UserService } from './services/user/user.service';
 import { PopupComponent } from './popup/popup.component';
 import { PopupService } from './services/popup/popup.service';
+import { UserIsActiveService } from './services/userIsActive/user-is-active.service';
 
 
 @NgModule({
@@ -30,8 +31,8 @@ import { PopupService } from './services/popup/popup.service';
     ErrorService,
     ChatFactory,
     MessageFactroy,
-    PopupService
+    PopupService,
+    UserIsActiveService
   ],
-  exports: [PopupComponent]
 })
 export class SharedModule {}
