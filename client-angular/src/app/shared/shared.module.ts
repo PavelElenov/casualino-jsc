@@ -11,14 +11,16 @@ import { ErrorService } from './services/error/error.service';
 import { ChatFactory } from './factories/chatFactory';
 import { MessageFactroy } from './factories/messageFactory';
 import { UserService } from './services/user/user.service';
-import { PopupComponent } from './popup/popup.component';
+import { PopupComponent } from './components/popup/popup.component';
 import { PopupService } from './services/popup/popup.service';
 import { UserIsActiveService } from './services/userIsActive/user-is-active.service';
+import { DropDownComponent } from './components/drop-down/drop-down.component';
 
 
 @NgModule({
   declarations: [
-    PopupComponent
+    PopupComponent,
+    DropDownComponent,
   ],
   imports: [CommonModule, HttpClientModule, RouterModule],
   providers: [
@@ -34,5 +36,6 @@ import { UserIsActiveService } from './services/userIsActive/user-is-active.serv
     PopupService,
     UserIsActiveService
   ],
+  exports:[DropDownComponent]
 })
 export class SharedModule {}

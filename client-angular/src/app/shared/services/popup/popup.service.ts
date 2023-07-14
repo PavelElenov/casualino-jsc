@@ -1,6 +1,6 @@
 import { ApplicationRef, ComponentRef, Injectable, ViewContainerRef } from '@angular/core';
 import { IPopupData } from '../../interfaces/popupData';
-import { PopupComponent } from '../../popup/popup.component';
+import { PopupComponent } from '../../components/popup/popup.component';
 
 @Injectable()
 export class PopupService {

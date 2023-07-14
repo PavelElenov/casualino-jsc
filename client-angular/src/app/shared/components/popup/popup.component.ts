@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { IButton } from '../interfaces/button';
+import { IButton } from '../../interfaces/button';
 
 @Component({
   selector: 'app-popup',

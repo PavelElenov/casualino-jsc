@@ -53,4 +53,23 @@ export class ChatComponent implements OnDestroy {
   deleteChat(name: string) {
     this.chatService.deleteChat(name);
   }
+
+  likeChat(){
+    console.log("Like chat");
+  }
+
+  reportChat(){
+    console.log("Report chat");
+  }
+
+  changeOption(event: Event){
+    const selectContainer: HTMLSelectElement = event.target! as HTMLSelectElement;
+    const selectedValue = selectContainer.options[selectContainer.selectedIndex].value;
+    
+    if(selectedValue == "like"){
+      this.likeChat();
+    }else if(selectedValue == "report"){
+      this.reportChat();
+    }
+  }
 }
