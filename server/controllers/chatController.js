@@ -34,3 +34,8 @@ exports.router.post("/", function (req, res) {
     (0, chatService_1.addChat)(newChat);
     res.status(204).json();
 });
+exports.router.post("/:name/like", function (req, res) {
+    var name = req.params.name;
+    (0, chatService_1.addLike)(name);
+    res.status(204).json();
+});

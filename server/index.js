@@ -34,5 +34,8 @@ io.use(function (socket, next) {
         var message = (0, chatService_1.addMessage)(data.writer.username, data.text, data.conversation);
         io.sockets.emit("message", { writer: message.writer, text: message.text, time: message.time, conversation: data.conversation });
     });
+    socket.on("disconnect", function () {
+        socket.disconnect();
+    });
 });
 server.listen(3000, function () { return console.log("Server listening on port 3000"); });

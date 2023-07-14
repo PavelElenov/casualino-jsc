@@ -1,5 +1,5 @@
 import { IConversation } from "../../shared/interfaces/conversation";
-import { addChat, deleteChatByName, deleteMessage, getAllChats, getConversationByName } from "../services/chatService";
+import { addChat, addLike, deleteChatByName, deleteMessage, getAllChats, getConversationByName } from "../services/chatService";
 import { Router } from "express";
 
 export const router = Router();
@@ -24,7 +24,7 @@ router.delete("/:name", (req, res) => {
   deleteChatByName(chatName);
   res.status(204).json();
 });
-//conversations/1/messages/hi
+
 router.delete("/:name/messages/:messageText", (req, res) => {
   const {name, messageText} = req.params;
   deleteMessage(name, messageText);
@@ -34,5 +34,11 @@ router.delete("/:name/messages/:messageText", (req, res) => {
 router.post("/", (req, res) => {
   const newChat = req.body.chat;
   addChat(newChat);
+  res.status(204).json();
+});
+
+router.post("/:name/like", (req, res) => {
+  const {name} = req.params;
+  addLike(name);
   res.status(204).json();
 })
