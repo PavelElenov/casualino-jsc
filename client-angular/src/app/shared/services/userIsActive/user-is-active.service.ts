@@ -38,6 +38,6 @@ export class UserIsActiveService {
 
       }
       
-    }, 10000);
+    }, 600000);
   }
 }

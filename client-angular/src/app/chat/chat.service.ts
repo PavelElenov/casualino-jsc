@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Injectable, OnDestroy } from '@angular/core';
 import { HttpService } from '../shared/services/http/http.service';
 import { StorageTokenService } from '../shared/services/storage/storage-token.service';
 import {
@@ -20,11 +20,17 @@ import {
   addChat,
   addMessage,
   addNewMessage,
+  deleteChat,
+  deleteMessage,
+  setChats,
   setCurrentChat,
+  setError,
+  setMessages,
 } from '../+store/actions';
 import { IUser } from '../shared/interfaces/user';
 import { ChatFactory } from '../shared/factories/chatFactory';
 import { MessageFactroy } from '../shared/factories/messageFactory';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -40,7 +46,8 @@ export class ChatService implements OnDestroy {
     private socketService: SocketService,
     private store: Store<IState>,
     private chatFactory: ChatFactory,
-    private messageFactory: MessageFactroy
+    private messageFactory: MessageFactroy,
+    private router: Router,
   ) {
     const userSubscription = this.store
       .select(selectUser)
@@ -59,11 +66,40 @@ export class ChatService implements OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
   }
-  getAllChats(): Observable<IConversation[]> {
-    return this.httpService.get<IConversation[]>(
-      '/conversations',
-      this.storage.getToken('auth-token')!
-    );
+  createConversation(): IConversation {
+    const conversation: IConversation = this.chatFactory.createConversation({
+      name: '',
+      img: '',
+      level: 0,
+    });
+    this.store.dispatch(setCurrentChat({ currentChat: conversation }));
+    return conversation;
+  }
+  setCurrentChat(chat: IConversation) {
+    this.store.dispatch(setCurrentChat({ currentChat: chat }));
+  
+    if (chat.messages.length > 0) {
+      this.store.dispatch(setMessages({ messages: chat.messages }));
+    } else {
+      this.store.dispatch(setMessages({ messages: [] }));
+    }
+  }
+  getAllChats() {
+    const getAllChatsSubscription = this.httpService
+      .get<IConversation[]>(
+        '/conversations',
+        this.storage.getToken('auth-token')!
+      )
+      .subscribe({
+        next: (chats) => {
+          this.store.dispatch(setChats({ chats }));
+        },
+        error: (err: any) => {
+          this.store.dispatch(setError({ error: err }));
+          this.router.navigate(['/error']);
+        },
+      });
+    this.subscriptions$.push(getAllChatsSubscription);
   }
   getChatByName(chatName: string): Observable<IConversation> {
     return this.httpService.get<IConversation>(
@@ -71,17 +107,36 @@ export class ChatService implements OnDestroy {
       this.storage.getToken('auth-token')!
     );
   }
-  deleteChat(name: string): Observable<any> {
-    return this.httpService.delete(
-      `/conversations/${name}`,
-      this.storage.getToken('auth-token')!
-    );
+  deleteChat(name: string) {
+    const deleteChatSubscription = this.httpService
+      .delete(`/conversations/${name}`, this.storage.getToken('auth-token')!)
+      .subscribe({
+        next: () => {
+          this.store.dispatch(deleteChat({ name }));
+        },
+        error: (err: any) => {
+          this.store.dispatch(setError({ error: err }));
+          this.router.navigate(['/error']);
+        },
+      });
+    this.subscriptions$.push(deleteChatSubscription);
   }
-  deleteMessage(currentChatName: string, messageText: string): Observable<any> {
-    return this.httpService.delete(
-      `/conversations/${currentChatName}/messages/${messageText}`,
-      this.storage.getToken('auth-token')!
-    );
+  deleteMessage(currentChatName: string, messageText: string) {
+    const deleteMessageSubscription = this.httpService
+      .delete(
+        `/conversations/${currentChatName}/messages/${messageText}`,
+        this.storage.getToken('auth-token')!
+      )
+      .subscribe({
+        next: () => {
+          this.store.dispatch(deleteMessage({ messageText }));
+        },
+        error: (err: any) => {
+          this.store.dispatch(setError({ error: err }));
+          this.router.navigate(['/error']);
+        },
+      });
+    this.subscriptions$.push(deleteMessageSubscription);
   }
   addChat(chat: IConversation): Observable<any> {
     return this.httpService.post(

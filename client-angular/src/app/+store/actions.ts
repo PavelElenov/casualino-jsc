@@ -70,4 +70,8 @@ export const clearChats = createAction(
   "Clear chats"
 );
 
+export const clearMessages = createAction(
+  "Clear messages"
+);
+
 

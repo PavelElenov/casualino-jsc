@@ -18,8 +18,8 @@ export class ErrorComponent implements OnInit, OnDestroy{
     this.subscriptions$.map(s => s.unsubscribe());
   }
   ngOnInit(): void {
-    const subscription = this.store.select(selectError).subscribe(error => this.error = error);
-    this.subscriptions$.push(subscription);
+    const errorSubscription = this.store.select(selectError).subscribe(error => this.error = error);
+    this.subscriptions$.push(errorSubscription);
   }
   
 }

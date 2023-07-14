@@ -1,19 +1,23 @@
-import { Component, Input, OnDestroy } from "@angular/core";
-import { Router } from "@angular/router";
-import { Store } from "@ngrx/store";
-import { Subscription } from "rxjs";
-import { IState } from "src/app/+store";
-import { deleteMessage, setError } from "src/app/+store/actions";
-import { selectCurrentChat, selectUser } from "src/app/+store/selectors";
-import { IConversation, IMessage } from "src/app/shared/interfaces/message";
-import { IUser } from "src/app/shared/interfaces/user";
-import { TimeService } from "src/app/shared/services/time/time.service";
-import { ChatService } from "../chat.service";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+} from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
+import { IState } from 'src/app/+store';
+import { selectCurrentChat, selectUser } from 'src/app/+store/selectors';
+import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
+import { IUser } from 'src/app/shared/interfaces/user';
+import { TimeService } from 'src/app/shared/services/time/time.service';
+import { ChatService } from '../chat.service';
 
 @Component({
-  selector: "app-message",
-  templateUrl: "./message.component.html",
-  styleUrls: ["./message.component.scss"],
+  selector: 'app-message',
+  templateUrl: './message.component.html',
+  styleUrls: ['./message.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MessageComponent implements OnDestroy {
   @Input() message!: IMessage;
@@ -25,7 +29,6 @@ export class MessageComponent implements OnDestroy {
     private timeService: TimeService,
     private store: Store<IState>,
     private chatService: ChatService,
-    private router: Router
   ) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
@@ -35,29 +38,17 @@ export class MessageComponent implements OnDestroy {
       this.message.time,
       this.timeService.getCurrentTimeInMinutes()
     );
-    const subscription = this.store
+    const selectUserSubscription = this.store
       .select(selectUser)
       .subscribe((user) => (this.user = user));
-    const subscription2 = this.store
+    const selectCurrentChatSubscription = this.store
       .select(selectCurrentChat)
       .subscribe((currentChat) => (this.currentChat = currentChat!));
 
-    this.subscriptions$.push(subscription2);
-    this.subscriptions$.push(subscription);
+    this.subscriptions$.push(selectUserSubscription);
+    this.subscriptions$.push(selectCurrentChatSubscription);
   }
   deleteMessage(messageText: string) {
-    const subscription = this.chatService
-      .deleteMessage(this.currentChat.name, messageText)
-      .subscribe({
-        next: () => {
-          this.store.dispatch(deleteMessage({ messageText }));
-        },
-        error: (err: any) => {
-          this.store.dispatch(setError({ error: err }));
-          this.router.navigate(["/error"]);
-        },
-      });
-
-    this.subscriptions$.push(subscription);
+    this.chatService.deleteMessage(this.currentChat.name, messageText);
   }
 }

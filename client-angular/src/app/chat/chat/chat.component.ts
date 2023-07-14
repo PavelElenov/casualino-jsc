@@ -1,23 +1,25 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
   OnDestroy,
   Output,
-} from "@angular/core";
-import { IConversation } from "src/app/shared/interfaces/message";
-import { TimeService } from "src/app/shared/services/time/time.service";
-import { ChatService } from "../chat.service";
-import { Observable, Subscription } from "rxjs";
-import { Store } from "@ngrx/store";
-import { IState } from "src/app/+store";
-import { deleteChat, setError } from "src/app/+store/actions";
-import { Router } from "@angular/router";
+} from '@angular/core';
+import { IConversation } from 'src/app/shared/interfaces/message';
+import { TimeService } from 'src/app/shared/services/time/time.service';
+import { ChatService } from '../chat.service';
+import { Observable, Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { IState } from 'src/app/+store';
+import { deleteChat, setError } from 'src/app/+store/actions';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: "app-chat",
-  templateUrl: "./chat.component.html",
-  styleUrls: ["./chat.component.scss"],
+  selector: 'app-chat',
+  templateUrl: './chat.component.html',
+  styleUrls: ['./chat.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComponent implements OnDestroy {
   @Input() chat!: IConversation;
@@ -49,15 +51,6 @@ export class ChatComponent implements OnDestroy {
   }
 
   deleteChat(name: string) {
-    const subsctiption = this.chatService.deleteChat(name).subscribe({
-      next: () => {
-        this.store.dispatch(deleteChat({ name }));
-      },
-      error: (err: any) => {
-        this.store.dispatch(setError({ error: err }));
-        this.router.navigate(["/error"]);
-      },
-    });
-    this.subscriptions$.push(subsctiption);
+    this.chatService.deleteChat(name);
   }
 }

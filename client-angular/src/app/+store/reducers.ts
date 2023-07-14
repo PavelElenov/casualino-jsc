@@ -7,6 +7,7 @@ import {
   addNewMessage,
   clearChats,
   clearCurrentChat,
+  clearMessages,
   clearNewMessages,
   clearUser,
   deleteChat,
@@ -100,7 +101,8 @@ export const currentChatReducer = createReducer(
     currentChat: undefined,
     messages: [],
     newMessagesCount: 0,
-  }))
+  })),
+  on(clearMessages, (state) => ({...state, messages: []}))
 );
 
 export const userReducer = createReducer(

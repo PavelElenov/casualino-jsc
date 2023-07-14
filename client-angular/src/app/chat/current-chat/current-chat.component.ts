@@ -1,5 +1,8 @@
 import {
+  AfterContentInit,
   AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   OnDestroy,
@@ -29,6 +32,7 @@ import {
   selector: 'app-current-chat',
   templateUrl: './current-chat.component.html',
   styleUrls: ['./current-chat.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() closeCurrentChatEmitter = new EventEmitter();
@@ -38,37 +42,43 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   user!: IUser;
   newMessages!: number;
 
-  constructor(private store: Store<IState>, private chatService: ChatService) {}
+  constructor(
+    private store: Store<IState>,
+    private chatService: ChatService,
+    private changeDetection: ChangeDetectorRef
+  ) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe);
   }
   ngOnInit(): void {
-    const subscription = this.store
+    const selectCurrentChatSubscription = this.store
       .select(selectCurrentChat)
-      .subscribe((currentChat) => (this.currentChat = currentChat!));
+      .subscribe((currentChat) => {this.currentChat = currentChat!});
 
-    const subscription2 = this.store
+    const selectUserSubscription = this.store
       .select(selectUser)
       .subscribe((user) => (this.user = user));
 
-    const subscription3 = this.store
+    const selectNewMessagesSubscription = this.store
       .select(selectNewMessages)
       .subscribe((newMessages) => (this.newMessages = newMessages));
 
-    const subscription4 = this.store
+    const selectMessagesSubscription = this.store
       .select(selectMessages)
       .subscribe((messages) => {
         this.messages = messages;
+        
         if (messages.length > 0) {
           messages[messages.length - 1].writer.username == this.user.username &&
             requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
         }
+        this.changeDetection.detectChanges();
       });
 
-    this.subscriptions$.push(subscription4);
-    this.subscriptions$.push(subscription3);
-    this.subscriptions$.push(subscription2);
-    this.subscriptions$.push(subscription);
+    this.subscriptions$.push(selectCurrentChatSubscription);
+    this.subscriptions$.push(selectUserSubscription);
+    this.subscriptions$.push(selectNewMessagesSubscription);
+    this.subscriptions$.push(selectMessagesSubscription);
   }
   ngAfterViewInit(): void {
     this.goToTheBottomOfTheMessages();
