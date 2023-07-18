@@ -1,1 +1,7 @@
-<ng-content></ng-content>
+<div class="select--drop-down" (click)="clickHandler()">
+  <span #selectedValue></span>
+  <i class="fa-solid fa-arrow-down"></i>
+</div>
+<div #content class="div--content" [@openClose]="contentState">
+  <ng-content select="[option]"></ng-content>
+</div>

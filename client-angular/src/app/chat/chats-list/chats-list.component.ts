@@ -51,13 +51,17 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.timeService.getServerTime();
 
     this.chats$ = this.store.select(selectChats);
-
+    
     this.userService.checkForUserAuthentication();
 
     this.chatService.getAllChats();
 
     this.socketService.connectToServer();
     this.chatService.listenForMessages();
+  }
+
+  trackByConversation(index: number, item: IConversation): string{
+    return item.name;
   }
 
   getCurrentChat(chat: Observable<IConversation>) {

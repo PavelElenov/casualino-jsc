@@ -22,6 +22,7 @@ import {
   addNewMessage,
   deleteChat,
   deleteMessage,
+  likeChat,
   setChats,
   setCurrentChat,
   setError,
@@ -65,6 +66,13 @@ export class ChatService implements OnDestroy {
   }
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
+  }
+  likeChat(conversation: IConversation){
+    const chat = {...conversation, likes: conversation.likes + 1};
+    const likeSubscription = this.httpService.post(`/conversations/${conversation.name}/like`, {}, this.storage.getToken("auth-token")!).subscribe(() => {
+      this.store.dispatch(likeChat({chat}));
+    });
+    this.subscriptions$.push(likeSubscription);
   }
   createConversation(): IConversation {
     const conversation: IConversation = this.chatFactory.createConversation({

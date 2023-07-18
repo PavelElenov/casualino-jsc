@@ -1,0 +1,51 @@
+.select--drop-down {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 2px;
+  width: 75px;
+  height: 22px;
+  position: relative;
+  padding-left: 9px;
+  margin-bottom: 0.2rem;
+
+  i {
+    position: absolute;
+    right: 4px;
+    font-size: 0.8rem;
+    top: 5px;
+  }
+}
+
+.div--content {
+  width: 75px;
+  border: 1px solid black;
+  border-radius: 10px;
+  overflow: hidden;
+  display: none;
+}
+
+.div--content.open{
+    display: block;
+    animation:open 500ms forwards;
+}
+
+.div--content.close{
+    display: block;
+    animation: close 500ms forwards;
+}
+
+@keyframes open{
+    from{
+        transform: scaleY(0)
+    }to{
+        transform: scaleY(1);
+    }
+}
+
+@keyframes close{
+    from{
+        transform: scaleX(1);
+    }to{
+        transform: scaleX(0);
+    }
+}

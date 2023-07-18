@@ -12,6 +12,7 @@ import {
   clearUser,
   deleteChat,
   deleteMessage,
+  likeChat,
   setChats,
   setCurrentChat,
   setError,
@@ -72,7 +73,13 @@ export const chatsReducer = createReducer(
     ...state,
     chats: state.chats.filter((c) => c.name != name),
   })),
-  on(clearChats, () => ({ chats: [] }))
+  on(clearChats, () => ({ chats: [] })),
+  on(likeChat, (state, {chat}) => ({...state, chats: state.chats.map<IConversation>((c:IConversation) => {
+    if(c.name == chat.name){
+      return chat;
+    }
+    return c;
+  })}))
 );
 
 export const currentChatReducer = createReducer(

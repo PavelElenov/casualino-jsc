@@ -10,10 +10,6 @@ import { IConversation } from 'src/app/shared/interfaces/message';
 import { TimeService } from 'src/app/shared/services/time/time.service';
 import { ChatService } from '../chat.service';
 import { Observable, Subscription } from 'rxjs';
-import { Store } from '@ngrx/store';
-import { IState } from 'src/app/+store';
-import { deleteChat, setError } from 'src/app/+store/actions';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat',
@@ -30,8 +26,6 @@ export class ChatComponent implements OnDestroy {
   constructor(
     private timeService: TimeService,
     private chatService: ChatService,
-    private store: Store<IState>,
-    private router: Router
   ) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
@@ -46,30 +40,20 @@ export class ChatComponent implements OnDestroy {
       );
     }
   }
+
+  changeSelectedElementHandler(value: string){
+    if(value == "Like"){
+      this.chatService.likeChat(this.chat);
+    }else{
+      console.log(`You report chat with name ${this.chat.name}`);
+    }
+  }
+  
   getCurrentChat(chatName: string) {
     this.currentChatEvent.emit(this.chatService.getChatByName(chatName));
   }
 
   deleteChat(name: string) {
     this.chatService.deleteChat(name);
-  }
-
-  likeChat(){
-    console.log("Like chat");
-  }
-
-  reportChat(){
-    console.log("Report chat");
-  }
-
-  changeOption(event: Event){
-    const selectContainer: HTMLSelectElement = event.target! as HTMLSelectElement;
-    const selectedValue = selectContainer.options[selectContainer.selectedIndex].value;
-    
-    if(selectedValue == "like"){
-      this.likeChat();
-    }else if(selectedValue == "report"){
-      this.reportChat();
-    }
-  }
+  }  
 }

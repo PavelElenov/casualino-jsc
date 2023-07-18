@@ -13,6 +13,7 @@ export type IConversation = {
     messages: IMessage[],
     img: string,
     level: number;
+    likes:number;
 }
 
 export type IMessageInfo = {

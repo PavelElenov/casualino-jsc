@@ -7,7 +7,7 @@
       <section class="chats">
         <ng-container *ngIf="chats$ | async">
           <app-chat
-            *ngFor="let chat of chats$ | async"
+            *ngFor="let chat of chats$ | async ;trackBy:trackByConversation"
             [chat]="chat"
             (currentChatEvent)="getCurrentChat($event)"
           ></app-chat>

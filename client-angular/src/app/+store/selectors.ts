@@ -34,4 +34,12 @@ export const selectError = createSelector(
 export const selectNewMessages = createSelector(
     currentChatSelector,
     state => state.newMessagesCount
+);
+
+export const selectLikesOfChat = (chatName: string) => createSelector(
+    chatsSelector,
+    state => {
+        const chat = state.chats.find(c => c.name == chatName);
+        return chat?.likes;
+    }
 )

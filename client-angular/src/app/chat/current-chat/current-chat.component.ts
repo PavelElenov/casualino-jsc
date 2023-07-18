@@ -4,10 +4,13 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   OnDestroy,
   OnInit,
   Output,
+  Renderer2,
+  ViewChild,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -36,6 +39,8 @@ import {
 })
 export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() closeCurrentChatEmitter = new EventEmitter();
+  @ViewChild("currentChat", {static:false}) currentChatContainer!: ElementRef;
+  @ViewChild("messages", {static:false}) messagesContainer!: ElementRef;
   messages!: IMessage[];
   currentChat!: IConversation;
   subscriptions$: Subscription[] = [];
@@ -45,7 +50,8 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private store: Store<IState>,
     private chatService: ChatService,
-    private changeDetection: ChangeDetectorRef
+    private changeDetection: ChangeDetectorRef,
+    private renderer: Renderer2
   ) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe);
@@ -85,6 +91,11 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const currentChatMessages: HTMLElement =
       document.getElementById('messages')!;
     currentChatMessages.style.scrollBehavior = 'smooth';
+    this.renderer.setProperty(this.messagesContainer, "scroll-behavior", "smooth");
+  }
+
+  trackByMessage(index: number, item: IMessage): string{
+    return item.text;
   }
   submitMessage(form: NgForm) {
     const { message } = form.value;

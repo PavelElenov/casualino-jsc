@@ -1,4 +1,4 @@
-<section class="current-chat" id="current-chat">
+<section #currentChat class="current-chat" id="current-chat">
   <i class="fa-solid fa-xmark" (click)="emitCloseCurrentChat()"></i>
   <section class="messages" id="messages" (scroll)="scrolling()">
     <ng-container *ngIf="messages">

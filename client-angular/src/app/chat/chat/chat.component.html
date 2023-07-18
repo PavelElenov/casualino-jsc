@@ -1,19 +1,20 @@
 <div class="chat">
-  <div class="img-container">
-    <span class="level">{{ chat.level }}</span>
-    <img [src]="chat.img" alt="" />
+  <div>
+    <div class="img-container">
+      <span class="level">{{ chat.level }}</span>
+      <img [src]="chat.img" alt="" />
+    </div>
+    <span>Likes: {{ chat.likes }}</span>
   </div>
   <div class="chat-info">
     <span class="user-username">{{ chat.name }}</span>
-    <p *ngIf="chat.messages.length > 0">
+    <p *ngIf="chat.messages.length > 0" class="p--chat-last-message">
       {{ chat.messages[chat.messages.length - 1].text }}
     </p>
-    <app-drop-down>
-      <select class="select--drop-down" (change)="changeOption($event)">
-        <option value="" selected></option>
-        <option value="like" class="option--like" (click)="likeChat()">Like</option>
-        <option value="report" class="option--report" (click)="reportChat()">Report</option>
-      </select>
+    <app-drop-down
+      (changeSelectedElement)="changeSelectedElementHandler($event)">
+        <p class="p--drop-down-content" event="click" eventHandler="" option>Like</p>
+        <p class="p--drop-down-content" event="hover" option>Report</p>
     </app-drop-down>
   </div>
   <div class="more-features">

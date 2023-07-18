@@ -15,14 +15,18 @@ import { PopupComponent } from './components/popup/popup.component';
 import { PopupService } from './services/popup/popup.service';
 import { UserIsActiveService } from './services/userIsActive/user-is-active.service';
 import { DropDownComponent } from './components/drop-down/drop-down.component';
-
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
-  declarations: [
-    PopupComponent,
-    DropDownComponent,
+  declarations: [PopupComponent, DropDownComponent],
+  imports: [
+    CommonModule,
+    HttpClientModule,
+    RouterModule,
+    BrowserModule,
+    BrowserAnimationsModule,
   ],
-  imports: [CommonModule, HttpClientModule, RouterModule],
   providers: [
     UserService,
     HttpService,
@@ -34,8 +38,8 @@ import { DropDownComponent } from './components/drop-down/drop-down.component';
     ChatFactory,
     MessageFactroy,
     PopupService,
-    UserIsActiveService
+    UserIsActiveService,
   ],
-  exports:[DropDownComponent]
+  exports: [DropDownComponent],
 })
 export class SharedModule {}

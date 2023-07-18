@@ -22,6 +22,7 @@ export class ChatFactory{
             messages: [],
             img: data.img,
             level: data.level,
+            likes: 0
           };
     }
 }

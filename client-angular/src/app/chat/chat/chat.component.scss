@@ -30,7 +30,7 @@
   width: 70%;
   padding-bottom: 0.5rem;
 
-  p {
+  .p--chat-last-message{
     margin-bottom: 0.5rem;
   }
 }
@@ -72,5 +72,18 @@
 
   &:hover {
     transform: scale(1.03);
+  }
+}
+
+.p--drop-down-content:not(:last-child){
+  border-bottom: 1px solid black;
+}
+
+.p--drop-down-content{
+  padding:5px;
+  cursor: pointer;
+
+  &:hover{
+    background-color: rgb(197, 185, 185);
   }
 }

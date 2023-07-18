@@ -74,4 +74,9 @@ export const clearMessages = createAction(
   "Clear messages"
 );
 
+export const likeChat = createAction(
+  "Like chat",
+  props<{chat: IConversation}>()
+)
+
 
