@@ -1,77 +1,77 @@
 .message {
-    margin-bottom: 1.5rem;
-    display: flex;
-    gap: 0.5rem;
-    width: 100%;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
 
-    .wrapper-messages {
-        max-width: 50%;
-        padding: 0;
+  .wrapper-messages {
+    max-width: 50%;
+    padding: 0;
 
-        .message-info {
-            position: relative;
-            border: 1px solid orange;
-            padding: 0.5rem;
-            border-top-right-radius: 15px;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-        }
+    .message-info {
+      position: relative;
+      border: 1px solid orange;
+      padding: 0.5rem;
+      border-top-right-radius: 15px;
+      border-bottom-left-radius: 15px;
+      border-bottom-right-radius: 15px;
     }
+  }
 }
 
 .my-message {
-    justify-content: end;
-    flex-direction: row-reverse;
-    margin-bottom: 1.5rem;
-    display: flex;
-    gap: 0.5rem;
-    width: 100%;
+  justify-content: end;
+  flex-direction: row-reverse;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
 
-    .wrapper-messages {
-        max-width: 50%;
-        padding: 0;
+  .wrapper-messages {
+    max-width: 50%;
+    padding: 0;
 
-        .message-info {
-            position: relative;
-            border: 1px solid orange;
-            padding: 0.5rem;
-            border-top-right-radius: 0;
-            border-top-left-radius: 15px;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-        }
+    .message-info {
+      position: relative;
+      border: 1px solid orange;
+      padding: 0.5rem;
+      border-top-right-radius: 0;
+      border-top-left-radius: 15px;
+      border-bottom-left-radius: 15px;
+      border-bottom-right-radius: 15px;
     }
+  }
 }
 
 .img-container {
-    padding-bottom: 0.5rem;
-    position: relative;
-    width: 70px;
-    height: 70px;
+  padding-bottom: 0.5rem;
+  position: relative;
+  width: 70px;
+  height: 70px;
 
-    .level {
-        position: absolute;
-        bottom: 9px;
-        right: 4px;
-        color: white;
-        font-weight: bold;
-    }
+  .level {
+    position: absolute;
+    bottom: 9px;
+    right: 4px;
+    color: white;
+    font-weight: bold;
+  }
 }
 
-.user-username{
-    font-weight: bold;
+.user-username {
+  font-weight: bold;
 }
 
-i{
-    color:red;
-    position:absolute;
-    top:5px;
-    right:5px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    transition: transform 0.5s;
+i {
+  color: red;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: transform 0.5s;
 
-    &:hover{
-        transform: rotate(180deg);
-    }
+  &:hover {
+    transform: rotate(180deg);
+  }
 }

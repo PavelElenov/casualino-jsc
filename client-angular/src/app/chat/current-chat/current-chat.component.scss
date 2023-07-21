@@ -6,8 +6,21 @@
   position: relative;
 }
 
-.current-chat[closing]{
+.current-chat.close{
   animation: close 500ms forwards;
+}
+
+.current-chat.open{
+  animation: open 500ms forwards;
+}
+
+@keyframes open{
+  from{
+    transform: scale(0);
+  }
+  to{
+    transform: scale(1)
+  }
 }
 
 @keyframes close{
@@ -27,7 +40,7 @@
   right:10px;
 
   &:hover{
-    transform: scale(1.03);
+    transform: scale(1.2);
   }
 }
 

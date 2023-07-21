@@ -11,10 +11,13 @@
     <p *ngIf="chat.messages.length > 0" class="p--chat-last-message">
       {{ chat.messages[chat.messages.length - 1].text }}
     </p>
+    <button (click)="addItem()">Add item</button>
+    <button (click)="removeLastItem()">Remove last item</button>
     <app-drop-down
-      (changeSelectedElement)="changeSelectedElementHandler($event)">
-        <p class="p--drop-down-content" event="click" eventHandler="" option>Like</p>
-        <p class="p--drop-down-content" event="hover" option>Report</p>
+      (changeSelectedElement)="changeSelectedElementHandler($event)" defaultSelectedValue="Like">
+        <p *ngFor="let item of items" #option class="p--drop-down-content" event="click" option>{{item}}</p>
+        <!-- <p class="p--drop-down-content" event="click" value="Like" option><i class="fa-solid fa-thumbs-up"></i> Like</p>
+        <p class="p--drop-down-content" event="click" value="Report" option ><i class="fa-solid fa-exclamation"></i> Report</p> -->
     </app-drop-down>
   </div>
   <div class="more-features">

@@ -39,8 +39,9 @@ import {
 })
 export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() closeCurrentChatEmitter = new EventEmitter();
-  @ViewChild("currentChat", {static:false}) currentChatContainer!: ElementRef;
-  @ViewChild("messages", {static:false}) messagesContainer!: ElementRef;
+  @ViewChild('currentChat', { static: false })
+  currentChatContainer!: ElementRef;
+  @ViewChild('messages', { static: false }) messagesContainer!: ElementRef;
   messages!: IMessage[];
   currentChat!: IConversation;
   subscriptions$: Subscription[] = [];
@@ -59,7 +60,9 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit(): void {
     const selectCurrentChatSubscription = this.store
       .select(selectCurrentChat)
-      .subscribe((currentChat) => {this.currentChat = currentChat!});
+      .subscribe((currentChat) => {
+        this.currentChat = currentChat!;
+      });
 
     const selectUserSubscription = this.store
       .select(selectUser)
@@ -73,7 +76,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .select(selectMessages)
       .subscribe((messages) => {
         this.messages = messages;
-        
+
         if (messages.length > 0) {
           messages[messages.length - 1].writer.username == this.user.username &&
             requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
@@ -87,14 +90,20 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscriptions$.push(selectMessagesSubscription);
   }
   ngAfterViewInit(): void {
+    this.currentChatContainer.nativeElement.classList.add('open');
+
     this.goToTheBottomOfTheMessages();
     const currentChatMessages: HTMLElement =
       document.getElementById('messages')!;
     currentChatMessages.style.scrollBehavior = 'smooth';
-    this.renderer.setProperty(this.messagesContainer, "scroll-behavior", "smooth");
+    this.renderer.setProperty(
+      this.messagesContainer,
+      'scroll-behavior',
+      'smooth'
+    );
   }
 
-  trackByMessage(index: number, item: IMessage): string{
+  trackByMessage(index: number, item: IMessage): string {
     return item.text;
   }
   submitMessage(form: NgForm) {
@@ -136,12 +145,14 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   emitCloseCurrentChat(): void {
     const currentChatContainer: HTMLElement =
       document.getElementById('current-chat')!;
-    currentChatContainer.setAttribute('closing', '');
+
+    currentChatContainer.classList.remove('open');
+    currentChatContainer.classList.add('close');
 
     currentChatContainer.addEventListener(
       'animationend',
       () => {
-        currentChatContainer.removeAttribute('closing');
+        currentChatContainer.classList.remove('close');
         const currentChatMessages: HTMLElement =
           document.getElementById('messages')!;
         currentChatMessages.style.removeProperty('scroll-behaviour');

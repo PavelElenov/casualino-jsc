@@ -18,10 +18,11 @@
 
 .div--content {
   width: 75px;
+  max-height: 88px;
   border: 1px solid black;
   border-radius: 10px;
-  overflow: hidden;
   display: none;
+  overflow: auto;
 }
 
 .div--content.open{

@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -22,10 +23,12 @@ export class ChatComponent implements OnDestroy {
   @Output() currentChatEvent = new EventEmitter<Observable<IConversation>>();
   time: string | undefined;
   subscriptions$: Subscription[] = [];
+  items: string[] = ["one", "two", "three"];
 
   constructor(
     private timeService: TimeService,
     private chatService: ChatService,
+    private changeDetection: ChangeDetectorRef
   ) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
@@ -41,6 +44,15 @@ export class ChatComponent implements OnDestroy {
     }
   }
 
+  removeLastItem(){
+    this.items.pop();
+    this.changeDetection.detectChanges();
+  }
+
+  addItem(){
+    this.items.push("four");
+    this.changeDetection.detectChanges();
+  }
   changeSelectedElementHandler(value: string){
     if(value == "Like"){
       this.chatService.likeChat(this.chat);
