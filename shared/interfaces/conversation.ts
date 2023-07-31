@@ -10,7 +10,7 @@ export type IMessage = {
 
 export type IConversation = {
     name: string,
-    messages: IMessage[],
+    lastMessage: IMessage,
     img: string,
     level: number;
     likes: number

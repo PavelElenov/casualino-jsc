@@ -12,12 +12,13 @@
     position: absolute;
     right: 4px;
     font-size: 0.8rem;
-    top: 5px;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
 .div--content {
-  width: 75px;
+  width: 150px;
   max-height: 88px;
   border: 1px solid black;
   border-radius: 10px;
@@ -25,28 +26,34 @@
   overflow: auto;
 }
 
-.div--content.open{
-    display: block;
-    animation:open 500ms forwards;
+// .div--content * {
+//   background-color: rgb(197, 185, 185);
+// }
+
+.div--content.open {
+  display: block;
+  animation: open 500ms forwards;
 }
 
-.div--content.close{
-    display: block;
-    animation: close 500ms forwards;
+.div--content.close {
+  display: block;
+  animation: close 500ms forwards;
 }
 
-@keyframes open{
-    from{
-        transform: scaleY(0)
-    }to{
-        transform: scaleY(1);
-    }
+@keyframes open {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
 }
 
-@keyframes close{
-    from{
-        transform: scaleX(1);
-    }to{
-        transform: scaleX(0);
-    }
+@keyframes close {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }

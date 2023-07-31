@@ -1,9 +1,9 @@
 <section #currentChat class="current-chat" id="current-chat">
   <i class="fa-solid fa-xmark" (click)="emitCloseCurrentChat()"></i>
-  <section class="messages" id="messages" (scroll)="scrolling()">
-    <ng-container *ngIf="messages">
+  <section #messagesContainer class="messages" id="messages" (scroll)="scrolling()" >
+    <ng-container *ngIf="lastMessages">
       <app-message
-        *ngFor="let message of messages"
+        *ngFor="let message of lastMessages"
         [message]="message"
       ></app-message>
     </ng-container>

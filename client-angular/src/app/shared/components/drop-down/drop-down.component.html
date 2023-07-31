@@ -1,7 +1,7 @@
 <div class="select--drop-down" (click)="clickHandler()">
-  <span #selectedValue></span>
+  <ng-content select="[selectedElement]" #selectedValue></ng-content>
   <i class="fa-solid fa-arrow-down"></i>
 </div>
-<div #content class="div--content" [@openClose]="contentState">
+<div #content class="div--content" [@openClose]="contentState" id="content">
   <ng-content select="[option]"></ng-content>
 </div>

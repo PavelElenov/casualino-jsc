@@ -8,6 +8,7 @@ import { MessageComponent } from "./message/message.component";
 import { CurrentChatComponent } from "./current-chat/current-chat.component";
 import { SharedModule } from "../shared/shared.module";
 import { ChatService } from "./chat.service";
+import { ShareDataDirective } from "./directives/share-user-data-directive.directive";
 
 
 @NgModule({
@@ -15,13 +16,14 @@ import { ChatService } from "./chat.service";
     ChatsListComponent,
     ChatComponent,
     MessageComponent,
-    CurrentChatComponent
+    CurrentChatComponent,
+    ShareDataDirective
   ],
   imports: [
     CommonModule,
     RouterModule,
     FormsModule,
-    SharedModule
+    SharedModule,
   ],
   providers: [ChatService]
 

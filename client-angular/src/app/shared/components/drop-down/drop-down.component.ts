@@ -17,7 +17,14 @@ import {
   ContentChildren,
   AfterContentInit,
   QueryList,
+  OnDestroy,
+  OnInit,
+  ChangeDetectorRef,
+  ContentChild,
 } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { ShareDataDirective } from 'src/app/chat/directives/share-user-data-directive.directive';
+import { IUser } from '../../interfaces/user';
 
 const openClose = trigger('openClose', [
   state(
@@ -61,66 +68,92 @@ const openClose = trigger('openClose', [
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [openClose],
 })
-export class DropDownComponent implements AfterContentInit {
-  @Input() defaultSelectedValue: string | undefined;
-  @Output() changeSelectedElement = new EventEmitter<string>();
+export class DropDownComponent implements AfterContentInit, OnDestroy {
+  @Input() defaultSelectedValue: any | undefined;
+  @Output() changeSelectedElement = new EventEmitter<any>();
   @ViewChild('content', { static: false }) contentRef!: ElementRef;
+  @ContentChildren(ShareDataDirective) data!: QueryList<ShareDataDirective>;
   selectedItem: HTMLElement | undefined;
-  @ViewChild('selectedValue', { static: false }) selectedValueRef!: ElementRef;
   contentState: string = '';
-
-  @ContentChildren('option') options!: QueryList<ElementRef>;
-
-  attributeName: string = 'drop-down-option-has-event'; // attribute name which need add
-  constructor() {}
+  attributeHasEventName: string = 'drop-down-option-has-event';
+  subscriptions: Subscription[] = [];
+  constructor(private changeDetection: ChangeDetectorRef) {}
+  ngOnDestroy(): void {
+    this.subscriptions.map((s) => s.unsubscribe());
+  }
 
   ngAfterContentInit(): void {
-    //add unique attribute and compore by anttribute
-    this.options?.map((option: ElementRef) => {
-      const optionElement: HTMLElement = option.nativeElement;
-      optionElement.setAttribute(this.attributeName, '');
+    if (this.defaultSelectedValue) {
+      const defaultSelectedValueDirective: ShareDataDirective = this.data.find(
+        (d) => d.data == this.defaultSelectedValue
+      )!;
+      this.setSelectedElement(
+        defaultSelectedValueDirective.el.nativeElement,
+        defaultSelectedValueDirective.data
+      );
+    }
+
+    this.data?.forEach((d: ShareDataDirective) => {
+      const optionElement: HTMLElement = d.el.nativeElement;
+      optionElement.setAttribute(this.attributeHasEventName, '');
 
       optionElement.addEventListener(
         optionElement.getAttribute('event')!,
         (event: Event) => this.eventListenerCallback(event)
       );
     });
-    
-    this.options!.changes.subscribe((options: QueryList<ElementRef>) => {
-      options.map((option: ElementRef) => {
-        const optionElement: HTMLElement = option.nativeElement;
-        if (optionElement.getAttribute(this.attributeName) == null) {
-          optionElement.setAttribute(this.attributeName, '');
 
-          optionElement.addEventListener(
-            optionElement.getAttribute('event')!,
-            (event: Event) => this.eventListenerCallback(event)
-          );
+    const changeSubscription = this.data!.changes.subscribe(
+      (data: QueryList<ShareDataDirective>) => {
+        let selectedItemIsDeleted: boolean = true;
+        data.forEach((d: ShareDataDirective) => {
+          const optionElement: HTMLElement = d.el.nativeElement;
+
+          if (optionElement == this.selectedItem) {
+            selectedItemIsDeleted = false;
+          }
+
+          if (optionElement.getAttribute(this.attributeHasEventName) == null) {
+            optionElement.setAttribute(this.attributeHasEventName, '');
+
+            optionElement.addEventListener(
+              optionElement.getAttribute('event')!,
+              (event: Event) => this.eventListenerCallback(event)
+            );
+          }
+        });
+
+        if (selectedItemIsDeleted) {
+          this.selectedItem = undefined;
         }
-      });
-    });
+      }
+    );
+    this.subscriptions.push(changeSubscription);
   }
 
   eventListenerCallback(event: Event) {
-    if (this.selectedItem) {
-      this.unHighlightElement(this.selectedItem);
-    }
-
-    this.selectedItem = event.target as HTMLElement;
-    this.highlightElement(this.selectedItem);
-
-    if (
-      this.selectedValueRef.nativeElement.innerText !==
-      this.selectedItem.innerHTML
-    ) {
-      this.selectedValueRef.nativeElement.innerHTML =
-        this.selectedItem.innerText;
-      this.changeSelectedElement.emit(
-        this.selectedItem.innerText.replace(/\s/g, '')
-      );
-    }
+    const currentElement: HTMLElement = event.target as HTMLElement;
+    const elementDirective: ShareDataDirective = this.data.find(
+      (d) => d.el.nativeElement == currentElement
+    )!;
+    this.setSelectedElement(
+      elementDirective.el.nativeElement,
+      elementDirective.data
+    );
 
     this.clickHandler();
+  }
+
+  setSelectedElement(element: HTMLElement, data: any) {
+    if (this.selectedItem !== element) {
+      if (this.selectedItem) {
+        this.unHighlightElement(this.selectedItem);
+      }
+
+      this.changeSelectedElement.emit(data);
+      this.highlightElement(element);
+      this.selectedItem = element;
+    }
   }
 
   highlightElement(element: HTMLElement): void {
@@ -137,6 +170,7 @@ export class DropDownComponent implements AfterContentInit {
     this.contentState == ''
       ? (this.contentState = 'open')
       : (this.contentState = 'close');
+    this.changeDetection.detectChanges();
 
     if (this.contentState == 'close') {
       setTimeout(() => {

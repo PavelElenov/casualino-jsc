@@ -30,7 +30,7 @@
   width: 70%;
   padding-bottom: 0.5rem;
 
-  .p--chat-last-message{
+  .p--chat-last-message {
     margin-bottom: 0.5rem;
   }
 }
@@ -75,23 +75,34 @@
   }
 }
 
-.p--drop-down-content:not(:last-child){
+.p--drop-down-content:not(:last-child) {
   border-bottom: 1px solid black;
 }
 
-.p--drop-down-content{
-  padding:5px;
+.p--drop-down-content {
+  padding: 5px;
   cursor: pointer;
 
   &:hover{
-    background-color: rgb(197, 185, 185);
+    background-color: rgb(226, 216, 216);
   }
 }
 
-.fa-thumbs-up{
-  color:rgb(24, 102, 227);
+.fa-thumbs-up {
+  color: rgb(24, 102, 227);
 }
 
-.fa-exclamation{
+.fa-exclamation {
   color: red;
+}
+
+.div--content {
+  .selected {
+    background-color: red;
+  }
+}
+
+.img--user-demo{
+  width: 50px;
+  height: 50px;
 }

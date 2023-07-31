@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { HttpService } from './services/http/http.service';
 import { SocketService } from './services/socket/socket.service';
@@ -26,6 +26,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     RouterModule,
     BrowserModule,
     BrowserAnimationsModule,
+    NgTemplateOutlet
   ],
   providers: [
     UserService,

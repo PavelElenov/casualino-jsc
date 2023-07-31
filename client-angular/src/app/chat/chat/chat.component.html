@@ -13,12 +13,24 @@
     </p>
     <button (click)="addItem()">Add item</button>
     <button (click)="removeLastItem()">Remove last item</button>
-    <app-drop-down
-      (changeSelectedElement)="changeSelectedElementHandler($event)" defaultSelectedValue="Like">
-        <p *ngFor="let item of items" #option class="p--drop-down-content" event="click" option>{{item}}</p>
-        <!-- <p class="p--drop-down-content" event="click" value="Like" option><i class="fa-solid fa-thumbs-up"></i> Like</p>
-        <p class="p--drop-down-content" event="click" value="Report" option ><i class="fa-solid fa-exclamation"></i> Report</p> -->
+    <app-drop-down (changeSelectedElement)="changeSelectedElementHandler($event)">
+      <div *ngFor="let user of newUsers; trackBy:trackByIndex" [appShareDataDirective]="user" #option option event="click" [attr.value]="user.username">
+        <img class="img--user-demo" [src]="user.img" alt="">
+        {{user.username}}
+      </div>
     </app-drop-down>
+    <!-- <app-drop-down (changeSelectedElement)="changeSelectedElementHandler($event)" defaultSelectedValue="">
+      <div *ngIf="dropDownSelectedValue" selectedElement>
+        <a href="/profile">Click</a>
+        {{dropDownSelectedValue}}
+      </div>
+      <div *ngFor="let item of items" #option class="p--drop-down-content" event="click" [attr.value]="item" option>
+        {{ item }}
+      </div>
+
+      <!-- <p class="p--drop-down-content" event="click" value="Like" option><i class="fa-solid fa-thumbs-up"></i> Like</p>
+        <p class="p--drop-down-content" event="click" value="Report" option ><i class="fa-solid fa-exclamation"></i> Report</p> -->
+    <!-- </app-drop-down>  -->
   </div>
   <div class="more-features">
     <i class="fa-solid fa-greater-than" (click)="getCurrentChat(chat.name)"></i>

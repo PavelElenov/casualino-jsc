@@ -1,5 +1,4 @@
 import {
-  AfterContentInit,
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -9,12 +8,11 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  Renderer2,
   ViewChild,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { IState } from 'src/app/+store';
 import {
   selectCurrentChat,
@@ -27,7 +25,6 @@ import { IUser } from 'src/app/shared/interfaces/user';
 import { ChatService } from '../chat.service';
 import {
   clearNewMessages,
-  setCurrentChat,
   substractOneNewMessage,
 } from 'src/app/+store/actions';
 
@@ -41,18 +38,21 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() closeCurrentChatEmitter = new EventEmitter();
   @ViewChild('currentChat', { static: false })
   currentChatContainer!: ElementRef;
-  @ViewChild('messages', { static: false }) messagesContainer!: ElementRef;
-  messages!: IMessage[];
+  @ViewChild('messagesContainer', { static: false })
+  messagesContainer!: ElementRef;
+  allMessages: IMessage[] = [];
   currentChat!: IConversation;
   subscriptions$: Subscription[] = [];
   user!: IUser;
   newMessages!: number;
+  lastMessages: IMessage[] = [];
+  topMessageOfLastMessages: HTMLElement | undefined;
+  lastScrollTop!: number;
 
   constructor(
     private store: Store<IState>,
     private chatService: ChatService,
-    private changeDetection: ChangeDetectorRef,
-    private renderer: Renderer2
+    private changeDetection: ChangeDetectorRef
   ) {}
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe);
@@ -75,12 +75,18 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const selectMessagesSubscription = this.store
       .select(selectMessages)
       .subscribe((messages) => {
-        this.messages = messages;
-
-        if (messages.length > 0) {
+        if (messages.length > 0 && this.allMessages.length > 0) {
           messages[messages.length - 1].writer.username == this.user.username &&
             requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
         }
+        this.allMessages = messages;
+
+        if (this.lastMessages.length == 0) {
+          this.setLastMessages();
+        } else {
+          this.lastMessages.push(this.allMessages[this.allMessages.length - 1]);
+        }
+
         this.changeDetection.detectChanges();
       });
 
@@ -90,72 +96,117 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscriptions$.push(selectMessagesSubscription);
   }
   ngAfterViewInit(): void {
-    this.currentChatContainer.nativeElement.classList.add('open');
+    this.topMessageOfLastMessages =
+      this.messagesContainer.nativeElement.children[0];
+
+    this.messagesContainer.nativeElement.classList.add('open');
 
     this.goToTheBottomOfTheMessages();
-    const currentChatMessages: HTMLElement =
-      document.getElementById('messages')!;
-    currentChatMessages.style.scrollBehavior = 'smooth';
-    this.renderer.setProperty(
-      this.messagesContainer,
-      'scroll-behavior',
-      'smooth'
-    );
+  }
+
+  setLastMessages() {
+    if (this.allMessages.length > 0) {
+      const startIndex = this.allMessages.length - 6 - this.lastMessages.length;
+      this.lastMessages = this.allMessages.slice(
+        startIndex > 0 ? startIndex : 0,
+        this.allMessages.length
+      );
+
+      if (this.topMessageOfLastMessages) {
+          console.log(this.topMessageOfLastMessages.offsetTop);
+          
+        setTimeout(() => {
+          this.messagesContainer.nativeElement.scrollTop = this.topMessageOfLastMessages?.offsetTop;
+          this.topMessageOfLastMessages = this.messagesContainer.nativeElement.children[0];
+        }, 0)
+        
+      }
+    } else {
+      this.lastMessages = [];
+    }
   }
 
   trackByMessage(index: number, item: IMessage): string {
     return item.text;
   }
+
   submitMessage(form: NgForm) {
     const { message } = form.value;
     form.reset();
     this.chatService.submitMessage(message);
   }
-  goToTheBottomOfTheMessages(): void {
-    const messagesDiv: HTMLDivElement = document.getElementById(
-      'messages'
-    ) as HTMLDivElement;
 
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  goToTheBottomOfTheMessages(): void {
+    this.messagesContainer.nativeElement.scrollTop =
+      this.messagesContainer.nativeElement.scrollHeight;
+
+    this.messagesContainer.nativeElement.style.scrollBehavior = 'smooth';
+    this.lastScrollTop = this.messagesContainer.nativeElement.scrollTop;
   }
+
   readAllNewMessages(): void {
     this.store.dispatch(clearNewMessages());
     this.goToTheBottomOfTheMessages();
   }
 
   scrolling(): void {
-    if (this.newMessages > 0) {
-      const messagesDiv: HTMLElement = document.getElementById('messages')!;
-      const element: HTMLElement = messagesDiv.childNodes[
-        messagesDiv.childNodes.length - this.newMessages - 5
-      ] as HTMLElement;
+    const currentScrollTop = this.messagesContainer.nativeElement.scrollTop;
 
-      const eleTop = element.offsetTop;
-      const eleBottom = eleTop + element.offsetHeight;
+    if (currentScrollTop < this.lastScrollTop) {
+      this.checkForTopMessageIsVisible();
+    } else {
+      this.checkForNewMessages();
+    }
+    this.lastScrollTop = currentScrollTop;
+  }
 
-      const containerTop = messagesDiv.scrollTop;
-      const containerBottom = containerTop + messagesDiv.clientHeight;
-
-      if (eleTop >= containerTop && eleBottom <= containerBottom) {
-        this.store.dispatch(substractOneNewMessage());
+  checkForTopMessageIsVisible() {
+    if (this.topMessageOfLastMessages) {
+      if (this.elementIsVisible(this.topMessageOfLastMessages)) {
+        this.setLastMessages();
       }
     }
   }
 
+  checkForNewMessages() {
+    if (this.newMessages > 0) {
+      const element: HTMLElement = this.messagesContainer.nativeElement
+        .childNodes[
+        this.messagesContainer.nativeElement.childNodes.length -
+          this.newMessages -
+          5
+      ] as HTMLElement;
+
+      this.elementIsVisible(element) &&
+        this.store.dispatch(substractOneNewMessage());
+    }
+  }
+
+  elementIsVisible(element: HTMLElement): boolean {
+    const eleTop = element.offsetTop;
+    const eleBottom = eleTop + element.offsetHeight;
+
+    const containerTop = this.messagesContainer.nativeElement.scrollTop;
+    const containerBottom =
+      containerTop + this.messagesContainer.nativeElement.clientHeight;
+
+    if (eleTop >= containerTop && eleBottom <= containerBottom) {
+      return true;
+    }
+    return false;
+  }
+
   emitCloseCurrentChat(): void {
-    const currentChatContainer: HTMLElement =
-      document.getElementById('current-chat')!;
+    this.currentChatContainer.nativeElement.classList.remove('open');
+    this.currentChatContainer.nativeElement.classList.add('close');
 
-    currentChatContainer.classList.remove('open');
-    currentChatContainer.classList.add('close');
-
-    currentChatContainer.addEventListener(
+    this.currentChatContainer.nativeElement.addEventListener(
       'animationend',
       () => {
-        currentChatContainer.classList.remove('close');
-        const currentChatMessages: HTMLElement =
-          document.getElementById('messages')!;
-        currentChatMessages.style.removeProperty('scroll-behaviour');
+        this.currentChatContainer.nativeElement.classList.remove('close');
+        this.currentChatContainer.nativeElement.style.removeProperty(
+          'scroll-behaviour'
+        );
         this.closeCurrentChatEmitter.emit();
       },
       { once: true }
