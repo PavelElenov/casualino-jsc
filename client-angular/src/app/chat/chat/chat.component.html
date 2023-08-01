@@ -8,8 +8,8 @@
   </div>
   <div class="chat-info">
     <span class="user-username">{{ chat.name }}</span>
-    <p *ngIf="chat.messages.length > 0" class="p--chat-last-message">
-      {{ chat.messages[chat.messages.length - 1].text }}
+    <p *ngIf="chat.lastMessage" class="p--chat-last-message">
+      {{ chat.lastMessage}}
     </p>
     <button (click)="addItem()">Add item</button>
     <button (click)="removeLastItem()">Remove last item</button>
@@ -33,8 +33,8 @@
     <!-- </app-drop-down>  -->
   </div>
   <div class="more-features">
-    <i class="fa-solid fa-greater-than" (click)="getCurrentChat(chat.name)"></i>
+    <i class="fa-solid fa-greater-than" (click)="getCurrentChat(chat.id)"></i>
     <p *ngIf="time">{{ time }}</p>
   </div>
-  <i class="fa-solid fa-xmark" (click)="deleteChat(chat.name)"></i>
+  <i class="fa-solid fa-xmark" (click)="deleteChat(chat.id)"></i>
 </div>

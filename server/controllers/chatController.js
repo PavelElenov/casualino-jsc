@@ -6,11 +6,12 @@ var express_1 = require("express");
 exports.router = (0, express_1.Router)();
 exports.router.get("/", function (req, res) {
     var chats = (0, chatService_1.getAllChats)();
+    console.log(chats);
     res.json(chats);
 });
-exports.router.get("/:name", function (req, res) {
+exports.router.get("/:id", function (req, res) {
     try {
-        var conversation = (0, chatService_1.getConversationByName)(req.params.name);
+        var conversation = (0, chatService_1.getConversationById)(parseInt(req.params.id));
         res.status(200).json(conversation);
     }
     catch (error) {
@@ -18,21 +19,29 @@ exports.router.get("/:name", function (req, res) {
         res.json(error.message);
     }
 });
-exports.router.delete("/:name", function (req, res) {
-    var chatName = req.params.name;
-    (0, chatService_1.deleteChatByName)(chatName);
+exports.router.get("/:id/lastMessages", function (req, res) {
+    var lastMessages = (0, chatService_1.getLastMessagesOfConversation)(parseInt(req.params.id));
+    if (lastMessages) {
+        res.status(200).json(lastMessages);
+    }
+    else {
+        res.status(204).json();
+    }
+});
+exports.router.delete("/:id", function (req, res) {
+    var conversationId = parseInt(req.params.id);
+    (0, chatService_1.deleteChatById)(conversationId);
     res.status(204).json();
 });
-//conversations/1/messages/hi
-exports.router.delete("/:name/messages/:messageText", function (req, res) {
-    var _a = req.params, name = _a.name, messageText = _a.messageText;
-    (0, chatService_1.deleteMessage)(name, messageText);
+exports.router.delete("/:conversationId/messages/:messageId", function (req, res) {
+    var _a = req.params, conversationId = _a.conversationId, messageId = _a.messageId;
+    (0, chatService_1.deleteMessage)(parseInt(conversationId), parseInt(messageId));
     res.status(204).json();
 });
 exports.router.post("/", function (req, res) {
     var newChat = req.body.chat;
-    (0, chatService_1.addChat)(newChat);
-    res.status(204).json();
+    var conversation = (0, chatService_1.createNewConversation)(newChat);
+    res.status(200).json(conversation);
 });
 exports.router.post("/:name/like", function (req, res) {
     var name = req.params.name;

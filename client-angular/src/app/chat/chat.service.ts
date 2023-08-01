@@ -3,6 +3,7 @@ import { HttpService } from '../shared/services/http/http.service';
 import { StorageTokenService } from '../shared/services/storage/storage-token.service';
 import {
   IConversation,
+  IConversationWithoutId,
   IFullMessageInfo,
   IMessage,
   IMessageInfo,
@@ -26,7 +27,7 @@ import {
   setChats,
   setCurrentChat,
   setError,
-  setMessages,
+  setLastMessages,
 } from '../+store/actions';
 import { IUser } from '../shared/interfaces/user';
 import { ChatFactory } from '../shared/factories/chatFactory';
@@ -48,7 +49,7 @@ export class ChatService implements OnDestroy {
     private store: Store<IState>,
     private chatFactory: ChatFactory,
     private messageFactory: MessageFactroy,
-    private router: Router,
+    private router: Router
   ) {
     const userSubscription = this.store
       .select(selectUser)
@@ -67,30 +68,31 @@ export class ChatService implements OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
   }
-  likeChat(conversation: IConversation){
-    const chat = {...conversation, likes: conversation.likes + 1};
-    const likeSubscription = this.httpService.post(`/conversations/${conversation.name}/like`, {}, this.storage.getToken("auth-token")!).subscribe(() => {
-      this.store.dispatch(likeChat({chat}));
-    });
+  likeChat(conversation: IConversation) {
+    const chat = { ...conversation, likes: conversation.likes + 1 };
+    const likeSubscription = this.httpService
+      .post(
+        `/conversations/${conversation.name}/like`,
+        {},
+        this.storage.getToken('auth-token')!
+      )
+      .subscribe(() => {
+        this.store.dispatch(likeChat({ chat }));
+      });
     this.subscriptions$.push(likeSubscription);
-  }
-  createConversation(): IConversation {
-    const conversation: IConversation = this.chatFactory.createConversation({
-      name: '',
-      img: '',
-      level: 0,
-    });
-    this.store.dispatch(setCurrentChat({ currentChat: conversation }));
-    return conversation;
   }
   setCurrentChat(chat: IConversation) {
     this.store.dispatch(setCurrentChat({ currentChat: chat }));
-  
-    if (chat.messages.length > 0) {
-      this.store.dispatch(setMessages({ messages: chat.messages }));
-    } else {
-      this.store.dispatch(setMessages({ messages: [] }));
-    }
+
+    const getLastMessagesSubscription = this.httpService
+      .get<IMessage[]>(`/conversations/${chat.id}/lastMessages`, this.storage.getToken("auth-token")!)
+      .subscribe((lastMessages: IMessage[]) => {
+        console.log(lastMessages);
+
+        this.store.dispatch(setLastMessages({ lastMessages }));
+      });
+
+    this.subscriptions$.push(getLastMessagesSubscription);
   }
   getAllChats() {
     const getAllChatsSubscription = this.httpService
@@ -109,18 +111,18 @@ export class ChatService implements OnDestroy {
       });
     this.subscriptions$.push(getAllChatsSubscription);
   }
-  getChatByName(chatName: string): Observable<IConversation> {
+  getChatById(chatId: number): Observable<IConversation> {
     return this.httpService.get<IConversation>(
-      `/conversations/${chatName}`,
+      `/conversations/${chatId}`,
       this.storage.getToken('auth-token')!
     );
   }
-  deleteChat(name: string) {
+  deleteChat(id: number) {
     const deleteChatSubscription = this.httpService
-      .delete(`/conversations/${name}`, this.storage.getToken('auth-token')!)
+      .delete(`/conversations/${id}`, this.storage.getToken('auth-token')!)
       .subscribe({
         next: () => {
-          this.store.dispatch(deleteChat({ name }));
+          this.store.dispatch(deleteChat({ id }));
         },
         error: (err: any) => {
           this.store.dispatch(setError({ error: err }));
@@ -129,15 +131,15 @@ export class ChatService implements OnDestroy {
       });
     this.subscriptions$.push(deleteChatSubscription);
   }
-  deleteMessage(currentChatName: string, messageText: string) {
+  deleteMessage(currentChatId: number, messageId: number) {
     const deleteMessageSubscription = this.httpService
       .delete(
-        `/conversations/${currentChatName}/messages/${messageText}`,
+        `/conversations/${currentChatId}/messages/${messageId}`,
         this.storage.getToken('auth-token')!
       )
       .subscribe({
         next: () => {
-          this.store.dispatch(deleteMessage({ messageText }));
+          this.store.dispatch(deleteMessage({ messageId }));
         },
         error: (err: any) => {
           this.store.dispatch(setError({ error: err }));
@@ -146,8 +148,8 @@ export class ChatService implements OnDestroy {
       });
     this.subscriptions$.push(deleteMessageSubscription);
   }
-  addChat(chat: IConversation): Observable<any> {
-    return this.httpService.post(
+  addChat(chat: IConversationWithoutId): Observable<IConversation> {
+    return this.httpService.post<IConversation>(
       '/conversations',
       { chat },
       this.storage.getToken('auth-token')!
@@ -158,13 +160,8 @@ export class ChatService implements OnDestroy {
       const currentChatSubscription = this.store
         .select(selectCurrentChat)
         .subscribe(async (currentChat) => {
-          if (data.conversation == currentChat?.name) {
-            const message: IMessage = this.messageFactory.createMessage(
-              data.writer,
-              data.text,
-              data.time
-            );
-            this.store.dispatch(addMessage({ message }));
+          if (data.conversationId === currentChat?.id) {
+            this.store.dispatch(addMessage({ message: data.message }));
 
             if (data.writer.username !== this.user.username) {
               this.messages.length > 4 && this.store.dispatch(addNewMessage());
@@ -179,27 +176,19 @@ export class ChatService implements OnDestroy {
     const messageInfo: IMessageInfo = this.chatFactory.createMessageInfoObject(
       this.user,
       message,
-      this.currentChat!.name
+      this.currentChat!.id
     );
-
-    if (this.currentChat?.name == '') {
-      const chat = this.chatFactory.createConversation({
-        name: this.user.username,
-        img: this.user.img,
-        level: this.user.level,
-      });
-      this.addNewConversation(chat);
-      messageInfo.conversation = chat.name;
-    }
 
     this.socketService.emitMessage(messageInfo);
   }
 
-  addNewConversation(chat: IConversation): void {
-    const addChatSubscription = this.addChat(chat)!.subscribe(() => {
-      this.store.dispatch(setCurrentChat({ currentChat: chat }));
-      this.store.dispatch(addChat({ chat }));
-    });
+  addNewConversation(chat: IConversationWithoutId): void {
+    const addChatSubscription = this.addChat(chat)!.subscribe(
+      (conversation) => {
+        this.store.dispatch(setCurrentChat({ currentChat: conversation }));
+        this.store.dispatch(addChat({ chat: conversation }));
+      }
+    );
     this.subscriptions$.push(addChatSubscription);
   }
 }

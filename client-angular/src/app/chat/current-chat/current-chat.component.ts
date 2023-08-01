@@ -75,18 +75,14 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const selectMessagesSubscription = this.store
       .select(selectMessages)
       .subscribe((messages) => {
-        if (messages.length > 0 && this.allMessages.length > 0) {
-          messages[messages.length - 1].writer.username == this.user.username &&
-            requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
+        if (
+          this.allMessages.length > 0 &&
+          messages[messages.length - 1].writer.username == this.user.username
+        ) {
+          requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
         }
         this.allMessages = messages;
-
-        if (this.lastMessages.length == 0) {
-          this.setLastMessages();
-        } else {
-          this.lastMessages.push(this.allMessages[this.allMessages.length - 1]);
-        }
-
+        
         this.changeDetection.detectChanges();
       });
 
@@ -104,27 +100,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.goToTheBottomOfTheMessages();
   }
 
-  setLastMessages() {
-    if (this.allMessages.length > 0) {
-      const startIndex = this.allMessages.length - 6 - this.lastMessages.length;
-      this.lastMessages = this.allMessages.slice(
-        startIndex > 0 ? startIndex : 0,
-        this.allMessages.length
-      );
-
-      if (this.topMessageOfLastMessages) {
-          console.log(this.topMessageOfLastMessages.offsetTop);
-          
-        setTimeout(() => {
-          this.messagesContainer.nativeElement.scrollTop = this.topMessageOfLastMessages?.offsetTop;
-          this.topMessageOfLastMessages = this.messagesContainer.nativeElement.children[0];
-        }, 0)
-        
-      }
-    } else {
-      this.lastMessages = [];
-    }
-  }
+  setLastMessages() {}
 
   trackByMessage(index: number, item: IMessage): string {
     return item.text;

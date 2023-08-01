@@ -31,8 +31,8 @@ io.use(function (socket, next) {
 }).on("connection", function (socket) {
     console.log("New User");
     socket.on("message", function (data) {
-        var message = (0, chatService_1.addMessage)(data.writer.username, data.text, data.conversation);
-        io.sockets.emit("message", { writer: message.writer, text: message.text, time: message.time, conversation: data.conversation });
+        var message = (0, chatService_1.addMessage)(data.writer.username, data.text, data.conversationId);
+        io.sockets.emit("message", { writer: message.writer, message: message, time: message.time, conversationId: data.conversationId });
     });
     socket.on("disconnect", function () {
         socket.disconnect();

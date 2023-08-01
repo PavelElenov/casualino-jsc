@@ -1,4 +1,5 @@
 export type IMessage = {
+    id: number,
     writer: {
         username: string,
         level: number,
@@ -8,12 +9,24 @@ export type IMessage = {
     time: number
 }
 
-export type IConversation = {
+export interface IConversationWithoutId{
     name: string,
-    lastMessage: IMessage,
     img: string,
     level: number;
     likes: number
+}
+
+export interface IConversation extends IConversationWithoutId{
+    id: number,
+}
+
+export interface IMessages{
+    conversationId: number,
+    messages: IMessage[]
+}
+
+export interface IConversationMoreInfo extends IConversation{
+    lastMessage: IMessage | undefined
 }
 
 export type IMessageInfo = {
@@ -23,7 +36,7 @@ export type IMessageInfo = {
         img: string,
     },
     text:string,
-    conversation: string;
+    conversationId: number;
 }
 
 export interface IFullMessageInfo{

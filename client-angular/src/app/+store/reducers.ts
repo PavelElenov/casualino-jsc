@@ -16,7 +16,7 @@ import {
   setChats,
   setCurrentChat,
   setError,
-  setMessages,
+  setLastMessages,
   setUser,
   substractOneNewMessage,
 } from './actions';
@@ -27,7 +27,7 @@ export interface IChats {
 
 export interface ICurrentChat {
   currentChat: IConversation | undefined;
-  messages: IMessage[];
+  lastMessages: IMessage[];
   newMessagesCount: number;
 }
 
@@ -45,7 +45,7 @@ const chatsState: IChats = {
 
 const currentChatState: ICurrentChat = {
   currentChat: undefined,
-  messages: [],
+  lastMessages: [],
   newMessagesCount: 0,
 };
 
@@ -69,9 +69,9 @@ export const chatsReducer = createReducer(
     chats: [...state.chats, chat],
   })),
   on(setChats, (state, { chats }) => ({ ...state, chats })),
-  on(deleteChat, (state, { name }) => ({
+  on(deleteChat, (state, { id }) => ({
     ...state,
-    chats: state.chats.filter((c) => c.name != name),
+    chats: state.chats.filter((c) => c.id !== id),
   })),
   on(clearChats, () => ({ chats: [] })),
   on(likeChat, (state, {chat}) => ({...state, chats: state.chats.map<IConversation>((c:IConversation) => {
@@ -86,14 +86,14 @@ export const currentChatReducer = createReducer(
   currentChatState,
   on(addMessage, (state, { message }) => ({
     ...state,
-    messages: [...state.messages, message],
+    lastMessages: [...state.lastMessages, message],
   })),
-  on(setMessages, (state, { messages }) => ({ ...state, messages })),
+  on(setLastMessages, (state, { lastMessages }) => ({ ...state, lastMessages })),
 
   on(setCurrentChat, (state, { currentChat }) => ({ ...state, currentChat })),
-  on(deleteMessage, (state, { messageText }) => ({
+  on(deleteMessage, (state, { messageId }) => ({
     ...state,
-    messages: state.messages.filter((m) => m.text !== messageText),
+    lastMessages: state.lastMessages.filter((m) => m.id !== messageId),
   })),
   on(addNewMessage, (state) => ({
     ...state,
@@ -106,7 +106,7 @@ export const currentChatReducer = createReducer(
   })),
   on(clearCurrentChat, () => ({
     currentChat: undefined,
-    messages: [],
+    lastMessages: [],
     newMessagesCount: 0,
   })),
   on(clearMessages, (state) => ({...state, messages: []}))

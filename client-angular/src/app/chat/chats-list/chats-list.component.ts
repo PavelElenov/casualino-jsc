@@ -9,15 +9,19 @@ import {
 } from '@angular/core';
 import { ChatService } from '../chat.service';
 import { Observable, Subscription } from 'rxjs';
-import { IConversation } from 'src/app/shared/interfaces/message';
+import {
+  IConversation,
+  IConversationWithoutId,
+} from 'src/app/shared/interfaces/message';
 import { SocketService } from 'src/app/shared/services/socket/socket.service';
 import { UserService } from 'src/app/shared/services/user/user.service';
 import { TimeService } from 'src/app/shared/services/time/time.service';
 import { IState } from 'src/app/+store';
 import { Store } from '@ngrx/store';
 import { clearMessages, setCurrentChat } from 'src/app/+store/actions';
-import { selectChats } from 'src/app/+store/selectors';
+import { selectChats, selectUser } from 'src/app/+store/selectors';
 import { PopupService } from 'src/app/shared/services/popup/popup.service';
+import { IUser } from 'src/app/shared/interfaces/user';
 
 @Component({
   selector: 'app-chats-list',
@@ -26,11 +30,12 @@ import { PopupService } from 'src/app/shared/services/popup/popup.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatsListComponent implements OnInit, OnDestroy {
-  chats$: Observable<IConversation[]> | undefined;
+  @ViewChild('chatListPage', { read: ViewContainerRef })
+  chats: IConversation[] | undefined;
   currentChat: IConversation | undefined;
   subscriptions$: Subscription[] = [];
 
-  @ViewChild('chatListPage', { read: ViewContainerRef })
+  user!: IUser;
   chatListRef!: ViewContainerRef;
 
   constructor(
@@ -49,19 +54,31 @@ export class ChatsListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.timeService.getServerTime();
-
-    this.chats$ = this.store.select(selectChats);
     
-    this.userService.checkForUserAuthentication();
+    const chatsSubscription = this.store.select(selectChats).subscribe((chats) => {
+      this.chats = chats;
+      this.changeDetection.detectChanges();
+    });
+    this.subscriptions$.push(chatsSubscription);
 
     this.chatService.getAllChats();
+
+    this.userService.checkForUserAuthentication();
+
+    const userSubscription = this.store
+      .select(selectUser)
+      .subscribe((user: IUser) => {
+        this.user = user;
+      });
+
+    this.subscriptions$.push(userSubscription);
 
     this.socketService.connectToServer();
     this.chatService.listenForMessages();
   }
 
-  trackByConversation(index: number, item: IConversation): string{
-    return item.name;
+  trackByConversation(index: number, item: IConversation): number {
+    return item.id;
   }
 
   getCurrentChat(chat: Observable<IConversation>) {
@@ -74,7 +91,14 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(getCurrentChatSubscription);
   }
   createNewConversation(): void {
-    this.currentChat = this.chatService.createConversation();
+    const newConversation: IConversationWithoutId = {
+      name: this.user.username,
+      img: this.user.img,
+      level: this.user.level,
+      lastMessage: undefined,
+      likes: 0,
+    };
+    this.chatService.addNewConversation(newConversation);
   }
 
   closeCurrentChat(): void {

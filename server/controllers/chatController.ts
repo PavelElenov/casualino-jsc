@@ -1,17 +1,16 @@
-import { IConversation } from "../../shared/interfaces/conversation";
-import { addChat, addLike, deleteChatByName, deleteMessage, getAllChats, getConversationByName } from "../services/chatService";
+import { IConversation, IConversationMoreInfo, IConversationWithoutId, IMessage } from "../../shared/interfaces/conversation";
+import { createNewConversation, addLike, deleteChatById, deleteMessage, getAllChats, getConversationById, getLastMessagesOfConversation } from "../services/chatService";
 import { Router } from "express";
 
 export const router = Router();
-
 router.get("/", (req, res) => {
-  const chats: IConversation[] = getAllChats();
+  const chats: IConversationMoreInfo[] = getAllChats();
   res.json(chats);
 });
 
-router.get("/:name", (req, res) => {
+router.get("/:id", (req, res) => {
   try {
-    const conversation:IConversation | Error = getConversationByName(req.params.name);
+    const conversation:IConversation | Error = getConversationById(parseInt(req.params.id));
     res.status(200).json(conversation);
   } catch (error: any) {
     res.status(404);
@@ -19,22 +18,33 @@ router.get("/:name", (req, res) => {
   }
 });
 
-router.delete("/:name", (req, res) => {
-  const chatName = req.params.name;
-  deleteChatByName(chatName);
+router.get("/:id/lastMessages", (req, res) => {
+  const lastMessages: IMessage[] | null = getLastMessagesOfConversation(parseInt(req.params.id));
+
+  if(lastMessages){
+    res.status(200).json(lastMessages);
+  }else{
+    res.status(204).json();
+  }
+  
+})
+
+router.delete("/:id", (req, res) => {
+  const conversationId = parseInt(req.params.id);
+  deleteChatById(conversationId);
   res.status(204).json();
 });
 
-router.delete("/:name/messages/:messageText", (req, res) => {
-  const {name, messageText} = req.params;
-  deleteMessage(name, messageText);
+router.delete("/:conversationId/messages/:messageId", (req, res) => {
+  const {conversationId, messageId} = req.params;
+  deleteMessage(parseInt(conversationId), parseInt(messageId));
   res.status(204).json();
 });
 
 router.post("/", (req, res) => {
-  const newChat = req.body.chat;
-  addChat(newChat);
-  res.status(204).json();
+  const newChat: IConversationWithoutId = req.body.chat;
+  const conversation: IConversation = createNewConversation(newChat);
+  res.status(200).json(conversation);
 });
 
 router.post("/:name/like", (req, res) => {

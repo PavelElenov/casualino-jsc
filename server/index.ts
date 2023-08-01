@@ -37,8 +37,8 @@ io.use(function (socket, next) {
   console.log("New User");
 
   socket.on("message", (data: IMessageInfo) => {    
-    const message:IMessage = addMessage(data.writer.username, data.text, data.conversation);
-    io.sockets.emit("message", {writer: message.writer, text: message.text, time: message.time, conversation: data.conversation});
+    const message:IMessage = addMessage(data.writer.username, data.text, data.conversationId);
+    io.sockets.emit("message", {writer: message.writer, message, time: message.time, conversationId: data.conversationId});
   });
 
   socket.on("disconnect", () => {

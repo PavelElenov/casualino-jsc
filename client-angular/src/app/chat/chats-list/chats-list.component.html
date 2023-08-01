@@ -5,14 +5,14 @@
   <div class="chats-page">
     <section class="wrapper">
       <section class="chats">
-        <ng-container *ngIf="chats$ | async">
+        <ng-container *ngIf="chats">
           <app-chat
-            *ngFor="let chat of chats$ | async ;trackBy:trackByConversation"
+            *ngFor="let chat of chats ;trackBy:trackByConversation"
             [chat]="chat"
             (currentChatEvent)="getCurrentChat($event)"
           ></app-chat>
         </ng-container>
-        <p *ngIf="!chats$">Loading...</p>
+        <p *ngIf="!chats">Loading...</p>
       </section>
       <section class="new-topic">
         <i class="fa-solid fa-plus"></i>

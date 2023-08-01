@@ -8,7 +8,7 @@ export const errorSelector = (state: IState) => state.error
 
 export const selectMessages = createSelector(
     currentChatSelector,
-    state => state.messages
+    state => state.lastMessages
 );
 
 export const selectChats = createSelector(

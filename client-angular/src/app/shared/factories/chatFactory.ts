@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
-import { IConversation, IMessageInfo } from "../interfaces/message";
+import { IConversation, IConversationWithoutId, IMessageInfo } from "../interfaces/message";
 import { IUser } from "../interfaces/user";
 
 @Injectable()
 export class ChatFactory{
-    createMessageInfoObject(user: IUser, messageText: string, chatName: string): IMessageInfo{
+    createMessageInfoObject(user: IUser, messageText: string, chatId: number): IMessageInfo{
         return {
             writer: {
               username: user.username,
@@ -12,14 +12,14 @@ export class ChatFactory{
               img: user.img,
             },
             text: messageText,
-            conversation: chatName,
+            conversationId: chatId,
           };
     }
 
-    createConversation(data:{name:string, img: string, level:number}): IConversation{
+    createConversation(data:{name:string, img: string, level:number}): IConversationWithoutId{
         return {
             name: data.name,
-            messages: [],
+            lastMessage: undefined,
             img: data.img,
             level: data.level,
             likes: 0

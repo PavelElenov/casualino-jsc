@@ -7,7 +7,7 @@
         <div class="message-info">
             <span class="user-username">{{message.writer.username}}</span>
             <p>{{message.text}}</p>
-            <i class="fa-solid fa-xmark" id="deleteChat" *ngIf="message.writer.username == user.username" (click)="deleteMessage(message.text)"></i>
+            <i class="fa-solid fa-xmark" id="deleteChat" *ngIf="message.writer.username == user.username" (click)="deleteMessage(message.id)"></i>
         </div>
         <p class="time">{{time}}</p>
     </div>

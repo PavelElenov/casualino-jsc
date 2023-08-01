@@ -6,9 +6,9 @@ export const addMessage = createAction(
   props<{ message: IMessage }>()
 );
 
-export const setMessages = createAction(
-  "Set messages",
-  props<{ messages: IMessage[] }>()
+export const setLastMessages = createAction(
+  "Set last messages",
+  props<{ lastMessages: IMessage[] }>()
 );
 
 export const setChats = createAction(
@@ -28,12 +28,12 @@ export const setUser = createAction(
 
 export const deleteChat = createAction(
   "Delete Chat",
-  props<{name: string}>()
+  props<{id: number}>()
 );
 
 export const deleteMessage = createAction(
   "Delete Message",
-  props<{messageText: string}>()
+  props<{messageId: number}>()
 );
 
 export const addChat = createAction(
