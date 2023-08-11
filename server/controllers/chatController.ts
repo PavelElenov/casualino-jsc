@@ -10,34 +10,32 @@ router.get("/", (req, res) => {
 
 router.get("/:id", (req, res) => {
   try {
-    const conversation:IConversation | Error = getConversationById(parseInt(req.params.id));
-    res.status(200).json(conversation);
+    const conversation:IConversation | Error = getConversationById(req.params.id);
+    res.status(200).json(conversation); 
   } catch (error: any) {
     res.status(404);
     res.json(error.message);
   }
 });
 
-router.get("/:id/lastMessages", (req, res) => {
-  const lastMessages: IMessage[] | null = getLastMessagesOfConversation(parseInt(req.params.id));
-
-  if(lastMessages){
-    res.status(200).json(lastMessages);
-  }else{
-    res.status(204).json();
-  }
+router.get("/:conversationId/lastMessages", (req, res) => {
+  const {conversationId} = req.params;
+  const lastMessageId: string = req.query.lastMessageId as string;
+  const lastMessages: IMessage[] = getLastMessagesOfConversation(conversationId, lastMessageId);
   
+  res.status(200).json(lastMessages);
 })
 
 router.delete("/:id", (req, res) => {
-  const conversationId = parseInt(req.params.id);
+  const conversationId = req.params.id;
   deleteChatById(conversationId);
   res.status(204).json();
 });
 
 router.delete("/:conversationId/messages/:messageId", (req, res) => {
   const {conversationId, messageId} = req.params;
-  deleteMessage(parseInt(conversationId), parseInt(messageId));
+  
+  deleteMessage(conversationId, messageId);
   res.status(204).json();
 });
 

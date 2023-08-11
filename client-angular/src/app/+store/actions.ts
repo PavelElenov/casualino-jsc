@@ -28,12 +28,12 @@ export const setUser = createAction(
 
 export const deleteChat = createAction(
   "Delete Chat",
-  props<{id: number}>()
+  props<{id: string}>()
 );
 
 export const deleteMessage = createAction(
   "Delete Message",
-  props<{messageId: number}>()
+  props<{messageId: string}>()
 );
 
 export const addChat = createAction(

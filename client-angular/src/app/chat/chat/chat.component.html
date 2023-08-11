@@ -9,7 +9,7 @@
   <div class="chat-info">
     <span class="user-username">{{ chat.name }}</span>
     <p *ngIf="chat.lastMessage" class="p--chat-last-message">
-      {{ chat.lastMessage}}
+      {{ chat.lastMessage.text}}
     </p>
     <button (click)="addItem()">Add item</button>
     <button (click)="removeLastItem()">Remove last item</button>

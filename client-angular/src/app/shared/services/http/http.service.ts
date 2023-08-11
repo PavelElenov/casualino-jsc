@@ -1,10 +1,6 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Store } from "@ngrx/store";
 import { throwError, Observable, catchError } from "rxjs";
-import { IState } from "src/app/+store";
-import { setError } from "src/app/+store/actions";
-import { IUserData } from "../../interfaces/user";
 import { ErrorService } from "../error/error.service";
 
 interface IHeaders {
@@ -22,7 +18,7 @@ export class HttpService {
 
   constructor(private http: HttpClient, private errorService: ErrorService) {}
 
-  get<T>(url: string, token?: string): Observable<T> {
+  get<T>(url: string, token?: string ): Observable<T> {
     const fetchInit: IHeaders = {
       headers: {},
     };
@@ -32,7 +28,7 @@ export class HttpService {
     }
 
     return this.http
-      .get<T>(`${this.APIURL}${url}`, { headers: fetchInit.headers })
+      .get<T>(`${this.APIURL}${url}`, {headers: fetchInit.headers})
       .pipe(
         catchError((error: HttpErrorResponse) => {
           return throwError(

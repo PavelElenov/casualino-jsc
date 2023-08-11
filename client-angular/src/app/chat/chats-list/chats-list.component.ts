@@ -77,7 +77,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.chatService.listenForMessages();
   }
 
-  trackByConversation(index: number, item: IConversation): number {
+  trackByConversation(index: number, item: IConversation): string {
     return item.id;
   }
 

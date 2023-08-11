@@ -1,10 +1,11 @@
-<section #currentChat class="current-chat" id="current-chat">
+<section #currentChat [ngClass]="isOpen ? 'open' : ''" class="current-chat" id="current-chat">
   <i class="fa-solid fa-xmark" (click)="emitCloseCurrentChat()"></i>
-  <section #messagesContainer class="messages" id="messages" (scroll)="scrolling()" >
-    <ng-container *ngIf="lastMessages">
+  <section #messagesContainer  class="messages" id="messages" (scroll)="scrolling()" >
+    <ng-container *ngIf="allMessages">
       <app-message
-        *ngFor="let message of lastMessages"
+        *ngFor="let message of allMessages"
         [message]="message"
+        [id]="message.id"
       ></app-message>
     </ng-container>
     <div class="div--new-message" *ngIf="newMessages" (click)="readAllNewMessages()">

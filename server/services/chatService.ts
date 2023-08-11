@@ -8,6 +8,7 @@ import {
 import { IUserSomeInfo } from "../../shared/interfaces/user";
 import { getCurrentTimeInMinutes } from "./timeService";
 import { getUserByUsername } from "./userService";
+import { v4 as uuid } from "uuid";
 
 interface IConversationAndLastMessagesCount {
   conversationId: number;
@@ -16,102 +17,101 @@ interface IConversationAndLastMessagesCount {
 
 let conversations: IConversation[] = [
   {
-    id: 1,
+    id: "1",
     name: "1",
     img: "https://i.pinimg.com/736x/f5/35/1b/f5351b460de396c8dfa2c9937f1f211c.jpg",
     level: 20,
     likes: 0,
   },
   {
-    id: 2,
+    id: "2",
     name: "2",
     img: "https://img.playbuzz.com/image/upload/ar_1.5,c_pad,f_jpg,b_auto/q_auto:good,f_auto,fl_lossy,w_480,c_limit,dpr_1/cdn/132af0ca-7be7-4cd8-84e3-9ad41df5c6a7/61791061-eb65-4342-a5f4-af1ae165edef_560_420.jpg",
     level: 30,
     likes: 0,
   },
   {
-    id: 3,
+    id: "3",
     name: "3",
     img: "https://png.pngtree.com/background/20230519/original/pngtree-three-smiling-faces-in-sunglasses-on-a-dark-background-picture-image_2657621.jpg",
     level: 40,
     likes: 0,
   },
   {
-    id: 4,
+    id: "4",
     name: "4",
     img: "https://cdn-icons-png.flaticon.com/512/6540/6540753.png",
     level: 50,
     likes: 0,
   },
 ];
+const messages: IMessage[] = []
+for(let i = 0; i < 30; i++){
+    messages.push({ id: uuid(),
+      writer: {
+          username: "Pavel",
+          level: 10,
+          img: "",
+      },
+      text: i.toString(),
+      time: Date.now() + i } )
+}
 
 let allMessagesInfo: IMessages[] = [
   {
-    conversationId: 1,
+    conversationId: "1",
+    messages: messages,
+  },
+  {
+    conversationId: "2",
     messages: [],
   },
   {
-    conversationId: 2,
+    conversationId: "3",
     messages: [],
   },
   {
-    conversationId: 3,
-    messages: [],
-  },
-  {
-    conversationId: 4,
+    conversationId: "4",
     messages: [],
   },
 ];
 
+console.log(allMessagesInfo);
+
+
 export function getLastMessagesOfConversation(
-  conversationId: number
-): IMessage[] | null {
-  let conversationsAndLastMessagesCount: IConversationAndLastMessagesCount[] =
-    [];
+  conversationId: string,
+  lastMessageId: string | undefined
+): IMessage[]{
+  const messasgesPerPage = 6;
+  let startIndex: number;
 
-  const messagesPerPage = 6;
-
-  let messagesInfo: IMessages = allMessagesInfo.find(
+  const currentConversationMessages: IMessage[] = allMessagesInfo.find(
     (data) => data.conversationId === conversationId
-  )!;
-
-  let conversation: IConversationAndLastMessagesCount | undefined =
-    conversationsAndLastMessagesCount.find(
-      (data) => data.conversationId == conversationId
+  )!.messages;
+   
+  if (!lastMessageId) {
+    startIndex = currentConversationMessages.length - messasgesPerPage;
+  }else{
+    const lastMessage: IMessage = currentConversationMessages.find(
+      (m) => m.id === lastMessageId
     )!;
-
-  if (!conversation) {
-    conversation = { conversationId, lastMessagesCount: 0 };
-    conversationsAndLastMessagesCount.push(conversation);
+    startIndex =
+      currentConversationMessages.indexOf(lastMessage) - messasgesPerPage; //This start index can be negative number
   }
 
-  const startIndex: number =
-    messagesInfo.messages.length -
-    messagesPerPage -
-    conversation.lastMessagesCount;
-
-  conversation.lastMessagesCount +=
-    startIndex > 0 ? messagesPerPage : messagesInfo.messages.length;
-
-  const lastMessages: IMessage[] | null =
-    messagesInfo.messages.length > 0
-      ? messagesInfo.messages.slice(
-          Math.max(0, startIndex),
-          messagesInfo.messages.length
-        )
-      : null;
-
-  return lastMessages;
+  if(currentConversationMessages.length > 0){
+    const lastMessages = currentConversationMessages.slice(
+      Math.max(0, startIndex),
+      currentConversationMessages.length
+    );
+    return lastMessages;
+  } 
+  return [];
+  
 }
-function getIdOfConversation(): number {
-  let lastId = 4;
-  return lastId++;
-}
-
-function setMessageId() {
-  let lastMessageId = 0;
-  return lastMessageId++;
+export function returnUniqueId(): string {
+  return uuid();
 }
 export function addLike(conversationName: string): void {
   const conversation: IConversation = conversations.find(
@@ -123,15 +123,15 @@ export function addLike(conversationName: string): void {
 export const createNewConversation = (
   newChat: IConversationWithoutId
 ): IConversation => {
-  const conversation = { ...newChat, id: getIdOfConversation() };
+  const conversation = { ...newChat, id: returnUniqueId() };
   conversations.push(conversation);
   allMessagesInfo.push({ conversationId: conversation.id, messages: [] });
   return conversation;
 };
 
 export const deleteMessage = (
-  conversationId: number,
-  messageId: number
+  conversationId: string,
+  messageId: string
 ): void => {
   const messagesInfo: IMessages = allMessagesInfo.find(
     (data) => data.conversationId === conversationId
@@ -142,7 +142,7 @@ export const deleteMessage = (
   const messageIndex: number = messagesInfo.messages.indexOf(message);
   messagesInfo.messages.splice(messageIndex, 1);
 };
-export const deleteChatById = (conversationId: number): void => {
+export const deleteChatById = (conversationId: string): void => {
   const conversation: IConversation = conversations.find(
     (c) => c.id === conversationId
   )!;
@@ -164,12 +164,8 @@ export const getAllChats = (): IConversationMoreInfo[] => {
 export const addMessage = (
   writerUsername: string,
   text: string,
-  conversationId: number
+  conversationId: string
 ): IMessage => {
-  console.log(conversationId);
-  console.log("Hi");
-  
-
   const messagesInfo: IMessages = allMessagesInfo.find(
     (data) => data.conversationId == conversationId
   )!;
@@ -177,7 +173,7 @@ export const addMessage = (
   const writer: IUserSomeInfo = getUserByUsername(writerUsername);
 
   const message: IMessage = {
-    id: setMessageId(),
+    id: returnUniqueId(),
     writer: writer,
     text,
     time: getCurrentTimeInMinutes(),
@@ -187,7 +183,7 @@ export const addMessage = (
 };
 
 export const getConversationById = (
-  conversationId: number
+  conversationId: string
 ): IConversation | Error => {
   const conversation: IConversation | undefined = conversations.find(
     (c) => c.id === conversationId

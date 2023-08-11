@@ -77,9 +77,7 @@ export class ChatComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions$.map((s) => s.unsubscribe());
   }
-  ngOnInit() {
-    console.log(this.chat);
-    
+  ngOnInit() {    
     if (this.chat.lastMessage) {
       const lastMessageTime: number =
         this.chat.lastMessage.time;
@@ -119,11 +117,11 @@ export class ChatComponent implements OnDestroy {
     // }
   }
 
-  getCurrentChat(chatId: number) {
+  getCurrentChat(chatId: string) {
     this.currentChatEvent.emit(this.chatService.getChatById(chatId));
   }
 
-  deleteChat(chatId: number) {
+  deleteChat(chatId: string) {
     this.chatService.deleteChat(chatId);
   }
 }

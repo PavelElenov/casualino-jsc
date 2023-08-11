@@ -4,7 +4,7 @@ import { IUser } from "../interfaces/user";
 
 @Injectable()
 export class ChatFactory{
-    createMessageInfoObject(user: IUser, messageText: string, chatId: number): IMessageInfo{
+    createMessageInfoObject(user: IUser, messageText: string, chatId: string): IMessageInfo{
         return {
             writer: {
               username: user.username,

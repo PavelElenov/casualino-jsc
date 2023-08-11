@@ -8,7 +8,7 @@ import {
   IMessage,
   IMessageInfo,
 } from '../shared/interfaces/message';
-import { Observable, Subscription } from 'rxjs';
+import { map, Observable, of, Subscription, switchMap, tap } from 'rxjs';
 import { SocketService } from '../shared/services/socket/socket.service';
 import {
   selectCurrentChat,
@@ -81,18 +81,24 @@ export class ChatService implements OnDestroy {
       });
     this.subscriptions$.push(likeSubscription);
   }
+
+  getLastMessages(
+    conversationId: string,
+    lastMessageId?: string
+  ): Observable<any> {
+    const url = lastMessageId
+      ? `/conversations/${conversationId}/lastMessages?lastMessageId=${lastMessageId}`
+      : `/conversations/${conversationId}/lastMessages`;
+
+    return new Observable(subscriber => this.httpService
+      .get<IMessage[]>(url, this.storage.getToken('auth-token')!)
+      .subscribe((lastMessages: IMessage[]) => {  
+        this.store.dispatch(setLastMessages({ lastMessages }));
+        subscriber.next(lastMessages);
+      }));
+  }
   setCurrentChat(chat: IConversation) {
     this.store.dispatch(setCurrentChat({ currentChat: chat }));
-
-    const getLastMessagesSubscription = this.httpService
-      .get<IMessage[]>(`/conversations/${chat.id}/lastMessages`, this.storage.getToken("auth-token")!)
-      .subscribe((lastMessages: IMessage[]) => {
-        console.log(lastMessages);
-
-        this.store.dispatch(setLastMessages({ lastMessages }));
-      });
-
-    this.subscriptions$.push(getLastMessagesSubscription);
   }
   getAllChats() {
     const getAllChatsSubscription = this.httpService
@@ -111,13 +117,13 @@ export class ChatService implements OnDestroy {
       });
     this.subscriptions$.push(getAllChatsSubscription);
   }
-  getChatById(chatId: number): Observable<IConversation> {
+  getChatById(chatId: string): Observable<IConversation> {
     return this.httpService.get<IConversation>(
       `/conversations/${chatId}`,
       this.storage.getToken('auth-token')!
     );
   }
-  deleteChat(id: number) {
+  deleteChat(id: string) {
     const deleteChatSubscription = this.httpService
       .delete(`/conversations/${id}`, this.storage.getToken('auth-token')!)
       .subscribe({
@@ -131,7 +137,9 @@ export class ChatService implements OnDestroy {
       });
     this.subscriptions$.push(deleteChatSubscription);
   }
-  deleteMessage(currentChatId: number, messageId: number) {
+  deleteMessage(currentChatId: string, messageId: string) {
+    console.log(currentChatId, messageId);
+
     const deleteMessageSubscription = this.httpService
       .delete(
         `/conversations/${currentChatId}/messages/${messageId}`,
@@ -163,8 +171,11 @@ export class ChatService implements OnDestroy {
           if (data.conversationId === currentChat?.id) {
             this.store.dispatch(addMessage({ message: data.message }));
 
-            if (data.writer.username !== this.user.username) {
-              this.messages.length > 4 && this.store.dispatch(addNewMessage());
+            if (
+              data.writer.username !== this.user.username &&
+              this.messages.length > 4
+            ) {
+              this.store.dispatch(addNewMessage());
             }
           }
         });

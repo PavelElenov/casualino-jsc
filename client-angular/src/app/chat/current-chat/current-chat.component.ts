@@ -45,9 +45,10 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   subscriptions$: Subscription[] = [];
   user!: IUser;
   newMessages!: number;
-  lastMessages: IMessage[] = [];
-  topMessageOfLastMessages: HTMLElement | undefined;
+  lastMessageElement: HTMLElement | undefined;
+  lastMessage: IMessage | undefined;
   lastScrollTop!: number;
+  isOpen: boolean = false;
 
   constructor(
     private store: Store<IState>,
@@ -61,7 +62,14 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const selectCurrentChatSubscription = this.store
       .select(selectCurrentChat)
       .subscribe((currentChat) => {
-        this.currentChat = currentChat!;
+        if (currentChat) {
+          this.currentChat = currentChat!;
+          this.chatService
+            .getLastMessages(this.currentChat.id)
+            .subscribe(
+              (lastMessages) => (this.lastMessage = lastMessages[0])
+            );
+        }
       });
 
     const selectUserSubscription = this.store
@@ -72,51 +80,43 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .select(selectNewMessages)
       .subscribe((newMessages) => (this.newMessages = newMessages));
 
-    const selectMessagesSubscription = this.store
-      .select(selectMessages)
-      .subscribe((messages) => {
-        if (
-          this.allMessages.length > 0 &&
-          messages[messages.length - 1].writer.username == this.user.username
-        ) {
-          requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
-        }
-        this.allMessages = messages;
-        
-        this.changeDetection.detectChanges();
-      });
-
     this.subscriptions$.push(selectCurrentChatSubscription);
     this.subscriptions$.push(selectUserSubscription);
     this.subscriptions$.push(selectNewMessagesSubscription);
-    this.subscriptions$.push(selectMessagesSubscription);
   }
   ngAfterViewInit(): void {
-    this.topMessageOfLastMessages =
-      this.messagesContainer.nativeElement.children[0];
+    this.isOpen = true;
 
-    this.messagesContainer.nativeElement.classList.add('open');
+    const selectMessagesSubscription = this.store
+      .select(selectMessages)
+      .subscribe((messages) => {
+        if (this.allMessages.length == 0) {
+          requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
+        }
 
-    this.goToTheBottomOfTheMessages();
+        this.allMessages = messages;
+
+        this.changeDetection.detectChanges();
+      });
+    this.subscriptions$.push(selectMessagesSubscription);
   }
 
-  setLastMessages() {}
-
   trackByMessage(index: number, item: IMessage): string {
-    return item.text;
+    return item.id;
   }
 
   submitMessage(form: NgForm) {
     const { message } = form.value;
     form.reset();
     this.chatService.submitMessage(message);
+    requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
+    // doesn't work
   }
 
   goToTheBottomOfTheMessages(): void {
     this.messagesContainer.nativeElement.scrollTop =
       this.messagesContainer.nativeElement.scrollHeight;
 
-    this.messagesContainer.nativeElement.style.scrollBehavior = 'smooth';
     this.lastScrollTop = this.messagesContainer.nativeElement.scrollTop;
   }
 
@@ -137,11 +137,24 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   checkForTopMessageIsVisible() {
-    if (this.topMessageOfLastMessages) {
-      if (this.elementIsVisible(this.topMessageOfLastMessages)) {
-        this.setLastMessages();
-      }
+    if (
+      this.lastMessage &&
+      this.messagesContainer.nativeElement.scrollTop === 0
+    ) {
+      this.getLastMessages();
     }
+  }
+
+  getLastMessages() {
+    const getLastMessagesSubscription: Subscription = this.chatService
+      .getLastMessages(this.currentChat.id, this.lastMessage?.id)
+      .subscribe((lastMessages) => {
+        const lastMessageElement: HTMLElement = document.getElementById(this.lastMessage!.id)!;
+        this.messagesContainer.nativeElement.scrollTop = lastMessageElement.offsetTop - 30;
+        this.lastMessage = lastMessages[0];
+      });
+
+    this.subscriptions$.push(getLastMessagesSubscription);
   }
 
   checkForNewMessages() {
@@ -180,9 +193,6 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       'animationend',
       () => {
         this.currentChatContainer.nativeElement.classList.remove('close');
-        this.currentChatContainer.nativeElement.style.removeProperty(
-          'scroll-behaviour'
-        );
         this.closeCurrentChatEmitter.emit();
       },
       { once: true }

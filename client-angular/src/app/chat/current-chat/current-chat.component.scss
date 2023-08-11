@@ -11,6 +11,7 @@
 }
 
 .current-chat.open{
+  scroll-behavior: smooth;
   animation: open 500ms forwards;
 }
 
@@ -87,3 +88,4 @@
   bottom:10%;
   text-align: center;
 }
+

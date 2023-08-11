@@ -6,12 +6,11 @@ var express_1 = require("express");
 exports.router = (0, express_1.Router)();
 exports.router.get("/", function (req, res) {
     var chats = (0, chatService_1.getAllChats)();
-    console.log(chats);
     res.json(chats);
 });
 exports.router.get("/:id", function (req, res) {
     try {
-        var conversation = (0, chatService_1.getConversationById)(parseInt(req.params.id));
+        var conversation = (0, chatService_1.getConversationById)(req.params.id);
         res.status(200).json(conversation);
     }
     catch (error) {
@@ -19,23 +18,20 @@ exports.router.get("/:id", function (req, res) {
         res.json(error.message);
     }
 });
-exports.router.get("/:id/lastMessages", function (req, res) {
-    var lastMessages = (0, chatService_1.getLastMessagesOfConversation)(parseInt(req.params.id));
-    if (lastMessages) {
-        res.status(200).json(lastMessages);
-    }
-    else {
-        res.status(204).json();
-    }
+exports.router.get("/:conversationId/lastMessages", function (req, res) {
+    var conversationId = req.params.conversationId;
+    var lastMessageId = req.query.lastMessageId;
+    var lastMessages = (0, chatService_1.getLastMessagesOfConversation)(conversationId, lastMessageId);
+    res.status(200).json(lastMessages);
 });
 exports.router.delete("/:id", function (req, res) {
-    var conversationId = parseInt(req.params.id);
+    var conversationId = req.params.id;
     (0, chatService_1.deleteChatById)(conversationId);
     res.status(204).json();
 });
 exports.router.delete("/:conversationId/messages/:messageId", function (req, res) {
     var _a = req.params, conversationId = _a.conversationId, messageId = _a.messageId;
-    (0, chatService_1.deleteMessage)(parseInt(conversationId), parseInt(messageId));
+    (0, chatService_1.deleteMessage)(conversationId, messageId);
     res.status(204).json();
 });
 exports.router.post("/", function (req, res) {
