@@ -6,7 +6,7 @@ export const addMessage = createAction(
   props<{ message: IMessage }>()
 );
 
-export const setLastMessages = createAction(
+export const addLastMessages = createAction(
   "Set last messages",
   props<{ lastMessages: IMessage[] }>()
 );
@@ -77,6 +77,16 @@ export const clearMessages = createAction(
 export const likeChat = createAction(
   "Like chat",
   props<{chat: IConversation}>()
+);
+
+export const replaceMessageById = createAction(
+  "Replace message",
+  props<{messageId: string, message: IMessage}>()
+);
+
+export const setMessagesPerPage = createAction(
+  "Set messages per page",
+  props<{messagesPerPage: number}>()
 )
 
 

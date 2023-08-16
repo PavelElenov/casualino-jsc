@@ -1,28 +1,54 @@
-import { Injectable } from "@angular/core";
-import { IConversation, IConversationWithoutId, IMessageInfo } from "../interfaces/message";
-import { IUser } from "../interfaces/user";
+import { Injectable } from '@angular/core';
+import { IConversation, IMessage, IMessageInfo } from '../interfaces/message';
+import { IUser } from '../interfaces/user';
+import { TimeService } from '../services/time/time.service';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
-export class ChatFactory{
-    createMessageInfoObject(user: IUser, messageText: string, chatId: string): IMessageInfo{
-        return {
-            writer: {
-              username: user.username,
-              level: user.level,
-              img: user.img,
-            },
-            text: messageText,
-            conversationId: chatId,
-          };
-    }
+export class ChatFactory {
+  constructor(private timeService: TimeService) {}
+  createMessageInfoObject(
+    user: IUser,
+    messageText: string,
+    chatId: string
+  ): IMessageInfo {
+    return {
+      id: uuid(),
+      writer: {
+        username: user.username,
+        level: user.level,
+        img: user.img,
+      },
+      text: messageText,
+      time: this.timeService.getCurrentTimeInMinutes(),
+      conversationId: chatId,
+    };
+  }
 
-    createConversation(data:{name:string, img: string, level:number}): IConversationWithoutId{
-        return {
-            name: data.name,
-            lastMessage: undefined,
-            img: data.img,
-            level: data.level,
-            likes: 0
-          };
-    }
+  createMessage(user: IUser, messageText: string): IMessage {
+    return {
+      id: uuid(),
+      writer: {
+        username: user.username,
+        level: user.level,
+        img: user.img,
+      },
+      text: messageText,
+      time: this.timeService.getCurrentTimeInMinutes(),
+    };
+  }
+
+  createConversation(data: {
+    name: string;
+    img: string;
+    level: number;
+  }): IConversation {
+    return {
+      name: data.name,
+      lastMessage: undefined,
+      img: data.img,
+      level: data.level,
+      likes: 0,
+    };
+  }
 }

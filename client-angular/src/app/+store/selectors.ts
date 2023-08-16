@@ -42,4 +42,11 @@ export const selectLikesOfChat = (chatName: string) => createSelector(
         const chat = state.chats.find(c => c.name == chatName);
         return chat?.likes;
     }
+);
+
+export const selectMessagesPerPage = createSelector(
+    currentChatSelector,
+    state => {
+        return state.messagesPerPage
+    }
 )

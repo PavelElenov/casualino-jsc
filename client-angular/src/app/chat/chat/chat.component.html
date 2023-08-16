@@ -33,8 +33,8 @@
     <!-- </app-drop-down>  -->
   </div>
   <div class="more-features">
-    <i class="fa-solid fa-greater-than" (click)="getCurrentChat(chat.id)"></i>
+    <i class="fa-solid fa-greater-than" (click)="getCurrentChat(chat.id!)"></i>
     <p *ngIf="time">{{ time }}</p>
   </div>
-  <i class="fa-solid fa-xmark" (click)="deleteChat(chat.id)"></i>
+  <i class="fa-solid fa-xmark" (click)="deleteChat(chat.id!)"></i>
 </div>

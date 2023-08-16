@@ -12,11 +12,12 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { IState } from 'src/app/+store';
 import {
   selectCurrentChat,
   selectMessages,
+  selectMessagesPerPage,
   selectNewMessages,
   selectUser,
 } from 'src/app/+store/selectors';
@@ -27,6 +28,7 @@ import {
   clearNewMessages,
   substractOneNewMessage,
 } from 'src/app/+store/actions';
+import { ChatFactory } from 'src/app/shared/factories/chatFactory';
 
 @Component({
   selector: 'app-current-chat',
@@ -39,16 +41,21 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('currentChat', { static: false })
   currentChatContainer!: ElementRef;
   @ViewChild('messagesContainer', { static: false })
-  messagesContainer!: ElementRef;
+  messagesContainerRef!: ElementRef;
+  messagesContainer!: HTMLElement;
   allMessages: IMessage[] = [];
   currentChat!: IConversation;
   subscriptions$: Subscription[] = [];
   user!: IUser;
   newMessages!: number;
-  lastMessageElement: HTMLElement | undefined;
   lastMessage: IMessage | undefined;
   lastScrollTop!: number;
-  isOpen: boolean = false;
+  currentChatState: string = '';
+  messageError: string | undefined = undefined;
+  sendingMessage!: IMessage;
+  animatingScroll: boolean = false;
+  waitingForNewLastMessages: boolean = false;
+  messagesPerPage!: number;
 
   constructor(
     private store: Store<IState>,
@@ -64,11 +71,14 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .subscribe((currentChat) => {
         if (currentChat) {
           this.currentChat = currentChat!;
-          this.chatService
-            .getLastMessages(this.currentChat.id)
-            .subscribe(
-              (lastMessages) => (this.lastMessage = lastMessages[0])
-            );
+          console.log("get last messages");
+          
+          const lastMessagesSubscription = this.chatService
+            .getLastMessages(this.currentChat.id!)
+            .subscribe(({lastMessages}) => {
+              this.lastMessage = lastMessages[0];
+            });
+          this.subscriptions$.push(lastMessagesSubscription);
         }
       });
 
@@ -78,21 +88,32 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const selectNewMessagesSubscription = this.store
       .select(selectNewMessages)
-      .subscribe((newMessages) => (this.newMessages = newMessages));
+      .subscribe((newMessages) => {
+        this.newMessages = newMessages;
+        this.changeDetection.detectChanges();
+      });
+
+    const selectMessagesPerPageSubscription = this.store
+      .select(selectMessagesPerPage)
+      .subscribe((messagesPerPage) => {
+        this.messagesPerPage = messagesPerPage!;
+      });
 
     this.subscriptions$.push(selectCurrentChatSubscription);
     this.subscriptions$.push(selectUserSubscription);
     this.subscriptions$.push(selectNewMessagesSubscription);
+    this.subscriptions$.push(selectMessagesPerPageSubscription);
   }
   ngAfterViewInit(): void {
-    this.isOpen = true;
+    this.currentChatState = 'open';
+    requestAnimationFrame(() => (this.animatingScroll = true));
+    this.messagesContainer = this.messagesContainerRef.nativeElement;
 
     const selectMessagesSubscription = this.store
       .select(selectMessages)
       .subscribe((messages) => {
-        if (this.allMessages.length == 0) {
-          requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
-        }
+        messages.length > 0 &&
+          this.scrollToBottomOfMessageContainerOrAddNewMessage(messages);
 
         this.allMessages = messages;
 
@@ -101,32 +122,98 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscriptions$.push(selectMessagesSubscription);
   }
 
+  scrollToBottomOfMessageContainerOrAddNewMessage(messages: IMessage[]) {
+    if (
+      this.allMessages.length === 0 ||
+      this.isClientAtTheBottomOfElement(this.messagesContainer)
+    ) {
+      // first time when current chat is open or when the client is at the bottom of current chat
+
+      this.scrollTo(
+        this.messagesContainer,
+        this.messagesContainer.scrollHeight
+      );
+    } else {
+      if (
+        messages[messages.length - 1] !==
+        this.allMessages[this.allMessages.length - 1]
+      ) {
+        // if have new message
+        if (
+          !this.isTheWriterOfTheMessageCurrentUser(
+            messages[messages.length - 1]
+          )
+        ) {
+          // if writer of message isn't a current user
+          this.chatService.addNewMessage();
+        } else {
+          this.scrollTo(
+            this.messagesContainer,
+            this.messagesContainer.scrollHeight
+          );
+        }
+      }
+    }
+  }
+
   trackByMessage(index: number, item: IMessage): string {
     return item.id;
   }
 
-  submitMessage(form: NgForm) {
-    const { message } = form.value;
-    form.reset();
-    this.chatService.submitMessage(message);
-    requestAnimationFrame(() => this.goToTheBottomOfTheMessages());
-    // doesn't work
+  isTheWriterOfTheMessageCurrentUser(message: IMessage): boolean {
+    return message.writer.username === this.user.username;
   }
 
-  goToTheBottomOfTheMessages(): void {
-    this.messagesContainer.nativeElement.scrollTop =
-      this.messagesContainer.nativeElement.scrollHeight;
+  isClientAtTheBottomOfElement(element: HTMLElement): boolean {
+    if (element.scrollTop + element.clientHeight === element.scrollHeight) {
+      return true;
+    }
+    return false;
+  }
 
-    this.lastScrollTop = this.messagesContainer.nativeElement.scrollTop;
+  scrollTo(element: HTMLElement, amountPx: number, animated: boolean = false) {
+    if (!animated) {
+      this.animatingScroll = false;
+    }
+    requestAnimationFrame(() => {
+      element.scrollTop = amountPx;
+      this.lastScrollTop = amountPx;
+      this.animatingScroll = true;
+    });
+  }
+
+  submitMessage(form: NgForm) {
+    const { messageText } = form.value;
+    form.reset();
+
+    try {
+      const message: IMessage = this.chatService.createMessage(
+        this.user,
+        messageText
+      );
+
+      this.sendingMessage = message;
+
+      this.chatService.addMessage(message);
+
+      this.chatService.submitMessage(message);
+    } catch (err: any) {
+      this.messageError = err.message;
+    }
+  }
+
+  resendMesssage() {
+    this.messageError = undefined;
+    this.chatService.submitMessage(this.sendingMessage);
   }
 
   readAllNewMessages(): void {
-    this.store.dispatch(clearNewMessages());
-    this.goToTheBottomOfTheMessages();
+    this.chatService.clearNewMessages();
+    this.scrollTo(this.messagesContainer, this.messagesContainer.scrollHeight);
   }
 
   scrolling(): void {
-    const currentScrollTop = this.messagesContainer.nativeElement.scrollTop;
+    const currentScrollTop = this.messagesContainer.scrollTop;
 
     if (currentScrollTop < this.lastScrollTop) {
       this.checkForTopMessageIsVisible();
@@ -137,37 +224,46 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   checkForTopMessageIsVisible() {
-    if (
-      this.lastMessage &&
-      this.messagesContainer.nativeElement.scrollTop === 0
-    ) {
+    if (this.lastMessage && this.messagesContainer.scrollTop === 0) {
       this.getLastMessages();
     }
   }
 
   getLastMessages() {
-    const getLastMessagesSubscription: Subscription = this.chatService
-      .getLastMessages(this.currentChat.id, this.lastMessage?.id)
-      .subscribe((lastMessages) => {
-        const lastMessageElement: HTMLElement = document.getElementById(this.lastMessage!.id)!;
-        this.messagesContainer.nativeElement.scrollTop = lastMessageElement.offsetTop - 30;
-        this.lastMessage = lastMessages[0];
-      });
+    if (!this.waitingForNewLastMessages) {
+      this.waitingForNewLastMessages = true;
+      
+      const getLastMessagesSubscription: Subscription = this.chatService
+        .getLastMessages(this.currentChat.id!, this.lastMessage?.id)
+        .subscribe(({lastMessages}) => {
+          this.waitingForNewLastMessages = false;
 
-    this.subscriptions$.push(getLastMessagesSubscription);
+          if (this.lastMessage) {
+            const lastMessageElement: HTMLElement = document.getElementById(
+              this.lastMessage!.id
+            )!;
+
+            this.scrollTo(
+              this.messagesContainer,
+              lastMessageElement.offsetTop - 30
+            );
+
+            this.lastMessage = lastMessages[0];
+          }
+        });
+
+      this.subscriptions$.push(getLastMessagesSubscription);
+    }
   }
 
   checkForNewMessages() {
     if (this.newMessages > 0) {
-      const element: HTMLElement = this.messagesContainer.nativeElement
-        .childNodes[
-        this.messagesContainer.nativeElement.childNodes.length -
-          this.newMessages -
-          5
+      const element: HTMLElement = this.messagesContainer.children[
+        this.messagesContainer.childNodes.length - this.newMessages
       ] as HTMLElement;
 
       this.elementIsVisible(element) &&
-        this.store.dispatch(substractOneNewMessage());
+        this.chatService.substractOneNewMessage();
     }
   }
 
@@ -175,9 +271,8 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const eleTop = element.offsetTop;
     const eleBottom = eleTop + element.offsetHeight;
 
-    const containerTop = this.messagesContainer.nativeElement.scrollTop;
-    const containerBottom =
-      containerTop + this.messagesContainer.nativeElement.clientHeight;
+    const containerTop = this.messagesContainer.scrollTop;
+    const containerBottom = containerTop + this.messagesContainer.clientHeight;
 
     if (eleTop >= containerTop && eleBottom <= containerBottom) {
       return true;
@@ -186,13 +281,13 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   emitCloseCurrentChat(): void {
-    this.currentChatContainer.nativeElement.classList.remove('open');
-    this.currentChatContainer.nativeElement.classList.add('close');
+    this.currentChatState = 'close';
 
     this.currentChatContainer.nativeElement.addEventListener(
       'animationend',
       () => {
-        this.currentChatContainer.nativeElement.classList.remove('close');
+        this.currentChatState = '';
+        this.chatService.clearCurrentChat();
         this.closeCurrentChatEmitter.emit();
       },
       { once: true }

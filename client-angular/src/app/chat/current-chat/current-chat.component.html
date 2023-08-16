@@ -1,6 +1,6 @@
-<section #currentChat [ngClass]="isOpen ? 'open' : ''" class="current-chat" id="current-chat">
+<section #currentChat [ngClass]="currentChatState" class="current-chat" id="current-chat">
   <i class="fa-solid fa-xmark" (click)="emitCloseCurrentChat()"></i>
-  <section #messagesContainer  class="messages" id="messages" (scroll)="scrolling()" >
+  <section #messagesContainer [ngClass]="animatingScroll ? 'scroll' : ''" class="messages" id="messages" (scroll)="scrolling()" >
     <ng-container *ngIf="allMessages">
       <app-message
         *ngFor="let message of allMessages"
@@ -11,11 +11,14 @@
     <div class="div--new-message" *ngIf="newMessages" (click)="readAllNewMessages()">
       <i class="fa-solid fa-arrow-down"></i>{{newMessages}}
     </div>
+    <div *ngIf="messageError" class="div--error-message">
+      <span class="span--message-error">{{messageError}}</span><button (click)="resendMesssage()">Resend</button>
+    </div>
   </section>
   <form #form="ngForm" class="write-message" (ngSubmit)="submitMessage(form)">
     <input
       type="text"
-      name="message"
+      name="messageText"
       ngModel
       placeholder="Write a new message"
     />

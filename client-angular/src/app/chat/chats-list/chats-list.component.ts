@@ -11,7 +11,6 @@ import { ChatService } from '../chat.service';
 import { Observable, Subscription } from 'rxjs';
 import {
   IConversation,
-  IConversationWithoutId,
 } from 'src/app/shared/interfaces/message';
 import { SocketService } from 'src/app/shared/services/socket/socket.service';
 import { UserService } from 'src/app/shared/services/user/user.service';
@@ -78,10 +77,12 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   }
 
   trackByConversation(index: number, item: IConversation): string {
-    return item.id;
+    return item.id!;
   }
 
   getCurrentChat(chat: Observable<IConversation>) {
+    console.log("get current chat");
+    
     const getCurrentChatSubscription = chat.subscribe((chat) => {
       this.currentChat = chat;
       this.chatService.setCurrentChat(chat);
@@ -91,7 +92,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
     this.subscriptions$.push(getCurrentChatSubscription);
   }
   createNewConversation(): void {
-    const newConversation: IConversationWithoutId = {
+    const newConversation: IConversation = {
       name: this.user.username,
       img: this.user.img,
       level: this.user.level,

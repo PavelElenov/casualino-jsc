@@ -11,8 +11,11 @@
 }
 
 .current-chat.open{
-  scroll-behavior: smooth;
   animation: open 500ms forwards;
+}
+
+.scroll{
+  scroll-behavior: smooth;
 }
 
 @keyframes open{
@@ -20,7 +23,7 @@
     transform: scale(0);
   }
   to{
-    transform: scale(1)
+    transform: scale(1);
   }
 }
 
@@ -87,5 +90,22 @@
   position: sticky;
   bottom:10%;
   text-align: center;
+}
+
+.div--error-message{
+  position: absolute;
+  bottom: 10px;
+
+  .span--message-error{
+    color: red;
+  }
+
+  button{
+    padding: 0.5rem;
+
+    &:hover{
+      transform: scale(1.03);
+    }
+  }
 }
 

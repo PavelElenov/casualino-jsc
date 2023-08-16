@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
-import { IMessageInfo } from '../../interfaces/message';
+import { IFullMessageInfo, IMessageInfo } from '../../interfaces/message';
 import { StorageTokenService } from '../storage/storage-token.service';
 
 @Injectable({
@@ -18,8 +18,8 @@ export class SocketService {
     });
   }
 
-  emitMessage(message: IMessageInfo) {
-    this.socket.emit('message', message);
+  emitMessage(message: IMessageInfo, callback?: (response: any) => void){
+    this.socket.emit('message', message, callback);
   }
 
   on(event: string, listener: (data: any) => void): void {

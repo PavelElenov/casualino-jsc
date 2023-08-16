@@ -1,14 +1,13 @@
-import { ChangeDetectorRef, Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpService } from '../shared/services/http/http.service';
 import { StorageTokenService } from '../shared/services/storage/storage-token.service';
 import {
   IConversation,
-  IConversationWithoutId,
   IFullMessageInfo,
   IMessage,
   IMessageInfo,
 } from '../shared/interfaces/message';
-import { map, Observable, of, Subscription, switchMap, tap } from 'rxjs';
+import { Observable, Subscription,} from 'rxjs';
 import { SocketService } from '../shared/services/socket/socket.service';
 import {
   selectCurrentChat,
@@ -21,18 +20,27 @@ import {
   addChat,
   addMessage,
   addNewMessage,
+  clearCurrentChat,
+  clearNewMessages,
   deleteChat,
   deleteMessage,
   likeChat,
   setChats,
   setCurrentChat,
   setError,
-  setLastMessages,
+  substractOneNewMessage,
+  replaceMessageById,
+  setMessagesPerPage,
+  addLastMessages
 } from '../+store/actions';
 import { IUser } from '../shared/interfaces/user';
 import { ChatFactory } from '../shared/factories/chatFactory';
-import { MessageFactroy } from '../shared/factories/messageFactory';
 import { Router } from '@angular/router';
+
+interface IGetLastMessages{
+  lastMessages: IMessage[],
+  messagesPerPage?: number
+}
 
 @Injectable({
   providedIn: 'root',
@@ -42,13 +50,13 @@ export class ChatService implements OnDestroy {
   user!: IUser;
   messages!: IMessage[];
   currentChat: IConversation | undefined;
+  sendMessagesCount: number = 0;
   constructor(
     private httpService: HttpService,
     private storage: StorageTokenService,
     private socketService: SocketService,
     private store: Store<IState>,
     private chatFactory: ChatFactory,
-    private messageFactory: MessageFactroy,
     private router: Router
   ) {
     const userSubscription = this.store
@@ -82,6 +90,18 @@ export class ChatService implements OnDestroy {
     this.subscriptions$.push(likeSubscription);
   }
 
+  clearNewMessages(){
+    this.store.dispatch(clearNewMessages());
+  }
+
+  clearCurrentChat(){
+    this.store.dispatch(clearCurrentChat())
+  }
+
+  substractOneNewMessage(){
+    this.store.dispatch(substractOneNewMessage());
+  }
+
   getLastMessages(
     conversationId: string,
     lastMessageId?: string
@@ -90,15 +110,21 @@ export class ChatService implements OnDestroy {
       ? `/conversations/${conversationId}/lastMessages?lastMessageId=${lastMessageId}`
       : `/conversations/${conversationId}/lastMessages`;
 
-    return new Observable(subscriber => this.httpService
-      .get<IMessage[]>(url, this.storage.getToken('auth-token')!)
-      .subscribe((lastMessages: IMessage[]) => {  
-        this.store.dispatch(setLastMessages({ lastMessages }));
-        subscriber.next(lastMessages);
-      }));
+    const data$ =  this.httpService
+      .get<IGetLastMessages>(url, this.storage.getToken('auth-token')!);
+    data$.subscribe(({lastMessages, messagesPerPage}) => {  
+      this.store.dispatch(addLastMessages({ lastMessages }));
+      messagesPerPage && this.store.dispatch(setMessagesPerPage({messagesPerPage}))
+    });
+
+    return data$;     
   }
   setCurrentChat(chat: IConversation) {
     this.store.dispatch(setCurrentChat({ currentChat: chat }));
+  }
+
+  addNewMessage(){
+    this.store.dispatch(addNewMessage());
   }
   getAllChats() {
     const getAllChatsSubscription = this.httpService
@@ -138,8 +164,6 @@ export class ChatService implements OnDestroy {
     this.subscriptions$.push(deleteChatSubscription);
   }
   deleteMessage(currentChatId: string, messageId: string) {
-    console.log(currentChatId, messageId);
-
     const deleteMessageSubscription = this.httpService
       .delete(
         `/conversations/${currentChatId}/messages/${messageId}`,
@@ -156,7 +180,7 @@ export class ChatService implements OnDestroy {
       });
     this.subscriptions$.push(deleteMessageSubscription);
   }
-  addChat(chat: IConversationWithoutId): Observable<IConversation> {
+  addChat(chat: IConversation): Observable<IConversation> {
     return this.httpService.post<IConversation>(
       '/conversations',
       { chat },
@@ -165,35 +189,41 @@ export class ChatService implements OnDestroy {
   }
   listenForMessages(): void {
     this.socketService.on('message', (data: IFullMessageInfo) => {
-      const currentChatSubscription = this.store
-        .select(selectCurrentChat)
-        .subscribe(async (currentChat) => {
-          if (data.conversationId === currentChat?.id) {
-            this.store.dispatch(addMessage({ message: data.message }));
-
-            if (
-              data.writer.username !== this.user.username &&
-              this.messages.length > 4
-            ) {
-              this.store.dispatch(addNewMessage());
-            }
-          }
-        });
-
-      this.subscriptions$.push(currentChatSubscription);
+      if (data.conversationId === this.currentChat?.id && data.message.writer.username !== this.user.username) {
+        this.addMessage(data.message);
+      }      
     });
   }
-  async submitMessage(message: string): Promise<void> {
-    const messageInfo: IMessageInfo = this.chatFactory.createMessageInfoObject(
-      this.user,
-      message,
-      this.currentChat!.id
-    );
 
-    this.socketService.emitMessage(messageInfo);
+  addMessage(message: IMessage){
+    this.store.dispatch(addMessage({message}));
   }
 
-  addNewConversation(chat: IConversationWithoutId): void {
+  createMessage(user: IUser, messageText: string): IMessage{
+    const message:IMessage = this.chatFactory.createMessage(
+      user,
+      messageText
+    );
+
+    return message
+  }
+
+  submitMessage(message: IMessage): void{
+    this.sendMessagesCount += 1;
+
+    if (this.sendMessagesCount % 2 === 0) {
+      throw new Error("Your message doesn't send please try again!");
+    }
+    const messageInfo: IMessageInfo = {...message, conversationId: this.currentChat!.id!};
+
+    this.socketService.emitMessage(messageInfo, (response: any) => this.replaceMessage(response.message, messageInfo.id));
+  }
+
+  replaceMessage(message: IMessage, messageId: string){
+    this.store.dispatch(replaceMessageById({messageId, message}));
+  }
+
+  addNewConversation(chat: IConversation): void {
     const addChatSubscription = this.addChat(chat)!.subscribe(
       (conversation) => {
         this.store.dispatch(setCurrentChat({ currentChat: conversation }));

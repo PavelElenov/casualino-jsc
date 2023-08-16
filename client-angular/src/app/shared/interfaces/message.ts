@@ -9,33 +9,20 @@ export type IMessage = {
     time: number
 }
 
-export interface IConversationWithoutId{
+export interface IConversation{
+    id?:string,
     name: string,
     lastMessage?: IMessage | undefined,
     img: string,
     level: number;
     likes:number;
 }
-export interface IConversation extends IConversationWithoutId{
-    id: string,
-}
 
-export type IMessageInfo = {
-    writer: {
-        username: string,
-        level: number,
-        img: string,
-    },
-    text:string,
+export interface IMessageInfo extends IMessage{
     conversationId: string;
 }
 
 export interface IFullMessageInfo{
-    writer: {
-        username: string,
-        level: number,
-        img: string,
-    },
     message: IMessage,
     conversationId: string;
     time: number;

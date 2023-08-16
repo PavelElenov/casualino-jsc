@@ -3,6 +3,7 @@ import { IConversation, IMessage } from '../shared/interfaces/message';
 import { IUser } from '../shared/interfaces/user';
 import {
   addChat,
+  addLastMessages,
   addMessage,
   addNewMessage,
   clearChats,
@@ -13,10 +14,11 @@ import {
   deleteChat,
   deleteMessage,
   likeChat,
+  replaceMessageById,
   setChats,
   setCurrentChat,
   setError,
-  setLastMessages,
+  setMessagesPerPage,
   setUser,
   substractOneNewMessage,
 } from './actions';
@@ -29,6 +31,7 @@ export interface ICurrentChat {
   currentChat: IConversation | undefined;
   lastMessages: IMessage[];
   newMessagesCount: number;
+  messagesPerPage: number | undefined;
 }
 
 export interface IUserState {
@@ -47,6 +50,7 @@ const currentChatState: ICurrentChat = {
   currentChat: undefined,
   lastMessages: [],
   newMessagesCount: 0,
+  messagesPerPage: undefined
 };
 
 const userState: IUserState = {
@@ -88,7 +92,7 @@ export const currentChatReducer = createReducer(
     ...state,
     lastMessages: [...state.lastMessages, message],
   })),
-  on(setLastMessages, (state, { lastMessages }) => ({ ...state, lastMessages })),
+  on(addLastMessages, (state, { lastMessages }) => ({ ...state, lastMessages:[...lastMessages, ...state.lastMessages]})),
 
   on(setCurrentChat, (state, { currentChat }) => ({ ...state, currentChat })),
   on(deleteMessage, (state, { messageId }) => ({
@@ -108,8 +112,16 @@ export const currentChatReducer = createReducer(
     currentChat: undefined,
     lastMessages: [],
     newMessagesCount: 0,
+    messagesPerPage: undefined
   })),
-  on(clearMessages, (state) => ({...state, messages: []}))
+  on(clearMessages, (state) => ({...state, messages: []})),
+  on(replaceMessageById, (state, {messageId, message}) => ({...state, lastMessages: state.lastMessages.map(messageInfo => {
+    if(messageInfo.id === messageId){
+      return message;
+    }
+    return messageInfo
+  })})),
+  on(setMessagesPerPage, (state, {messagesPerPage}) => ({...state, messagesPerPage}))
 );
 
 export const userReducer = createReducer(
