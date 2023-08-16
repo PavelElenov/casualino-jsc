@@ -17,9 +17,10 @@ import { UserIsActiveService } from './services/userIsActive/user-is-active.serv
 import { DropDownComponent } from './components/drop-down/drop-down.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { LoaderComponent } from './components/loader/loader.component';
 
 @NgModule({
-  declarations: [PopupComponent, DropDownComponent],
+  declarations: [PopupComponent, DropDownComponent, LoaderComponent],
   imports: [
     CommonModule,
     HttpClientModule,
@@ -41,6 +42,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     PopupService,
     UserIsActiveService,
   ],
-  exports: [DropDownComponent],
+  exports: [DropDownComponent, LoaderComponent],
 })
 export class SharedModule {}

@@ -8,6 +8,9 @@
         [id]="message.id"
       ></app-message>
     </ng-container>
+    <div class="div--loader">
+      <app-loader></app-loader>
+    </div>
     <div class="div--new-message" *ngIf="newMessages" (click)="readAllNewMessages()">
       <i class="fa-solid fa-arrow-down"></i>{{newMessages}}
     </div>
