@@ -4,6 +4,7 @@ exports.router = void 0;
 var chatService_1 = require("../services/chatService");
 var express_1 = require("express");
 exports.router = (0, express_1.Router)();
+var firstTimeRequestingForLastMessages = true;
 exports.router.get("/", function (req, res) {
     var chats = (0, chatService_1.getAllChats)();
     res.json(chats);
@@ -22,7 +23,14 @@ exports.router.get("/:conversationId/lastMessages", function (req, res) {
     var conversationId = req.params.conversationId;
     var lastMessageId = req.query.lastMessageId;
     var lastMessages = (0, chatService_1.getLastMessagesOfConversation)(conversationId, lastMessageId);
-    res.status(200).json(lastMessages);
+    if (firstTimeRequestingForLastMessages) {
+        firstTimeRequestingForLastMessages = false;
+        var messagesPerPage = (0, chatService_1.getMessagesPerPage)();
+        res.status(200).json({ lastMessages: lastMessages, messagesPerPage: messagesPerPage });
+    }
+    else {
+        res.status(200).json({ lastMessages: lastMessages });
+    }
 });
 exports.router.delete("/:id", function (req, res) {
     var conversationId = req.params.id;

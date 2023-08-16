@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = require("express");
+var express = require("express");
 var socket_io_1 = require("socket.io");
-var http_1 = require("http");
-var express_2 = require("./config/express");
+var http = require("http");
+var express_1 = require("./config/express");
 var routes_1 = require("./config/routes");
 var chatService_1 = require("./services/chatService");
 var createJsonToken_1 = require("./utils/createJsonToken");
 var tokenService_1 = require("./services/tokenService");
-var app = (0, express_1)();
-var server = http_1.createServer(app);
+var app = express();
+var server = http.createServer(app);
 var io = new socket_io_1.Server(server);
-(0, express_2.expressConfig)(app);
+(0, express_1.expressConfig)(app);
 (0, routes_1.routesConfig)(app);
 io.use(function (socket, next) {
     if (socket.handshake.query.token) {
@@ -30,9 +30,12 @@ io.use(function (socket, next) {
     }
 }).on("connection", function (socket) {
     console.log("New User");
-    socket.on("message", function (data) {
-        var message = (0, chatService_1.addMessage)(data.writer.username, data.text, data.conversationId);
+    socket.on("message", function (data, callback) {
+        var message = (0, chatService_1.addMessage)(data);
         io.sockets.emit("message", { writer: message.writer, message: message, time: message.time, conversationId: data.conversationId });
+        callback({
+            message: message
+        });
     });
     socket.on("disconnect", function () {
         socket.disconnect();

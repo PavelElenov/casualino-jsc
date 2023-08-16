@@ -11,8 +11,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConversationById = exports.addMessage = exports.getAllChats = exports.deleteChatById = exports.deleteMessage = exports.createNewConversation = exports.addLike = exports.returnUniqueId = exports.getLastMessagesOfConversation = void 0;
-var timeService_1 = require("./timeService");
+exports.getConversationById = exports.addMessage = exports.getAllChats = exports.deleteChatById = exports.deleteMessage = exports.createNewConversation = exports.addLike = exports.returnUniqueId = exports.getLastMessagesOfConversation = exports.getMessagesPerPage = void 0;
 var userService_1 = require("./userService");
 var uuid_1 = require("uuid");
 var conversations = [
@@ -74,21 +73,28 @@ var allMessagesInfo = [
         messages: [],
     },
 ];
-console.log(allMessagesInfo);
+var messagesPerPage = 6;
+function getMessagesPerPage() {
+    return messagesPerPage;
+}
+exports.getMessagesPerPage = getMessagesPerPage;
 function getLastMessagesOfConversation(conversationId, lastMessageId) {
-    var messasgesPerPage = 6;
     var startIndex;
+    var endIndex;
+    var lastMessage = undefined;
     var currentConversationMessages = allMessagesInfo.find(function (data) { return data.conversationId === conversationId; }).messages;
     if (!lastMessageId) {
-        startIndex = currentConversationMessages.length - messasgesPerPage;
+        startIndex = currentConversationMessages.length - messagesPerPage - 1;
+        endIndex = currentConversationMessages.length;
     }
     else {
-        var lastMessage = currentConversationMessages.find(function (m) { return m.id === lastMessageId; });
+        lastMessage = currentConversationMessages.find(function (m) { return m.id === lastMessageId; });
         startIndex =
-            currentConversationMessages.indexOf(lastMessage) - messasgesPerPage; //This start index can be negative number
+            currentConversationMessages.indexOf(lastMessage) - messagesPerPage; //This start index can be negative number
+        endIndex = currentConversationMessages.indexOf(lastMessage);
     }
     if (currentConversationMessages.length > 0) {
-        var lastMessages = currentConversationMessages.slice(Math.max(0, startIndex), currentConversationMessages.length);
+        var lastMessages = currentConversationMessages.slice(Math.max(0, startIndex), endIndex);
         return lastMessages;
     }
     return [];
@@ -132,14 +138,14 @@ var getAllChats = function () {
     return allConversations;
 };
 exports.getAllChats = getAllChats;
-var addMessage = function (writerUsername, text, conversationId) {
-    var messagesInfo = allMessagesInfo.find(function (data) { return data.conversationId == conversationId; });
-    var writer = (0, userService_1.getUserByUsername)(writerUsername);
+var addMessage = function (data) {
+    var messagesInfo = allMessagesInfo.find(function (messageInfo) { return messageInfo.conversationId === data.conversationId; });
+    var writer = (0, userService_1.getUserByUsername)(data.writer.username);
     var message = {
         id: returnUniqueId(),
         writer: writer,
-        text: text,
-        time: (0, timeService_1.getCurrentTimeInMinutes)(),
+        text: data.text,
+        time: data.time,
     };
     messagesInfo.messages.push(message);
     return message;

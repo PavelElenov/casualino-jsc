@@ -4,6 +4,7 @@ import {
   IConversationWithoutId,
   IMessage,
   IMessages,
+  IMessageInfo
 } from "../../shared/interfaces/conversation";
 import { IUserSomeInfo } from "../../shared/interfaces/user";
 import { getCurrentTimeInMinutes } from "./timeService";
@@ -75,35 +76,40 @@ let allMessagesInfo: IMessages[] = [
     messages: [],
   },
 ];
+const messagesPerPage = 6;
 
-console.log(allMessagesInfo);
-
+export function getMessagesPerPage(): number {
+  return messagesPerPage;
+}
 
 export function getLastMessagesOfConversation(
   conversationId: string,
   lastMessageId: string | undefined
 ): IMessage[]{
-  const messasgesPerPage = 6;
   let startIndex: number;
+  let endIndex: number;
+  let lastMessage: IMessage | undefined = undefined;
 
   const currentConversationMessages: IMessage[] = allMessagesInfo.find(
     (data) => data.conversationId === conversationId
   )!.messages;
    
   if (!lastMessageId) {
-    startIndex = currentConversationMessages.length - messasgesPerPage;
+    startIndex = currentConversationMessages.length - messagesPerPage - 1;
+    endIndex = currentConversationMessages.length;
   }else{
-    const lastMessage: IMessage = currentConversationMessages.find(
+    lastMessage = currentConversationMessages.find(
       (m) => m.id === lastMessageId
     )!;
     startIndex =
-      currentConversationMessages.indexOf(lastMessage) - messasgesPerPage; //This start index can be negative number
+      currentConversationMessages.indexOf(lastMessage) - messagesPerPage; //This start index can be negative number
+    endIndex = currentConversationMessages.indexOf(lastMessage);
   }
 
   if(currentConversationMessages.length > 0){
     const lastMessages = currentConversationMessages.slice(
       Math.max(0, startIndex),
-      currentConversationMessages.length
+      endIndex
     );
     return lastMessages;
   } 
@@ -139,6 +145,7 @@ export const deleteMessage = (
   const message: IMessage = messagesInfo.messages.find(
     (m) => m.id === messageId
   )!;
+ 
   const messageIndex: number = messagesInfo.messages.indexOf(message);
   messagesInfo.messages.splice(messageIndex, 1);
 };
@@ -162,21 +169,19 @@ export const getAllChats = (): IConversationMoreInfo[] => {
 };
 
 export const addMessage = (
-  writerUsername: string,
-  text: string,
-  conversationId: string
+  data: IMessageInfo
 ): IMessage => {
   const messagesInfo: IMessages = allMessagesInfo.find(
-    (data) => data.conversationId == conversationId
+    (messageInfo) => messageInfo.conversationId === data.conversationId
   )!;
 
-  const writer: IUserSomeInfo = getUserByUsername(writerUsername);
+  const writer: IUserSomeInfo = getUserByUsername(data.writer.username);
 
   const message: IMessage = {
     id: returnUniqueId(),
     writer: writer,
-    text,
-    time: getCurrentTimeInMinutes(),
+    text: data.text,
+    time: data.time,
   };
   messagesInfo.messages.push(message);
   return message;
