@@ -106,6 +106,8 @@ export class ChatService implements OnDestroy {
     conversationId: string,
     lastMessageId?: string
   ): Observable<any> {
+    console.log("chat service get last messages");
+    
     const url = lastMessageId
       ? `/conversations/${conversationId}/lastMessages?lastMessageId=${lastMessageId}`
       : `/conversations/${conversationId}/lastMessages`;

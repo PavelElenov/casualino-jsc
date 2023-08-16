@@ -81,8 +81,6 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   }
 
   getCurrentChat(chat: Observable<IConversation>) {
-    console.log("get current chat");
-    
     const getCurrentChatSubscription = chat.subscribe((chat) => {
       this.currentChat = chat;
       this.chatService.setCurrentChat(chat);

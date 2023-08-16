@@ -29,23 +29,6 @@ export interface IConversationMoreInfo extends IConversation{
     lastMessage: IMessage | undefined
 }
 
-export type IMessageInfo = {
-    writer: {
-        username: string,
-        level: number,
-        img: string,
-    },
-    text:string,
+export interface IMessageInfo extends IMessage{
     conversationId: string;
-}
-
-export interface IFullMessageInfo{
-    writer: {
-        username: string,
-        level: number,
-        img: string,
-    },
-    text:string,
-    conversation: string;
-    time: number;
 }

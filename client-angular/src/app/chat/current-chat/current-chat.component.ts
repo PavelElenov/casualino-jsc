@@ -38,13 +38,15 @@ import { ChatFactory } from 'src/app/shared/factories/chatFactory';
 })
 export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() closeCurrentChatEmitter = new EventEmitter();
+
   @ViewChild('currentChat', { static: false })
   currentChatContainer!: ElementRef;
+
   @ViewChild('messagesContainer', { static: false })
   messagesContainerRef!: ElementRef;
   messagesContainer!: HTMLElement;
   allMessages: IMessage[] = [];
-  currentChat!: IConversation;
+  currentChat: IConversation | undefined = undefined;
   subscriptions$: Subscription[] = [];
   user!: IUser;
   newMessages!: number;
@@ -56,6 +58,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   animatingScroll: boolean = false;
   waitingForNewLastMessages: boolean = false;
   messagesPerPage!: number;
+  lastPage: boolean = false;
 
   constructor(
     private store: Store<IState>,
@@ -69,13 +72,13 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const selectCurrentChatSubscription = this.store
       .select(selectCurrentChat)
       .subscribe((currentChat) => {
-        if (currentChat) {
+        if (currentChat && !this.currentChat) {
           this.currentChat = currentChat!;
-          console.log("get last messages");
-          
+          console.log('get last messages');
+
           const lastMessagesSubscription = this.chatService
             .getLastMessages(this.currentChat.id!)
-            .subscribe(({lastMessages}) => {
+            .subscribe(({ lastMessages }) => {
               this.lastMessage = lastMessages[0];
             });
           this.subscriptions$.push(lastMessagesSubscription);
@@ -115,6 +118,10 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
         messages.length > 0 &&
           this.scrollToBottomOfMessageContainerOrAddNewMessage(messages);
 
+        if(messages.length < this.messagesPerPage){
+          this.lastPage = true;
+        }
+
         this.allMessages = messages;
 
         this.changeDetection.detectChanges();
@@ -123,11 +130,8 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   scrollToBottomOfMessageContainerOrAddNewMessage(messages: IMessage[]) {
-    if (
-      this.allMessages.length === 0 ||
-      this.isClientAtTheBottomOfElement(this.messagesContainer)
-    ) {
-      // first time when current chat is open or when the client is at the bottom of current chat
+    if (this.allMessages.length === 0) {
+      // first time when current chat is open
 
       this.scrollTo(
         this.messagesContainer,
@@ -139,18 +143,28 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.allMessages[this.allMessages.length - 1]
       ) {
         // if have new message
-        if (
-          !this.isTheWriterOfTheMessageCurrentUser(
-            messages[messages.length - 1]
-          )
-        ) {
-          // if writer of message isn't a current user
-          this.chatService.addNewMessage();
-        } else {
+        if (this.isClientAtTheBottomOfElement(this.messagesContainer)) {
           this.scrollTo(
             this.messagesContainer,
-            this.messagesContainer.scrollHeight
+            this.messagesContainer.scrollHeight,
+            true
           );
+        } // when have new message and client is at bottom of messages
+        else {
+          if (
+            !this.isTheWriterOfTheMessageCurrentUser(
+              messages[messages.length - 1]
+            )
+          ) {
+            // if writer of message isn't a current user
+            this.chatService.addNewMessage();
+          } else {
+            this.scrollTo(
+              this.messagesContainer,
+              this.messagesContainer.scrollHeight,
+              true
+            );
+          }
         }
       }
     }
@@ -172,13 +186,10 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   scrollTo(element: HTMLElement, amountPx: number, animated: boolean = false) {
-    if (!animated) {
-      this.animatingScroll = false;
-    }
+    this.animatingScroll = animated;
     requestAnimationFrame(() => {
       element.scrollTop = amountPx;
       this.lastScrollTop = amountPx;
-      this.animatingScroll = true;
     });
   }
 
@@ -230,12 +241,12 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   getLastMessages() {
-    if (!this.waitingForNewLastMessages) {
+    if (!this.waitingForNewLastMessages && !this.lastPage) {
       this.waitingForNewLastMessages = true;
-      
+
       const getLastMessagesSubscription: Subscription = this.chatService
-        .getLastMessages(this.currentChat.id!, this.lastMessage?.id)
-        .subscribe(({lastMessages}) => {
+        .getLastMessages(this.currentChat!.id!, this.lastMessage?.id)
+        .subscribe(({ lastMessages }) => {
           this.waitingForNewLastMessages = false;
 
           if (this.lastMessage) {
