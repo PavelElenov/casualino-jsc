@@ -75,7 +75,7 @@ export class ChatComponent implements OnDestroy {
     private changeDetection: ChangeDetectorRef
   ) {}
   ngOnDestroy(): void {
-    this.subscriptions$.map((s) => s.unsubscribe());
+    this.subscriptions$.forEach((s) => s.unsubscribe());
   }
   ngOnInit() {    
     if (this.chat.lastMessage) {

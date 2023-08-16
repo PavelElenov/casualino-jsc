@@ -31,7 +31,7 @@ export class MessageComponent implements OnDestroy {
     private chatService: ChatService,
   ) {}
   ngOnDestroy(): void {
-    this.subscriptions$.map((s) => s.unsubscribe());
+    this.subscriptions$.forEach((s) => s.unsubscribe());
   }
   ngOnInit() {
     this.time = this.timeService.getHowLongAgoMessageWasWritten(

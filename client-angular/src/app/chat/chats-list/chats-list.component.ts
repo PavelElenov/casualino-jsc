@@ -33,7 +33,6 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   chats: IConversation[] | undefined;
   currentChat: IConversation | undefined;
   subscriptions$: Subscription[] = [];
-
   user!: IUser;
   chatListRef!: ViewContainerRef;
 
@@ -48,7 +47,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnDestroy(): void {
-    this.subscriptions$.map((s) => s.unsubscribe());
+    this.subscriptions$.forEach((s) => s.unsubscribe());
   }
 
   ngOnInit() {
@@ -102,7 +101,6 @@ export class ChatsListComponent implements OnInit, OnDestroy {
 
   closeCurrentChat(): void {
     this.currentChat = undefined;
-    this.store.dispatch(setCurrentChat({ currentChat: undefined }));
     this.store.dispatch(clearMessages());
   }
 

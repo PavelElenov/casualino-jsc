@@ -8,7 +8,7 @@
         [id]="message.id"
       ></app-message>
     </ng-container>
-    <div class="div--loader">
+    <div class="div--loader" *ngIf="waitingForNewLastMessages">
       <app-loader></app-loader>
     </div>
     <div class="div--new-message" *ngIf="newMessages" (click)="readAllNewMessages()">

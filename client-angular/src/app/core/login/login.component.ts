@@ -26,7 +26,7 @@ export class LoginComponent implements OnDestroy, OnInit {
     });
   }
   ngOnDestroy(): void {
-    this.subscriptions$.map((s) => s.unsubscribe());
+    this.subscriptions$.forEach((s) => s.unsubscribe());
   }
 
   loginUser(form: NgForm) {

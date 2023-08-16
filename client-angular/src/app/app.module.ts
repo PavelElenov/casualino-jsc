@@ -10,6 +10,20 @@ import { StoreDevtoolsModule } from "@ngrx/store-devtools";
 import { reducers } from "./+store";
 import { SharedModule } from "./shared/shared.module";
 
+import { ActionReducer, MetaReducer } from "@ngrx/store";
+
+export function debug(reducer: ActionReducer<any>): ActionReducer<any> {
+    return function (state, action) {
+        console.log("@ngrx action", { ...action });
+        const result = reducer(state, action);
+
+        console.log("@ngrx previous state", state, "current state", result);
+        return result;
+    };
+}
+
+export const metaReducers: MetaReducer<any>[] = [debug];
+
 @NgModule({
   declarations: [
     AppComponent
@@ -19,7 +33,7 @@ import { SharedModule } from "./shared/shared.module";
     ChatModule,
     CoreModule,
     AppRoutingModule,
-    StoreModule.forRoot(reducers),
+    StoreModule.forRoot(reducers, {metaReducers}),
     StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() }),
     SharedModule
   ],

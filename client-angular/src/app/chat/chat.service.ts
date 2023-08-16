@@ -7,7 +7,7 @@ import {
   IMessage,
   IMessageInfo,
 } from '../shared/interfaces/message';
-import { Observable, Subscription,} from 'rxjs';
+import { Observable, Subject, Subscription,} from 'rxjs';
 import { SocketService } from '../shared/services/socket/socket.service';
 import {
   selectCurrentChat,
@@ -74,7 +74,7 @@ export class ChatService implements OnDestroy {
     this.subscriptions$.push(userSubscription);
   }
   ngOnDestroy(): void {
-    this.subscriptions$.map((s) => s.unsubscribe());
+    this.subscriptions$.forEach((s) => s.unsubscribe());
   }
   likeChat(conversation: IConversation) {
     const chat = { ...conversation, likes: conversation.likes + 1 };
@@ -105,21 +105,25 @@ export class ChatService implements OnDestroy {
   getLastMessages(
     conversationId: string,
     lastMessageId?: string
-  ): Observable<any> {
-    console.log("chat service get last messages");
+  ): Observable<IGetLastMessages> {
+    
     
     const url = lastMessageId
       ? `/conversations/${conversationId}/lastMessages?lastMessageId=${lastMessageId}`
       : `/conversations/${conversationId}/lastMessages`;
 
+    const subject:Subject<IGetLastMessages> = new Subject();
     const data$ =  this.httpService
       .get<IGetLastMessages>(url, this.storage.getToken('auth-token')!);
     data$.subscribe(({lastMessages, messagesPerPage}) => {  
+      console.log("hi");
       this.store.dispatch(addLastMessages({ lastMessages }));
-      messagesPerPage && this.store.dispatch(setMessagesPerPage({messagesPerPage}))
+      messagesPerPage && this.store.dispatch(setMessagesPerPage({messagesPerPage}));
+      subject.next({lastMessages, messagesPerPage})
     });
+    
 
-    return data$;     
+    return subject;     
   }
   setCurrentChat(chat: IConversation) {
     this.store.dispatch(setCurrentChat({ currentChat: chat }));

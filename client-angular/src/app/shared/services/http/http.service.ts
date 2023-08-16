@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { throwError, Observable, catchError } from "rxjs";
+import { throwError, Observable, catchError, take } from "rxjs";
 import { ErrorService } from "../error/error.service";
 
 interface IHeaders {

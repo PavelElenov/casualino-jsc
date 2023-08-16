@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { filter, Subscription, take } from 'rxjs';
 import { IState } from 'src/app/+store';
 import {
   selectCurrentChat,
@@ -66,13 +66,12 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     private changeDetection: ChangeDetectorRef
   ) {}
   ngOnDestroy(): void {
-    this.subscriptions$.map((s) => s.unsubscribe);
+    this.subscriptions$.forEach((s) => s.unsubscribe());
   }
   ngOnInit(): void {
     const selectCurrentChatSubscription = this.store
-      .select(selectCurrentChat)
+      .select(selectCurrentChat).pipe(filter(currentChat => currentChat != null))
       .subscribe((currentChat) => {
-        if (currentChat && !this.currentChat) {
           this.currentChat = currentChat!;
           console.log('get last messages');
 
@@ -83,11 +82,13 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
             });
           this.subscriptions$.push(lastMessagesSubscription);
         }
-      });
+      );
 
     const selectUserSubscription = this.store
       .select(selectUser)
-      .subscribe((user) => (this.user = user));
+      .subscribe((user) => {
+        this.user = user;
+      });
 
     const selectNewMessagesSubscription = this.store
       .select(selectNewMessages)

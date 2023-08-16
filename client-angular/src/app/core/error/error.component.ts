@@ -15,7 +15,7 @@ export class ErrorComponent implements OnInit, OnDestroy{
   subscriptions$: Subscription[] = []
   constructor(private store: Store<IState>){}
   ngOnDestroy(): void {
-    this.subscriptions$.map(s => s.unsubscribe());
+    this.subscriptions$.forEach(s => s.unsubscribe());
   }
   ngOnInit(): void {
     const errorSubscription = this.store.select(selectError).subscribe(error => this.error = error);
