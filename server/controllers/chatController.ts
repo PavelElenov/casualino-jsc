@@ -17,7 +17,7 @@ import {
 import { Router } from "express";
 
 export const router = Router();
-let firstTimeRequestingForLastMessages: boolean = true;
+
 router.get("/", (req, res) => {
   const chats: IConversationMoreInfo[] = getAllChats();
   res.json(chats);
@@ -43,13 +43,8 @@ router.get("/:conversationId/lastMessages", (req, res) => {
     lastMessageId
   );
 
-  if (firstTimeRequestingForLastMessages) {
-    firstTimeRequestingForLastMessages = false;
-    const messagesPerPage = getMessagesPerPage();
-    res.status(200).json({ lastMessages, messagesPerPage });
-  } else {
-    res.status(200).json({ lastMessages });
-  }
+  const messagesPerPage = getMessagesPerPage();
+  res.status(200).json({ lastMessages, messagesPerPage });
 });
 
 router.delete("/:id", (req, res) => {

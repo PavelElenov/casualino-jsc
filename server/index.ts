@@ -17,14 +17,13 @@ const io = new Server(server);
 expressConfig(app);
 routesConfig(app);
 
-
-io.use(function (socket, next) {  
+io.use(function (socket, next) {
   if (socket.handshake.query.token) {
-    const token:string | string[]  = socket.handshake.query.token;
+    const token: string | string[] = socket.handshake.query.token;
 
     try {
-      const parsedToken:IJsonWebToken = verifyToken(token as string);
-      compareToken({user: parsedToken.username, token: token as string});
+      const parsedToken: IJsonWebToken = verifyToken(token as string);
+      compareToken({ user: parsedToken.username, token: token as string });
       next();
     } catch (err) {
       next(new Error("Authentication error"));
@@ -32,21 +31,26 @@ io.use(function (socket, next) {
   } else {
     next(new Error("Authentication error"));
   }
-
 }).on("connection", function (socket) {
   console.log("New User");
 
-  socket.on("message", (data: IMessageInfo, callback) => {    
-    const message:IMessage = addMessage(data);
-    io.sockets.emit("message", {writer: message.writer, message, time: message.time, conversationId: data.conversationId});
+  socket.on("message", (data: IMessageInfo, callback) => {
+    const message: IMessage = addMessage(data);
+    io.sockets.emit("message", {
+      writer: message.writer,
+      message,
+      time: message.time,
+      conversationId: data.conversationId,
+    });
     callback({
-      message
-    })
+      message,
+      status: "ok",
+    });
   });
 
   socket.on("disconnect", () => {
     socket.disconnect();
-  })
+  });
 });
 
 server.listen(3000, () => console.log("Server listening on port 3000"));
