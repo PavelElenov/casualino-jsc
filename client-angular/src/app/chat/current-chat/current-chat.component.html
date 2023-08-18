@@ -14,10 +14,10 @@
     <div class="div--new-message" *ngIf="newMessages" (click)="readAllNewMessages()">
       <i class="fa-solid fa-arrow-down"></i>{{newMessages}}
     </div>
-    <div *ngIf="messageError" class="div--error-message">
-      <span class="span--message-error">{{messageError}}</span><button (click)="resendMesssage()">Resend</button>
-    </div>
   </section>
+  <div *ngIf="messageError" class="div--error-message">
+    <span class="span--message-error">{{messageError}}</span><button (click)="resendMesssage()">Resend</button>
+  </div>
   <form #form="ngForm" class="write-message" (ngSubmit)="submitMessage(form)">
     <input
       type="text"

@@ -79,7 +79,7 @@ export class DropDownComponent implements AfterContentInit, OnDestroy {
   subscriptions: Subscription[] = [];
   constructor(private changeDetection: ChangeDetectorRef) {}
   ngOnDestroy(): void {
-    this.subscriptions.map((s) => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   ngAfterContentInit(): void {

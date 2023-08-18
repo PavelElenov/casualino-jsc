@@ -1,3 +1,10 @@
+import { state } from '@angular/animations';
+import {
+  createEntityAdapter,
+  EntityAdapter,
+  EntityState,
+  Update,
+} from '@ngrx/entity';
 import { createReducer, on } from '@ngrx/store';
 import { IConversation, IMessage } from '../shared/interfaces/message';
 import { IUser } from '../shared/interfaces/user';
@@ -5,21 +12,23 @@ import {
   addChat,
   addLastMessages,
   addMessage,
+  addMessageToChatByChatId,
   addNewMessage,
   clearChats,
-  clearCurrentChat,
-  clearMessages,
   clearNewMessages,
+  clearSelectedChatId,
   clearUser,
   deleteChat,
   deleteMessage,
   likeChat,
   replaceMessageById,
   setChats,
-  setCurrentChat,
   setError,
+  setLastPageEqualsToTrue,
   setMessagesPerPage,
+  setSelectedChatId,
   setUser,
+  setWaitingForMessages,
   substractOneNewMessage,
 } from './actions';
 
@@ -27,11 +36,12 @@ export interface IChats {
   chats: IConversation[];
 }
 
-export interface ICurrentChat {
-  currentChat: IConversation | undefined;
+export interface ICurrentChatInfo extends IConversation {
   lastMessages: IMessage[];
   newMessagesCount: number;
-  messagesPerPage: number | undefined;
+  messagesPerPage: number;
+  lastPage: boolean;
+  waitingForNewLastMessages: boolean;
 }
 
 export interface IUserState {
@@ -42,15 +52,19 @@ export interface IError {
   error: string;
 }
 
+export interface IChatsEntity extends EntityState<ICurrentChatInfo> {
+  selectedChatId: string | null;
+}
+
+export const chatsAdapter: EntityAdapter<ICurrentChatInfo> =
+  createEntityAdapter<ICurrentChatInfo>();
+
+const chatsEntityState: IChatsEntity = chatsAdapter.getInitialState({
+  selectedChatId: null,
+});
+
 const chatsState: IChats = {
   chats: [],
-};
-
-const currentChatState: ICurrentChat = {
-  currentChat: undefined,
-  lastMessages: [],
-  newMessagesCount: 0,
-  messagesPerPage: undefined
 };
 
 const userState: IUserState = {
@@ -78,50 +92,191 @@ export const chatsReducer = createReducer(
     chats: state.chats.filter((c) => c.id !== id),
   })),
   on(clearChats, () => ({ chats: [] })),
-  on(likeChat, (state, {chat}) => ({...state, chats: state.chats.map<IConversation>((c:IConversation) => {
-    if(c.name == chat.name){
-      return chat;
-    }
-    return c;
-  })}))
+  on(likeChat, (state, { chat }) => ({
+    ...state,
+    chats: state.chats.map<IConversation>((c: IConversation) => {
+      if (c.name == chat.name) {
+        return chat;
+      }
+      return c;
+    }),
+  }))
 );
 
-export const currentChatReducer = createReducer(
-  currentChatState,
-  on(addMessage, (state, { message }) => ({
-    ...state,
-    lastMessages: [...state.lastMessages, message],
-  })),
-  on(addLastMessages, (state, { lastMessages }) => ({ ...state, lastMessages:[...lastMessages, ...state.lastMessages]})),
+export const chatsEntityReducer = createReducer(
+  chatsEntityState,
+  on(setChats, (state, {chats}) => {
+    return chatsAdapter.addMany(chats.map(chat => {
+      return {
+        ...chat,
+        lastMessages: [],
+        newMessagesCount: 0,
+        messagesPerPage: 0,
+        lastPage: false,
+        waitingForNewLastMessages: false,
+      }
+    }), state);
+  }),
+  on(addChat, (state, { chat }) => {
+    return chatsAdapter.addOne(
+      {
+        ...chat,
+        lastMessages: [],
+        newMessagesCount: 0,
+        messagesPerPage: 0,
+        lastPage: false,
+        waitingForNewLastMessages: false,
+      },
+      state
+    );
+  }),
+  on(addMessage, (state: IChatsEntity, data: { message: IMessage }) => {
+    const currentChat = state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: { lastMessages: [...currentChat.lastMessages, data.message] },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(addMessageToChatByChatId, (state, data: {chatId: string, message: IMessage}) => {
+    const chat = state.entities[data.chatId]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: data.chatId,
+      changes: {
+        lastMessages: [...chat.lastMessages, data.message]
+      }
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(addLastMessages, (state, data: { lastMessages: IMessage[] }) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        lastMessages: [...data.lastMessages, ...currentChat.lastMessages],
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
 
-  on(setCurrentChat, (state, { currentChat }) => ({ ...state, currentChat })),
-  on(deleteMessage, (state, { messageId }) => ({
+  on(deleteMessage, (state, data: { messageId: string }) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        lastMessages: currentChat.lastMessages.filter(
+          (m) => m.id !== data.messageId
+        ),
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(addNewMessage, (state) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        newMessagesCount: currentChat.newMessagesCount + 1,
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(clearNewMessages, (state) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        newMessagesCount: 0,
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(substractOneNewMessage, (state) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        newMessagesCount: currentChat.newMessagesCount - 1,
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+
+  on(replaceMessageById, (state, { messageId, message }) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        lastMessages: currentChat.lastMessages.map((messageInfo) => {
+          if (messageInfo.id === messageId) {
+            return message;
+          }
+          return messageInfo;
+        }),
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(setMessagesPerPage, (state, { messagesPerPage }) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        messagesPerPage: messagesPerPage,
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(setLastPageEqualsToTrue, (state) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        lastPage: true,
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(setWaitingForMessages, (state, { value }) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        waitingForNewLastMessages: value,
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, state);
+  }),
+  on(setSelectedChatId, (state, { chatId }) => ({
     ...state,
-    lastMessages: state.lastMessages.filter((m) => m.id !== messageId),
+    selectedChatId: chatId,
   })),
-  on(addNewMessage, (state) => ({
-    ...state,
-    newMessagesCount: state.newMessagesCount + 1,
-  })),
-  on(clearNewMessages, (state) => ({ ...state, newMessagesCount: 0 })),
-  on(substractOneNewMessage, (state) => ({
-    ...state,
-    newMessagesCount: state.newMessagesCount - 1,
-  })),
-  on(clearCurrentChat, () => ({
-    currentChat: undefined,
-    lastMessages: [],
-    newMessagesCount: 0,
-    messagesPerPage: undefined
-  })),
-  on(clearMessages, (state) => ({...state, messages: []})),
-  on(replaceMessageById, (state, {messageId, message}) => ({...state, lastMessages: state.lastMessages.map(messageInfo => {
-    if(messageInfo.id === messageId){
-      return message;
-    }
-    return messageInfo
-  })})),
-  on(setMessagesPerPage, (state, {messagesPerPage}) => ({...state, messagesPerPage}))
+  on(clearSelectedChatId, (state) => {
+    const currentChat: ICurrentChatInfo =
+      state.entities[state.selectedChatId!]!;
+    const updatedChat: Update<ICurrentChatInfo> = {
+      id: currentChat.id!,
+      changes: {
+        newMessagesCount: 0,
+        messagesPerPage: 0,
+        lastPage: false,
+        waitingForNewLastMessages: false,
+      },
+    };
+    return chatsAdapter.updateOne(updatedChat, {
+      ...state,
+      selectedChatId: null,
+    });
+  })
 );
 
 export const userReducer = createReducer(

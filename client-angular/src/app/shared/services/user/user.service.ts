@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { SocketService } from '../socket/socket.service';
 import { Store } from '@ngrx/store';
 import { IState } from 'src/app/+store';
-import { clearChats, clearCurrentChat, clearUser, setError, setUser } from 'src/app/+store/actions';
+import { clearChats, clearSelectedChatId, clearUser, setError, setUser } from 'src/app/+store/actions';
 
 @Injectable({
   providedIn: 'root',
@@ -24,12 +24,9 @@ export class UserService implements OnDestroy {
     private sockeService: SocketService,
     private store: Store<IState>
   ) {
-    if (this.storage.getToken('auth-token')) {
-      this.getUserByToken(this.storage.getToken('auth-token')!);
-    }
   }
   ngOnDestroy(): void {
-    this.subscriptions.map(s => s.unsubscribe());
+    this.subscriptions.forEach(s => s.unsubscribe());
   }
 
   checkForUserAuthentication(){
@@ -39,9 +36,12 @@ export class UserService implements OnDestroy {
       this.getUserByToken(authToken);
     }
   }
-  getUserByToken(token: string) {
+  getUserByToken(token: string) { 
     try {
-      const setUserSubscription = this.httpService.get<IUser>('/user', token).subscribe((user) => this.store.dispatch(setUser({ user })));
+      const setUserSubscription = this.httpService.get<IUser>('/user', token).subscribe((user) => {
+       
+        this.store.dispatch(setUser({ user }))
+    });
       this.subscriptions.push(setUserSubscription);
     } catch (error) {
       this.router.navigate(['/error']);
@@ -69,7 +69,7 @@ export class UserService implements OnDestroy {
     this.storage.deleteToken('auth-token');
     this.router.navigate(['/login']);
     this.sockeService.disconnect();
-    this.store.dispatch(clearCurrentChat());
+    this.store.dispatch(clearSelectedChatId());
     this.store.dispatch(clearUser());
     this.store.dispatch(clearChats());
   }

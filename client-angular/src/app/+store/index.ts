@@ -1,16 +1,25 @@
-import { chatsReducer, currentChatReducer, errorReducer, IChats, ICurrentChat, IError, IUserState, userReducer } from "./reducers";
-import { ActionReducerMap } from "@ngrx/store";
+import {
+  chatsReducer,
+  chatsEntityReducer,
+  errorReducer,
+  IChats,
+  IChatsEntity,
+  IError,
+  IUserState,
+  userReducer,
+} from './reducers';
+import { ActionReducerMap } from '@ngrx/store';
 
 export interface IState {
-  chats: IChats,
-  currentChat: ICurrentChat,
-  user: IUserState,
-  error: IError
+  chatsState: IChats;
+  chatsEntityState: IChatsEntity;
+  userState: IUserState;
+  errorState: IError;
 }
 
 export const reducers: ActionReducerMap<IState> = {
-  chats: chatsReducer,
-  currentChat: currentChatReducer,
-  user: userReducer,
-  error: errorReducer
+  chatsState: chatsReducer,
+  chatsEntityState: chatsEntityReducer,
+  userState: userReducer,
+  errorState: errorReducer,
 };

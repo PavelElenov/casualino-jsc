@@ -16,19 +16,17 @@ import { filter, Subscription, take } from 'rxjs';
 import { IState } from 'src/app/+store';
 import {
   selectCurrentChat,
+  selectLastPage,
   selectMessages,
   selectMessagesPerPage,
   selectNewMessages,
   selectUser,
+  selectWaitingForLastMessages,
 } from 'src/app/+store/selectors';
-import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
+import { IMessage } from 'src/app/shared/interfaces/message';
 import { IUser } from 'src/app/shared/interfaces/user';
 import { ChatService } from '../chat.service';
-import {
-  clearNewMessages,
-  substractOneNewMessage,
-} from 'src/app/+store/actions';
-import { ChatFactory } from 'src/app/shared/factories/chatFactory';
+import { ICurrentChatInfo } from 'src/app/+store/reducers';
 
 @Component({
   selector: 'app-current-chat',
@@ -46,7 +44,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   messagesContainerRef!: ElementRef;
   messagesContainer!: HTMLElement;
   allMessages: IMessage[] = [];
-  currentChat: IConversation | undefined = undefined;
+  currentChat: ICurrentChatInfo | null = null;
   subscriptions$: Subscription[] = [];
   user!: IUser;
   newMessages!: number;
@@ -56,9 +54,9 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   messageError: string | undefined = undefined;
   sendingMessage!: IMessage;
   animatingScroll: boolean = false;
-  waitingForNewLastMessages: boolean = false;
+  waitingForNewLastMessages!: boolean;
   messagesPerPage!: number;
-  lastPage: boolean = false;
+  lastPage!: boolean;
 
   constructor(
     private store: Store<IState>,
@@ -69,25 +67,31 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscriptions$.forEach((s) => s.unsubscribe());
   }
   ngOnInit(): void {
-    const selectCurrentChatSubscription = this.store
-      .select(selectCurrentChat).pipe(filter(currentChat => currentChat != null))
-      .subscribe((currentChat) => {
-          this.currentChat = currentChat!;
-          console.log('get last messages');
+    const selectUserSubscription = this.store
+      .select(selectUser)
+      .subscribe((user) => {
+        this.user = user;
+      });
 
+    const selectCurrentChatSubscription = this.store
+      .select(selectCurrentChat)
+      .pipe(
+        filter((currentChat) => currentChat != null),
+        take(1)
+      )
+      .subscribe((currentChat) => {
+        this.currentChat = currentChat!;
+
+        if (currentChat.lastMessages.length === 0) {
           const lastMessagesSubscription = this.chatService
             .getLastMessages(this.currentChat.id!)
             .subscribe(({ lastMessages }) => {
               this.lastMessage = lastMessages[0];
             });
           this.subscriptions$.push(lastMessagesSubscription);
+        }else{
+          this.lastMessage = currentChat.lastMessages[0];
         }
-      );
-
-    const selectUserSubscription = this.store
-      .select(selectUser)
-      .subscribe((user) => {
-        this.user = user;
       });
 
     const selectNewMessagesSubscription = this.store
@@ -103,10 +107,24 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.messagesPerPage = messagesPerPage!;
       });
 
+    const selectLastPageSubscription = this.store
+      .select(selectLastPage)
+      .subscribe((lastPageValue) => {
+        this.lastPage = lastPageValue;
+      });
+
+    const selectWaitingForLastMessagesSubscription = this.store
+      .select(selectWaitingForLastMessages)
+      .subscribe((value) => {
+        this.waitingForNewLastMessages = value;
+      });
+
     this.subscriptions$.push(selectCurrentChatSubscription);
     this.subscriptions$.push(selectUserSubscription);
     this.subscriptions$.push(selectNewMessagesSubscription);
     this.subscriptions$.push(selectMessagesPerPageSubscription);
+    this.subscriptions$.push(selectWaitingForLastMessagesSubscription);
+    this.subscriptions$.push(selectLastPageSubscription);
   }
   ngAfterViewInit(): void {
     this.currentChatState = 'open';
@@ -119,8 +137,8 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
         messages.length > 0 &&
           this.scrollToBottomOfMessageContainerOrAddNewMessage(messages);
 
-        if(messages.length < this.messagesPerPage){
-          this.lastPage = true;
+        if (messages.length < this.messagesPerPage) {
+          this.chatService.setLastPage();
         }
 
         this.allMessages = messages;
@@ -133,10 +151,11 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   scrollToBottomOfMessageContainerOrAddNewMessage(messages: IMessage[]) {
     if (this.allMessages.length === 0) {
       // first time when current chat is open
-
-      this.scrollTo(
-        this.messagesContainer,
-        this.messagesContainer.scrollHeight
+      requestAnimationFrame(() =>
+        this.scrollTo(
+          this.messagesContainer,
+          this.messagesContainer.scrollHeight
+        )
       );
     } else {
       if (
@@ -145,10 +164,12 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       ) {
         // if have new message
         if (this.isClientAtTheBottomOfElement(this.messagesContainer)) {
-          this.scrollTo(
-            this.messagesContainer,
-            this.messagesContainer.scrollHeight,
-            true
+          requestAnimationFrame(() =>
+            this.scrollTo(
+              this.messagesContainer,
+              this.messagesContainer.scrollHeight,
+              true
+            )
           );
         } // when have new message and client is at bottom of messages
         else {
@@ -160,11 +181,13 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
             // if writer of message isn't a current user
             this.chatService.addNewMessage();
           } else {
-            this.scrollTo(
-              this.messagesContainer,
-              this.messagesContainer.scrollHeight,
-              true
-            );
+            requestAnimationFrame(() => {
+              this.scrollTo(
+                this.messagesContainer,
+                this.messagesContainer.scrollHeight,
+                true
+              );
+            });
           }
         }
       }
@@ -243,12 +266,12 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   getLastMessages() {
     if (!this.waitingForNewLastMessages && !this.lastPage) {
-      this.waitingForNewLastMessages = true;
+      this.chatService.setWaitingForLastMessages(true);
 
       const getLastMessagesSubscription: Subscription = this.chatService
         .getLastMessages(this.currentChat!.id!, this.lastMessage?.id)
         .subscribe(({ lastMessages }) => {
-          this.waitingForNewLastMessages = false;
+          this.chatService.setWaitingForLastMessages(false);
 
           if (this.lastMessage) {
             const lastMessageElement: HTMLElement = document.getElementById(

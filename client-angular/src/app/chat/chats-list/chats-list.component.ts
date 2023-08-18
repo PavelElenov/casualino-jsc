@@ -17,7 +17,7 @@ import { UserService } from 'src/app/shared/services/user/user.service';
 import { TimeService } from 'src/app/shared/services/time/time.service';
 import { IState } from 'src/app/+store';
 import { Store } from '@ngrx/store';
-import { clearMessages, setCurrentChat } from 'src/app/+store/actions';
+import { clearMessages } from 'src/app/+store/actions';
 import { selectChats, selectUser } from 'src/app/+store/selectors';
 import { PopupService } from 'src/app/shared/services/popup/popup.service';
 import { IUser } from 'src/app/shared/interfaces/user';
