@@ -11,7 +11,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConversationById = exports.addMessage = exports.getAllChats = exports.deleteChatById = exports.deleteMessage = exports.createNewConversation = exports.addLike = exports.returnUniqueId = exports.getLastMessagesOfConversation = exports.getMessagesPerPage = void 0;
+exports.getConversationById = exports.addMessage = exports.getAllChats = exports.deleteChatById = exports.deleteMessage = exports.createNewConversation = exports.addLike = exports.returnUniqueId = exports.getOldestMessagesOfConversation = exports.getLastMessagesOfConversation = exports.getMessagesPerPage = void 0;
 var userService_1 = require("./userService");
 var uuid_1 = require("uuid");
 var conversations = [
@@ -46,14 +46,16 @@ var conversations = [
 ];
 var messages = [];
 for (var i = 0; i < 30; i++) {
-    messages.push({ id: (0, uuid_1.v4)(),
+    messages.push({
+        id: (0, uuid_1.v4)(),
         writer: {
             username: "Pavel",
             level: 10,
             img: "",
         },
         text: i.toString(),
-        time: Date.now() + i });
+        time: Date.now() + i,
+    });
 }
 var allMessagesInfo = [
     {
@@ -100,6 +102,27 @@ function getLastMessagesOfConversation(conversationId, lastMessageId) {
     return [];
 }
 exports.getLastMessagesOfConversation = getLastMessagesOfConversation;
+function getOldestMessagesOfConversation(conversationId, lastMessageId) {
+    var startIndex = 0;
+    var endIndex = 0;
+    var currentChatMessages = allMessagesInfo.find(function (data) { return data.conversationId === conversationId; }).messages;
+    if (lastMessageId) {
+        var lastMessage = currentChatMessages.find(function (m) { return m.id === lastMessageId; });
+        startIndex = currentChatMessages.indexOf(lastMessage) + 1;
+        endIndex = startIndex + messagesPerPage;
+    }
+    else {
+        endIndex = messagesPerPage;
+    }
+    if (currentChatMessages.length > 0) {
+        var messages_1 = currentChatMessages.slice(startIndex, endIndex > currentChatMessages.length - 1
+            ? currentChatMessages.length - 1
+            : endIndex);
+        return messages_1;
+    }
+    return [];
+}
+exports.getOldestMessagesOfConversation = getOldestMessagesOfConversation;
 function returnUniqueId() {
     return (0, uuid_1.v4)();
 }
@@ -138,7 +161,11 @@ var getAllChats = function () {
     return allConversations;
 };
 exports.getAllChats = getAllChats;
+var sendMessagesCount = 0;
 var addMessage = function (data) {
+    if (sendMessagesCount % 2 == 0) {
+        throw new Error("Your message doesn't send please try again!");
+    }
     var messagesInfo = allMessagesInfo.find(function (messageInfo) { return messageInfo.conversationId === data.conversationId; });
     var writer = (0, userService_1.getUserByUsername)(data.writer.username);
     var message = {
@@ -148,6 +175,7 @@ var addMessage = function (data) {
         time: data.time,
     };
     messagesInfo.messages.push(message);
+    sendMessagesCount += 1;
     return message;
 };
 exports.addMessage = addMessage;

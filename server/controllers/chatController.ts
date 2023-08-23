@@ -13,6 +13,7 @@ import {
   getConversationById,
   getLastMessagesOfConversation,
   getMessagesPerPage,
+  getOldestMessagesOfConversation,
 } from "../services/chatService";
 import { Router } from "express";
 
@@ -47,6 +48,13 @@ router.get("/:conversationId/lastMessages", (req, res) => {
   res.status(200).json({ lastMessages, messagesPerPage });
 });
 
+router.get("/:conversationId/oldestMessages", (req, res) => {
+  const {conversationId} = req.params;
+  const lastMessageId: string = req.query.lastMessageId as string;
+  const oldestMessages: IMessage[] = getOldestMessagesOfConversation(conversationId, lastMessageId);
+
+  res.status(200).json(oldestMessages);
+})
 router.delete("/:id", (req, res) => {
   const conversationId = req.params.id;
   deleteChatById(conversationId);

@@ -35,17 +35,23 @@ io.use(function (socket, next) {
   console.log("New User");
 
   socket.on("message", (data: IMessageInfo, callback) => {
-    const message: IMessage = addMessage(data);
-    io.sockets.emit("message", {
-      writer: message.writer,
-      message,
-      time: message.time,
-      conversationId: data.conversationId,
-    });
-    callback({
-      message,
-      status: "ok",
-    });
+    try {
+      const message: IMessage = addMessage(data);
+      io.sockets.emit("message", {
+        writer: message.writer,
+        message,
+        time: message.time,
+        conversationId: data.conversationId,
+      });
+      callback({
+        message,
+        status: "ok",
+      });
+    } catch (err: any) {
+      callback({
+        status: err.message
+      })
+    }
   });
 
   socket.on("disconnect", () => {

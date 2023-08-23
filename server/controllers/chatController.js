@@ -25,6 +25,12 @@ exports.router.get("/:conversationId/lastMessages", function (req, res) {
     var messagesPerPage = (0, chatService_1.getMessagesPerPage)();
     res.status(200).json({ lastMessages: lastMessages, messagesPerPage: messagesPerPage });
 });
+exports.router.get("/:conversationId/oldestMessages", function (req, res) {
+    var conversationId = req.params.conversationId;
+    var lastMessageId = req.query.lastMessageId;
+    var oldestMessages = (0, chatService_1.getOldestMessagesOfConversation)(conversationId, lastMessageId);
+    res.status(200).json(oldestMessages);
+});
 exports.router.delete("/:id", function (req, res) {
     var conversationId = req.params.id;
     (0, chatService_1.deleteChatById)(conversationId);

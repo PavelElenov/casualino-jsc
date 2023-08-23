@@ -31,17 +31,24 @@ io.use(function (socket, next) {
 }).on("connection", function (socket) {
     console.log("New User");
     socket.on("message", function (data, callback) {
-        var message = (0, chatService_1.addMessage)(data);
-        io.sockets.emit("message", {
-            writer: message.writer,
-            message: message,
-            time: message.time,
-            conversationId: data.conversationId,
-        });
-        callback({
-            message: message,
-            status: "ok",
-        });
+        try {
+            var message = (0, chatService_1.addMessage)(data);
+            io.sockets.emit("message", {
+                writer: message.writer,
+                message: message,
+                time: message.time,
+                conversationId: data.conversationId,
+            });
+            callback({
+                message: message,
+                status: "ok",
+            });
+        }
+        catch (err) {
+            callback({
+                status: err.message
+            });
+        }
     });
     socket.on("disconnect", function () {
         socket.disconnect();
