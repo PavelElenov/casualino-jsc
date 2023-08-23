@@ -57,10 +57,12 @@ export class ChatFactory {
     return {
       ...chat,
       lastMessages: [],
+      oldestMessages: [],
       newMessagesCount: 0,
       messagesPerPage: 0,
       lastPage: false,
-      waitingForNewLastMessages: false,
+      waitingForNewMessages: false,
+      messageError: null
     };
   }
 }

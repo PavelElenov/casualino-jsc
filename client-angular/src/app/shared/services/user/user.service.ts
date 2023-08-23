@@ -7,7 +7,8 @@ import { Router } from '@angular/router';
 import { SocketService } from '../socket/socket.service';
 import { Store } from '@ngrx/store';
 import { IState } from 'src/app/+store';
-import { clearChats, clearSelectedChatId, clearUser, setError, setUser } from 'src/app/+store/actions';
+import { clearChats, clearChat, clearUser, setError, setUser } from 'src/app/+store/actions';
+import { ChatService } from 'src/app/chat/chat.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +23,8 @@ export class UserService implements OnDestroy {
     private storage: StorageTokenService,
     private router: Router,
     private sockeService: SocketService,
-    private store: Store<IState>
+    private store: Store<IState>,
+    private chatService: ChatService
   ) {
   }
   ngOnDestroy(): void {
@@ -69,7 +71,7 @@ export class UserService implements OnDestroy {
     this.storage.deleteToken('auth-token');
     this.router.navigate(['/login']);
     this.sockeService.disconnect();
-    this.store.dispatch(clearSelectedChatId());
+    this.chatService.clearCurrentChat();
     this.store.dispatch(clearUser());
     this.store.dispatch(clearChats());
   }

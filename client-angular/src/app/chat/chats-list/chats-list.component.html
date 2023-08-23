@@ -24,6 +24,7 @@
       *ngIf="currentChat"
       class="current-chat-container"
       (closeCurrentChatEmitter)="closeCurrentChat()"
+      [currentChatId]="currentChat.id!"
     ></app-current-chat>
   </div>
 </section>

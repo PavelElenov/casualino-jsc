@@ -115,3 +115,19 @@
   right: 50%;
 }
 
+.button-last-or-oldest-messages{
+  position: absolute;
+  right: 42%;
+  top: 0;
+  background-color: rgb(18, 93, 231);
+  color: white;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border-radius: 10px;
+  border: 1px solid black;
+
+  &:hover{
+    transform: scale(1.03);
+  }
+}
+

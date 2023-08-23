@@ -5,7 +5,7 @@ import { IUser } from "../shared/interfaces/user";
 import { ICurrentChatInfo } from "./reducers";
 export const addMessage = createAction(
   "Add message",
-  props<{ message: IMessage }>()
+  props<{ chatId: string, message: IMessage }>()
 );
 
 export const addMessageToChatByChatId = createAction(
@@ -15,7 +15,12 @@ export const addMessageToChatByChatId = createAction(
 
 export const addLastMessages = createAction(
   "Set last messages",
-  props<{ lastMessages: IMessage[] }>()
+  props<{ chatId: string, lastMessages: IMessage[] }>()
+);
+
+export const addOldestMessages = createAction(
+  "Add oldest messages",
+  props<{chatId: string, messages: IMessage[]}>()
 );
 
 export const setChats = createAction(
@@ -35,7 +40,7 @@ export const deleteChat = createAction(
 
 export const deleteMessage = createAction(
   "Delete Message",
-  props<{messageId: string}>()
+  props<{chatId: string, messageId: string}>()
 );
 
 export const addChat = createAction(
@@ -50,14 +55,17 @@ export const setError = createAction(
 
 export const addNewMessage = createAction(
   "Add new message",
+  props<{chatId: string}>()
 );
 
 export const clearNewMessages = createAction(
-  "Clear new messages"
+  "Clear new messages",
+  props<{chatId: string}>()
 );
 
 export const substractOneNewMessage = createAction(
-  "Substract new message"
+  "Substract new message",
+  props<{chatId: string}>()
 );
 
 export const clearUser = createAction(
@@ -79,21 +87,22 @@ export const likeChat = createAction(
 
 export const replaceMessageById = createAction(
   "Replace message",
-  props<{messageId: string, message: IMessage}>()
+  props<{chatId: string, messageId: string, message: IMessage}>()
 );
 
 export const setMessagesPerPage = createAction(
   "Set messages per page",
-  props<{messagesPerPage: number}>()
+  props<{chatId: string, messagesPerPage: number}>()
 );
 
 export const setLastPageEqualsToTrue = createAction(
-  "Set last page is equals to true"
+  "Set last page is equals to true",
+  props<{chatId: string}>()
 );
 
 export const setWaitingForMessages = createAction(
   "Set waiting for messages",
-  props<{value: boolean}>()
+  props<{chatId: string, value: boolean}>()
 );
 
 export const updateChatsEnity = createAction(
@@ -106,10 +115,19 @@ export const setSelectedChatId = createAction(
   props<{chatId: string}>()
 );
 
-export const clearSelectedChatId = createAction(
-  "Clear selected chat id"
+export const clearChat = createAction(
+  "Clear selected chat id",
+  props<{chatId: string}>()
 );
 
+export const setMessageError = createAction(
+  "Set message error",
+  props<{chatId: string, value: string | null}>()
+);
 
+export const addMessageToOldestMessages = createAction(
+  "Add message to oldest messages",
+  props<{chatId: string, message:IMessage}>()
+)
 
 

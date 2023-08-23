@@ -7,6 +7,7 @@ import {
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { IState } from 'src/app/+store';
+import { ICurrentChatInfo } from 'src/app/+store/reducers';
 import { selectCurrentChat, selectUser } from 'src/app/+store/selectors';
 import { IConversation, IMessage } from 'src/app/shared/interfaces/message';
 import { IUser } from 'src/app/shared/interfaces/user';
@@ -21,10 +22,11 @@ import { ChatService } from '../chat.service';
 })
 export class MessageComponent implements OnDestroy {
   @Input() message!: IMessage;
+  @Input() currentChatId!: string;
   time!: string;
   user!: IUser;
   subscriptions$: Subscription[] = [];
-  currentChat!: IConversation;
+  
   constructor(
     private timeService: TimeService,
     private store: Store<IState>,
@@ -41,14 +43,10 @@ export class MessageComponent implements OnDestroy {
     const selectUserSubscription = this.store
       .select(selectUser)
       .subscribe((user) => (this.user = user));
-    const selectCurrentChatSubscription = this.store
-      .select(selectCurrentChat)
-      .subscribe((currentChat) => (this.currentChat = currentChat!));
 
     this.subscriptions$.push(selectUserSubscription);
-    this.subscriptions$.push(selectCurrentChatSubscription);
   }
   deleteMessage(messageId: string) {
-    this.chatService.deleteMessage(this.currentChat.id!, messageId);
+    this.chatService.deleteMessage(this.currentChatId, messageId);
   }
 }

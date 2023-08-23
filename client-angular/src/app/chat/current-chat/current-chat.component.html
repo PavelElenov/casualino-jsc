@@ -1,19 +1,22 @@
 <section #currentChat [ngClass]="currentChatState" class="current-chat" id="current-chat">
   <i class="fa-solid fa-xmark" (click)="emitCloseCurrentChat()"></i>
+  <button class="button-last-or-oldest-messages" (click)="loadLastOrOldestMessages()">{{lastOrOldestMessagesStateForButtonText}}</button>
   <section #messagesContainer [ngClass]="animatingScroll ? 'scroll' : ''" class="messages" id="messages" (scroll)="scrolling()" >
     <ng-container *ngIf="allMessages">
       <app-message
         *ngFor="let message of allMessages"
-        [message]="message"
         [id]="message.id"
+        [message]="message"
+        [currentChatId]="currentChatId"
       ></app-message>
     </ng-container>
-    <div class="div--loader" *ngIf="waitingForNewLastMessages">
+    <div class="div--loader" *ngIf="waitingForNewMessages">
       <app-loader></app-loader>
     </div>
     <div class="div--new-message" *ngIf="newMessages" (click)="readAllNewMessages()">
       <i class="fa-solid fa-arrow-down"></i>{{newMessages}}
     </div>
+    
   </section>
   <div *ngIf="messageError" class="div--error-message">
     <span class="span--message-error">{{messageError}}</span><button (click)="resendMesssage()">Resend</button>
