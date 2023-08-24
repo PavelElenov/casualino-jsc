@@ -6,6 +6,7 @@ export type IMessage = {
         img: string,
     },
     text: string,
+    sending: boolean,
     time: number
 }
 

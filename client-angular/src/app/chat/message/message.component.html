@@ -1,13 +1,18 @@
-<div [ngClass]="{'my-message': message.writer.username == user.username, 'message': message.writer.username !== user.username}">
+<div
+    [ngClass]="{
+        'my-message': message.writer.username == user.username,
+         'message': message.writer.username !== user.username,
+        }">
     <div class="img-container">
         <span class="level">{{message.writer.level}}</span>
         <img src={{message.writer.img}} alt="">
     </div>
-    <div class="wrapper-messages">
+    <div [ngClass]="messageSendingStatus ? 'sending' : ''" class="wrapper-messages">
         <div class="message-info">
             <span class="user-username">{{message.writer.username}}</span>
             <p>{{message.text}}</p>
-            <i class="fa-solid fa-xmark" id="deleteChat" *ngIf="message.writer.username == user.username" (click)="deleteMessage(message.id)"></i>
+            <i class="fa-solid fa-xmark" id="deleteChat" *ngIf="message.writer.username == user.username"
+                (click)="deleteMessage(message.id)"></i>
         </div>
         <p class="time">{{time}}</p>
     </div>

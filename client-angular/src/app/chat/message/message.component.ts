@@ -26,6 +26,7 @@ export class MessageComponent implements OnDestroy {
   time!: string;
   user!: IUser;
   subscriptions$: Subscription[] = [];
+  messageSendingStatus!: boolean;
   
   constructor(
     private timeService: TimeService,
@@ -40,6 +41,9 @@ export class MessageComponent implements OnDestroy {
       this.message.time,
       this.timeService.getCurrentTimeInMinutes()
     );
+
+    this.messageSendingStatus = this.message.sending;
+    
     const selectUserSubscription = this.store
       .select(selectUser)
       .subscribe((user) => (this.user = user));

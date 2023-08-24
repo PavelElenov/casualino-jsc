@@ -163,7 +163,8 @@ var getAllChats = function () {
 exports.getAllChats = getAllChats;
 var sendMessagesCount = 0;
 var addMessage = function (data) {
-    if (sendMessagesCount % 2 == 0) {
+    sendMessagesCount += 1;
+    if (sendMessagesCount % 3 === 0) {
         throw new Error("Your message doesn't send please try again!");
     }
     var messagesInfo = allMessagesInfo.find(function (messageInfo) { return messageInfo.conversationId === data.conversationId; });
@@ -175,7 +176,6 @@ var addMessage = function (data) {
         time: data.time,
     };
     messagesInfo.messages.push(message);
-    sendMessagesCount += 1;
     return message;
 };
 exports.addMessage = addMessage;

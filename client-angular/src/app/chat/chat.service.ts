@@ -37,11 +37,13 @@ import {
   addMessageToChatByChatId,
   addOldestMessages,
   setMessageError,
+  setMessageSendingStatus,
 } from '../+store/actions';
 import { IUser } from '../shared/interfaces/user';
 import { ChatFactory } from '../shared/factories/chatFactory';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
+import { ICurrentChatInfo } from '../+store/reducers';
 
 interface IGetLastMessages {
   lastMessages: IMessage[];
@@ -55,7 +57,7 @@ export class ChatService implements OnDestroy {
   subscriptions$: Subscription[] = [];
   user!: IUser;
   messages!: IMessage[];
-  currentChat!: IConversation;
+  currentChat!: ICurrentChatInfo;
   sendMessagesCount: number = 0;
   messagesPerPage: number | null = null;
   constructor(
@@ -64,7 +66,7 @@ export class ChatService implements OnDestroy {
     private socketService: SocketService,
     private store: Store<IState>,
     private chatFactory: ChatFactory,
-    private router: Router,
+    private router: Router
   ) {
     const userSubscription = this.store
       .select(selectUser)
@@ -117,7 +119,7 @@ export class ChatService implements OnDestroy {
   }
 
   clearCurrentChat() {
-    this.store.dispatch(clearChat({chatId: this.currentChat.id!}));
+    this.store.dispatch(clearChat({ chatId: this.currentChat.id! }));
   }
 
   substractOneNewMessage() {
@@ -148,7 +150,26 @@ export class ChatService implements OnDestroy {
               messagesPerPage,
             })
           );
-        subject.next({ lastMessages, messagesPerPage });
+
+        if (lastMessages.length < messagesPerPage) {
+          this.setLastPage();
+        }
+
+        if (
+          this.checkForOldestAndLastMessagesOverlapping(
+            this.currentChat.oldestMessages,
+            this.currentChat.lastMessages
+          )
+        ) {
+          this.setLastPage();
+          const messages: IMessage[] = this.concatOldestAndLastMessages(
+            this.currentChat.oldestMessages,
+            this.currentChat.lastMessages
+          );
+          subject.next({ lastMessages: messages, messagesPerPage });
+        } else {
+          subject.next({ lastMessages, messagesPerPage });
+        }
       });
 
     return subject;
@@ -161,23 +182,51 @@ export class ChatService implements OnDestroy {
 
     const subject: Subject<IMessage[]> = new Subject();
     this.httpService
-      .get<IMessage[]>(
-        url,
-        this.storage.getToken('auth-token')!
-      )
-      .subscribe((oldestMessages ) => {
+      .get<IMessage[]>(url, this.storage.getToken('auth-token')!)
+      .subscribe((oldestMessages) => {
         this.store.dispatch(
           addOldestMessages({
             chatId: this.currentChat.id!,
             messages: oldestMessages,
           })
         );
-        subject.next(oldestMessages);
+
+        if (
+          this.checkForOldestAndLastMessagesOverlapping(
+            this.currentChat.oldestMessages,
+            this.currentChat.lastMessages
+          )
+        ) {
+          this.setLastPage();
+          const messages: IMessage[] = this.concatOldestAndLastMessages(
+            this.currentChat.oldestMessages,
+            this.currentChat.lastMessages
+          );
+          subject.next(messages);
+        } else {
+          subject.next(oldestMessages);
+        }
       });
 
     return subject;
   }
-  setCurrentChat(chat: IConversation) {
+
+  concatOldestAndLastMessages(
+    oldestMessages: IMessage[],
+    lastMessages: IMessage[]
+  ): IMessage[] {
+    const indexOfLastMessageOfOldestMessages = lastMessages.findIndex(
+      (m) => m.id === oldestMessages[oldestMessages.length - 1].id
+    );
+
+    lastMessages = lastMessages.slice(
+      indexOfLastMessageOfOldestMessages + 1,
+      lastMessages.length
+    );
+    return [...oldestMessages, ...lastMessages];
+  }
+
+  setCurrentChat(chat: ICurrentChatInfo) {
     this.currentChat = chat;
   }
 
@@ -287,20 +336,57 @@ export class ChatService implements OnDestroy {
     return message;
   }
 
-  submitMessage(message: IMessage): void {
-    this.sendMessagesCount += 1;
+  checkForOldestAndLastMessagesOverlapping(
+    oldestMessages: IMessage[],
+    lastMessages: IMessage[]
+  ): boolean {
+    if (oldestMessages.length > 0 && lastMessages.length > 0) {
+      const lastMessageOfOldestMessages =
+        oldestMessages[oldestMessages.length - 1];
+      const isLastMessagesIncludesLastMessageOfOldest = lastMessages.find(
+        (m) => m.id === lastMessageOfOldestMessages.id
+      );
 
-    if (this.sendMessagesCount % 2 === 0) {
-      throw new Error("Your message doesn't send please try again!");
+      if (isLastMessagesIncludesLastMessageOfOldest) {
+        return true;
+      }
     }
+
+    return false;
+  }
+
+  submitMessage(message: IMessage): void {
     const messageInfo: IMessageInfo = {
       ...message,
       conversationId: this.currentChat!.id!,
     };
 
-    this.socketService.emitMessage(messageInfo, (response: any) => {
-      response.status === 'ok' &&
-        this.replaceMessage(response.message, messageInfo.id);
+    this.store.dispatch(
+      setMessageSendingStatus({
+        chatId: this.currentChat!.id!,
+        messageId: message.id,
+        status: true,
+      })
+    );
+
+    this.socketService.emitMessage(messageInfo, async (response: any) => {
+      if (response.status === 'ok') {
+        await this.replaceMessage(response.message, messageInfo.id);
+        this.store.dispatch(
+          setMessageSendingStatus({
+            chatId: this.currentChat!.id!,
+            messageId: response.message.id,
+            status: false,
+          })
+        );
+      } else {
+        this.store.dispatch(
+          setMessageError({
+            chatId: this.currentChat!.id!,
+            value: response.status,
+          })
+        );
+      }
     });
   }
 

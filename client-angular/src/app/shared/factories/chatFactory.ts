@@ -20,6 +20,7 @@ export class ChatFactory {
         level: user.level,
         img: user.img,
       },
+      sending: false,
       text: messageText,
       time: this.timeService.getCurrentTimeInMinutes(),
       conversationId: chatId,
@@ -34,6 +35,7 @@ export class ChatFactory {
         level: user.level,
         img: user.img,
       },
+      sending: false,
       text: messageText,
       time: this.timeService.getCurrentTimeInMinutes(),
     };

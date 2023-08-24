@@ -128,6 +128,13 @@ export const setMessageError = createAction(
 export const addMessageToOldestMessages = createAction(
   "Add message to oldest messages",
   props<{chatId: string, message:IMessage}>()
-)
+);
+
+export const setMessageSendingStatus = createAction(
+  "Set message sending status",
+  props<{chatId: string, messageId: string, status: boolean}>()
+);
+
+
 
 

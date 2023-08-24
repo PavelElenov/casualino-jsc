@@ -205,7 +205,9 @@ export const getAllChats = (): IConversationMoreInfo[] => {
 let sendMessagesCount: number = 0;
 
 export const addMessage = (data: IMessageInfo): IMessage => {
-  if (sendMessagesCount % 2 == 0) {
+  sendMessagesCount += 1;
+
+  if (sendMessagesCount % 3 === 0) {
     throw new Error("Your message doesn't send please try again!");
   }
 
@@ -222,7 +224,7 @@ export const addMessage = (data: IMessageInfo): IMessage => {
     time: data.time,
   };
   messagesInfo.messages.push(message);
-  sendMessagesCount += 1;
+  
   return message;
 };
 
