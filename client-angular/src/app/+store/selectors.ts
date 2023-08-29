@@ -21,13 +21,10 @@ export const selectChatById = (chatId: string) =>
     return chat;
   });
 
-export const selectLastMessages = (chatId: string) =>
+export const selectAllMessages = (chatId: string) =>
   createSelector(chatsEntitySelector, (state) => {
-    if (chatId) {
-      const chat = state.entities[chatId]!;
-      return chat.lastMessages;
-    }
-    return [];
+    const chat = state.entities[chatId]!;
+    return chat.allMessages;
   });
 
 export const selectChats = createSelector(
@@ -90,10 +87,28 @@ export const selectMessageError = (chatId: string) =>
     return chat.messageError;
   });
 
-export const selectOldestMessages = (chatId: string) => createSelector(
-    chatsEntitySelector,
-    (state) => {
-        const chat = state.entities[chatId]!;
-        return chat.oldestMessages;
-    }
-)
+export const selectLastMessagesCounter = (chatId: string) => 
+createSelector(chatsEntitySelector, (state) => {
+  const chat = state.entities[chatId]!;
+  return chat.lastMessagesCounter;
+});
+
+export const selectOldestMessagesCounter = (chatId: string) => 
+createSelector(chatsEntitySelector, (state) => {
+  const chat = state.entities[chatId]!;
+  return chat.oldestMessagesCounter;
+});
+
+export const selectLastMessages = (chatId: string) => 
+createSelector(chatsEntitySelector, (state) => {
+  const chat = state.entities[chatId]!;
+  const lastMessagesCounter = chat.lastMessagesCounter;
+  return chat.allMessages.slice(chat.allMessages.length - lastMessagesCounter - 1, chat.allMessages.length - 1)
+});
+
+export const selectOldestMessages = (chatId: string) => 
+createSelector(chatsEntitySelector, (state) => {
+  const chat = state.entities[chatId]!;
+  const oldestMessagesCounter = chat.oldestMessagesCounter;
+  return chat.allMessages.slice(0, oldestMessagesCounter);
+})

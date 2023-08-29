@@ -58,9 +58,10 @@ export class ChatFactory {
   createCurrentChatInfo(chat: IConversation): ICurrentChatInfo {
     return {
       ...chat,
-      lastMessages: [],
-      oldestMessages: [],
+      lastMessagesCounter: 0,
+      oldestMessagesCounter: 0,
       newMessagesCount: 0,
+      allMessages: [],
       messagesPerPage: 0,
       lastPage: false,
       waitingForNewMessages: false,

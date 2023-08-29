@@ -3,6 +3,7 @@ import { createAction, props } from "@ngrx/store";
 import { IConversation, IMessage } from "../shared/interfaces/message";
 import { IUser } from "../shared/interfaces/user";
 import { ICurrentChatInfo } from "./reducers";
+
 export const addMessage = createAction(
   "Add message",
   props<{ chatId: string, message: IMessage }>()
@@ -15,12 +16,12 @@ export const addMessageToChatByChatId = createAction(
 
 export const addLastMessages = createAction(
   "Set last messages",
-  props<{ chatId: string, lastMessages: IMessage[] }>()
+  props<{ chatId: string, lastMessages: IMessage[], lastMessageId?: string }>()
 );
 
 export const addOldestMessages = createAction(
   "Add oldest messages",
-  props<{chatId: string, messages: IMessage[]}>()
+  props<{chatId: string, lastMessageId:string, messages: IMessage[]}>()
 );
 
 export const setChats = createAction(
@@ -134,6 +135,16 @@ export const setMessageSendingStatus = createAction(
   "Set message sending status",
   props<{chatId: string, messageId: string, status: boolean}>()
 );
+
+// export const increaseLastMessagesCounter = createAction(
+//   "Increase last messages counter",
+//   props<{chatId:string, value: number}>()
+// );
+
+// export const increaseOldestMessagesCounter = createAction(
+//   "Increase oldest messages counter",
+//   props<{chatId:string, value: number}>()
+// )
 
 
 

@@ -11,6 +11,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import { SocketService } from '../shared/services/socket/socket.service';
 import {
   selectChatById,
+  selectCurrentChat,
   selectMessagesPerPage,
   selectUser,
 } from '../+store/selectors';
@@ -57,7 +58,6 @@ export class ChatService implements OnDestroy {
   subscriptions$: Subscription[] = [];
   user!: IUser;
   messages!: IMessage[];
-  currentChat!: ICurrentChatInfo;
   sendMessagesCount: number = 0;
   messagesPerPage: number | null = null;
   constructor(
@@ -72,32 +72,40 @@ export class ChatService implements OnDestroy {
       .select(selectUser)
       .subscribe((user) => (this.user = user));
 
-    if (this.currentChat) {
-      const messagePerPageSubscription = this.store
-        .select(selectMessagesPerPage(this.currentChat.id!))
-        .subscribe((messagesPerPage) => {
-          this.messagesPerPage = messagesPerPage;
-        });
-
-      this.subscriptions$.push(messagePerPageSubscription);
-    }
-
     this.subscriptions$.push(userSubscription);
   }
   ngOnDestroy(): void {
     this.subscriptions$.forEach((s) => s.unsubscribe());
   }
 
-  setWaitingForLastMessages(value: boolean) {
-    this.store.dispatch(
-      setWaitingForMessages({ chatId: this.currentChat.id!, value })
+  returnLastMessages(
+    allMessages: IMessage[],
+    lastMessagesCounter: number
+  ): IMessage[] {
+    const lastMessages = allMessages.slice(
+      allMessages.length - lastMessagesCounter,
+      allMessages.length
     );
+    console.log(lastMessages);
+    return lastMessages;
   }
 
-  setLastPage() {
-    this.store.dispatch(
-      setLastPageEqualsToTrue({ chatId: this.currentChat.id! })
-    );
+  returnOldestMessages(
+    allMessages: IMessage[],
+    oldestMessagesCounter: number
+  ): IMessage[] {
+    const oldestMessages = allMessages.slice(0, oldestMessagesCounter);
+    console.log(oldestMessages);
+
+    return oldestMessages;
+  }
+
+  setWaitingForLastMessages(chatId: string, value: boolean) {
+    this.store.dispatch(setWaitingForMessages({ chatId, value }));
+  }
+
+  setLastPage(chatId: string) {
+    this.store.dispatch(setLastPageEqualsToTrue({ chatId }));
   }
 
   likeChat(conversation: IConversation) {
@@ -114,18 +122,16 @@ export class ChatService implements OnDestroy {
     this.subscriptions$.push(likeSubscription);
   }
 
-  clearNewMessages() {
-    this.store.dispatch(clearNewMessages({ chatId: this.currentChat.id! }));
+  clearNewMessages(chatId: string) {
+    this.store.dispatch(clearNewMessages({ chatId }));
   }
 
-  clearCurrentChat() {
-    this.store.dispatch(clearChat({ chatId: this.currentChat.id! }));
+  clearCurrentChat(chatId: string) {
+    this.store.dispatch(clearChat({ chatId }));
   }
 
-  substractOneNewMessage() {
-    this.store.dispatch(
-      substractOneNewMessage({ chatId: this.currentChat.id! })
-    );
+  substractOneNewMessage(chatId: string) {
+    this.store.dispatch(substractOneNewMessage({ chatId }));
   }
 
   getLastMessages(
@@ -139,43 +145,81 @@ export class ChatService implements OnDestroy {
     const subject: Subject<IGetLastMessages> = new Subject();
     this.httpService
       .get<IGetLastMessages>(url, this.storage.getToken('auth-token')!)
+      .pipe(take(1))
       .subscribe(({ lastMessages, messagesPerPage }) => {
-        this.store.dispatch(
-          addLastMessages({ chatId: this.currentChat.id!, lastMessages })
-        );
-        this.messagesPerPage == null &&
-          this.store.dispatch(
-            setMessagesPerPage({
-              chatId: this.currentChat.id!,
-              messagesPerPage,
-            })
-          );
+        if (lastMessages.length > 0) {
+          this.messagesPerPage == null &&
+            this.store.dispatch(
+              setMessagesPerPage({
+                chatId: conversationId,
+                messagesPerPage,
+              })
+            );
 
-        if (lastMessages.length < messagesPerPage) {
-          this.setLastPage();
-        }
+          if (lastMessages.length < messagesPerPage) {
+            this.setLastPage(conversationId);
+          }
 
-        if (
-          this.checkForOldestAndLastMessagesOverlapping(
-            this.currentChat.oldestMessages,
-            this.currentChat.lastMessages
-          )
-        ) {
-          this.setLastPage();
-          const messages: IMessage[] = this.concatOldestAndLastMessages(
-            this.currentChat.oldestMessages,
-            this.currentChat.lastMessages
-          );
-          subject.next({ lastMessages: messages, messagesPerPage });
-        } else {
-          subject.next({ lastMessages, messagesPerPage });
+          const selectChatByIdSubscription = this.store
+            .select(selectCurrentChat(conversationId))
+            .pipe(take(1))
+            .subscribe((chat) => {
+              if (
+                this.checkForOldestAndLastMessagesOverlapping(
+                  chat.allMessages,
+                  lastMessages[0]
+                )
+              ) {
+                this.setLastPage(conversationId);
+                const messages: IMessage[] = this.concatOldestAndLastMessages(
+                  chat.allMessages,
+                  lastMessages
+                );
+                this.store.dispatch(
+                  addLastMessages({
+                    chatId: conversationId,
+                    lastMessages: messages,
+                    lastMessageId,
+                  })
+                );
+                const indexOfLastMessage = chat.allMessages.findIndex(
+                  (m) => m.id === lastMessageId
+                );
+
+                subject.next({
+                  lastMessages: [
+                    ...chat.allMessages.slice(0, indexOfLastMessage),
+                    ...messages,
+                    ...chat.allMessages.slice(
+                      indexOfLastMessage,
+                      chat.allMessages.length
+                    ),
+                  ],
+                  messagesPerPage,
+                });
+              } else {
+                this.store.dispatch(
+                  addLastMessages({
+                    chatId: conversationId,
+                    lastMessages,
+                    lastMessageId,
+                  })
+                );
+                subject.next({ lastMessages, messagesPerPage });
+              }
+            });
+          this.subscriptions$.push(selectChatByIdSubscription);
         }
       });
 
     return subject;
   }
 
-  getOldestMessages(conversationId: string, lastMessageId?: string) {
+  getOldestMessages(
+    conversationId: string,
+    lastMessageOfLastMessagesId: string,
+    lastMessageId?: string
+  ) {
     const url: string = lastMessageId
       ? `/conversations/${conversationId}/oldestMessages?lastMessageId=${lastMessageId}`
       : `/conversations/${conversationId}/oldestMessages`;
@@ -184,27 +228,54 @@ export class ChatService implements OnDestroy {
     this.httpService
       .get<IMessage[]>(url, this.storage.getToken('auth-token')!)
       .subscribe((oldestMessages) => {
-        this.store.dispatch(
-          addOldestMessages({
-            chatId: this.currentChat.id!,
-            messages: oldestMessages,
-          })
-        );
+        if (oldestMessages.length > 0) {
+          const selectChatByIdSubscription = this.store
+            .select(selectCurrentChat(conversationId))
+            .pipe(take(1))
+            .subscribe((chat) => {
+              if (
+                this.checkForOldestAndLastMessagesOverlapping(
+                  chat.allMessages,
+                  oldestMessages[oldestMessages.length - 1]
+                )
+              ) {
+                this.setLastPage(conversationId);
+                const messages: IMessage[] = this.concatOldestAndLastMessages(
+                  chat.allMessages,
+                  oldestMessages
+                );
 
-        if (
-          this.checkForOldestAndLastMessagesOverlapping(
-            this.currentChat.oldestMessages,
-            this.currentChat.lastMessages
-          )
-        ) {
-          this.setLastPage();
-          const messages: IMessage[] = this.concatOldestAndLastMessages(
-            this.currentChat.oldestMessages,
-            this.currentChat.lastMessages
-          );
-          subject.next(messages);
-        } else {
-          subject.next(oldestMessages);
+                this.store.dispatch(
+                  addOldestMessages({
+                    chatId: conversationId,
+                    lastMessageId: lastMessageOfLastMessagesId,
+                    messages,
+                  })
+                );
+                const indexOfLastMessage = chat.allMessages.findIndex(
+                  (m) => m.id === lastMessageOfLastMessagesId
+                );
+                subject.next([
+                  ...chat.allMessages.slice(0, indexOfLastMessage),
+                  ...messages,
+                  ...chat.allMessages.slice(
+                    indexOfLastMessage,
+                    chat.allMessages.length
+                  ),
+                ]);
+              } else {
+                this.store.dispatch(
+                  addOldestMessages({
+                    chatId: conversationId,
+                    lastMessageId: lastMessageOfLastMessagesId,
+                    messages: oldestMessages,
+                  })
+                );
+                subject.next(oldestMessages);
+              }
+            });
+
+          this.subscriptions$.push(selectChatByIdSubscription);
         }
       });
 
@@ -212,32 +283,22 @@ export class ChatService implements OnDestroy {
   }
 
   concatOldestAndLastMessages(
-    oldestMessages: IMessage[],
-    lastMessages: IMessage[]
+    allMessages: IMessage[],
+    messagesToAdd: IMessage[]
   ): IMessage[] {
-    const indexOfLastMessageOfOldestMessages = lastMessages.findIndex(
-      (m) => m.id === oldestMessages[oldestMessages.length - 1].id
+    const messages: IMessage[] = messagesToAdd.filter(
+      (m) => !allMessages.find((message) => message.id === m.id)
     );
 
-    lastMessages = lastMessages.slice(
-      indexOfLastMessageOfOldestMessages + 1,
-      lastMessages.length
-    );
-    return [...oldestMessages, ...lastMessages];
+    return messages;
   }
 
-  setCurrentChat(chat: ICurrentChatInfo) {
-    this.currentChat = chat;
+  setMessageError(chatId: string, value: string | null) {
+    this.store.dispatch(setMessageError({ chatId, value }));
   }
 
-  setMessageError(value: string | null) {
-    this.store.dispatch(
-      setMessageError({ chatId: this.currentChat.id!, value })
-    );
-  }
-
-  addNewMessage() {
-    this.store.dispatch(addNewMessage({ chatId: this.currentChat.id! }));
+  addNewMessage(chatId: string) {
+    this.store.dispatch(addNewMessage({ chatId }));
   }
   getAllChats() {
     const getAllChatsSubscription = this.httpService
@@ -285,7 +346,7 @@ export class ChatService implements OnDestroy {
       .subscribe({
         next: () => {
           this.store.dispatch(
-            deleteMessage({ chatId: this.currentChat.id!, messageId })
+            deleteMessage({ chatId: currentChatId, messageId })
           );
         },
         error: (err: any) => {
@@ -304,17 +365,14 @@ export class ChatService implements OnDestroy {
   }
   listenForMessages(): void {
     this.socketService.on('message', (data: IFullMessageInfo) => {
-      if (
-        data.conversationId === this.currentChat?.id &&
-        data.message.writer.username !== this.user.username
-      ) {
-        this.addMessage(data.message);
+      if (data.message.writer.username !== this.user.username) {
+        this.addMessageToChatByChatId(data.conversationId, data.message);
       } else if (data.message.writer.username !== this.user.username) {
         const selectChatByIdSubscription = this.store
           .select(selectChatById(data.conversationId))
           .pipe(take(1))
           .subscribe((chat) => {
-            chat!.lastMessages.length > 0 &&
+            chat!.allMessages.length > 0 &&
               this.addMessageToChatByChatId(data.conversationId, data.message);
           });
         this.subscriptions$.push(selectChatByIdSubscription);
@@ -322,8 +380,8 @@ export class ChatService implements OnDestroy {
     });
   }
 
-  addMessage(message: IMessage) {
-    this.store.dispatch(addMessage({ chatId: this.currentChat.id!, message }));
+  addMessage(chatId: string, message: IMessage) {
+    this.store.dispatch(addMessageToChatByChatId({ chatId, message }));
   }
 
   addMessageToChatByChatId(chatId: string, message: IMessage) {
@@ -337,33 +395,24 @@ export class ChatService implements OnDestroy {
   }
 
   checkForOldestAndLastMessagesOverlapping(
-    oldestMessages: IMessage[],
-    lastMessages: IMessage[]
+    allMessages: IMessage[],
+    message: IMessage
   ): boolean {
-    if (oldestMessages.length > 0 && lastMessages.length > 0) {
-      const lastMessageOfOldestMessages =
-        oldestMessages[oldestMessages.length - 1];
-      const isLastMessagesIncludesLastMessageOfOldest = lastMessages.find(
-        (m) => m.id === lastMessageOfOldestMessages.id
-      );
-
-      if (isLastMessagesIncludesLastMessageOfOldest) {
-        return true;
-      }
+    if (allMessages.find((m) => m.id === message.id)) {
+      return true;
     }
-
     return false;
   }
 
-  submitMessage(message: IMessage): void {
+  submitMessage(chatId: string, message: IMessage): void {
     const messageInfo: IMessageInfo = {
       ...message,
-      conversationId: this.currentChat!.id!,
+      conversationId: chatId,
     };
 
     this.store.dispatch(
       setMessageSendingStatus({
-        chatId: this.currentChat!.id!,
+        chatId,
         messageId: message.id,
         status: true,
       })
@@ -371,10 +420,10 @@ export class ChatService implements OnDestroy {
 
     this.socketService.emitMessage(messageInfo, async (response: any) => {
       if (response.status === 'ok') {
-        await this.replaceMessage(response.message, messageInfo.id);
+        await this.replaceMessage(chatId, response.message, messageInfo.id);
         this.store.dispatch(
           setMessageSendingStatus({
-            chatId: this.currentChat!.id!,
+            chatId,
             messageId: response.message.id,
             status: false,
           })
@@ -382,7 +431,7 @@ export class ChatService implements OnDestroy {
       } else {
         this.store.dispatch(
           setMessageError({
-            chatId: this.currentChat!.id!,
+            chatId,
             value: response.status,
           })
         );
@@ -390,10 +439,8 @@ export class ChatService implements OnDestroy {
     });
   }
 
-  replaceMessage(message: IMessage, messageId: string) {
-    this.store.dispatch(
-      replaceMessageById({ chatId: this.currentChat.id!, messageId, message })
-    );
+  replaceMessage(chatId: string, message: IMessage, messageId: string) {
+    this.store.dispatch(replaceMessageById({ chatId, messageId, message }));
   }
 
   addNewConversation(chat: IConversation): void {

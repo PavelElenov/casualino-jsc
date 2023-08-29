@@ -12,25 +12,24 @@ import {
   ViewChild,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Store } from '@ngrx/store';
+import { Action, ActionsSubject, Store } from '@ngrx/store';
 import { filter, Subscription, take } from 'rxjs';
 import { IState } from 'src/app/+store';
 import {
+  selectAllMessages,
   selectCurrentChat,
-  selectLastMessages,
-  selectLastPage,
-  selectMessageError,
-  selectMessagesPerPage,
-  selectNewMessages,
-  selectOldestMessages,
   selectUser,
-  selectWaitingForLastMessages,
 } from 'src/app/+store/selectors';
 import { IMessage } from 'src/app/shared/interfaces/message';
 import { IUser } from 'src/app/shared/interfaces/user';
 import { ChatService } from '../chat.service';
 import { ICurrentChatInfo } from 'src/app/+store/reducers';
-import { debug } from 'src/app/app.module';
+
+
+interface IAction extends Action{
+  chatId: string,
+  message: IMessage,
+}
 
 @Component({
   selector: 'app-current-chat',
@@ -59,11 +58,13 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   animatingScroll: boolean = false;
   isOldestMessages: boolean = false;
   lastOrOldestMessagesStateForButtonText: string = 'go to oldest messages';
+  lastMessageOfLastMessagesId!: string;
 
   constructor(
     private store: Store<IState>,
     private chatService: ChatService,
-    private changeDetection: ChangeDetectorRef
+    private changeDetection: ChangeDetectorRef,
+    private actionListener: ActionsSubject
   ) {}
   ngOnDestroy(): void {
     this.subscriptions$.forEach((s) => s.unsubscribe());
@@ -80,21 +81,54 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(filter((currentChat) => currentChat != null))
       .subscribe((currentChat) => {
         this.currentChat = currentChat!;
-        this.chatService.setCurrentChat(currentChat);
-
-        if (currentChat.lastMessages.length === 0) {
-          const lastMessagesSubscription = this.chatService
-            .getLastMessages(this.currentChat.id!)
-            .subscribe(({ lastMessages }) => {
-              this.lastMessage = lastMessages[0];
-            });
-          this.subscriptions$.push(lastMessagesSubscription);
-        } else if (!this.isOldestMessages && !this.lastMessage) {
-          this.lastMessage = currentChat.lastMessages[0];
-        }
         this.changeDetection.detectChanges();
       });
 
+    const lastMessagesSubscription = this.chatService
+      .getLastMessages(this.currentChatId)
+      .pipe(
+        filter(({ lastMessages }) => lastMessages.length > 0),
+        take(1)
+      )
+      .subscribe(({ lastMessages }) => {
+        this.lastMessage = lastMessages[0];
+        this.lastMessageOfLastMessagesId = this.lastMessage.id;
+
+        this.changeDetection.detectChanges();
+      });
+
+    this.actionListener
+      .pipe(
+        filter(
+          (action) =>
+            action.type === 'Add message to chat'
+        )
+      )
+      .subscribe((action) => {
+        const actionObject:IAction = action as IAction;
+        const message: IMessage = actionObject.message;
+        this.allMessages = [...this.allMessages, message]
+         
+        if (
+          !this.isClientAtTheBottomOfElement(this.messagesContainer) &&
+          !this.isTheWriterOfTheMessageCurrentUser(
+            message
+          )
+        ) {
+          this.chatService.addNewMessage(this.currentChat.id!);
+        } else if (this.isClientAtTheBottomOfElement(this.messagesContainer)) {
+          this.scrollTo(
+            this.messagesContainer,
+            this.messagesContainer.scrollHeight,
+            true,
+            true
+          );
+        }
+        
+        this.changeDetection.detectChanges();
+      });
+
+    this.subscriptions$.push(lastMessagesSubscription);
     this.subscriptions$.push(selectCurrentChatSubscription);
     this.subscriptions$.push(selectUserSubscription);
   }
@@ -103,67 +137,25 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     requestAnimationFrame(() => (this.animatingScroll = true));
     this.messagesContainer = this.messagesContainerRef.nativeElement;
 
-    const selectLastMessagesSubscription = this.store
-      .select(selectLastMessages(this.currentChatId))
+    const selectAllMessagesSubscription = this.store
+      .select(selectAllMessages(this.currentChatId))
       .subscribe((messages) => {
         if (!this.isOldestMessages && messages.length > 0) {
-          if (
-            this.isNewMessage(messages) &&
-            !this.isClientAtTheBottomOfElement(this.messagesContainer) &&
-            !this.isTheWriterOfTheMessageCurrentUser(
-              messages[messages.length - 1]
-            )
-          ) {
-            this.chatService.addNewMessage();
-          } else if (
-            this.isNewMessage(messages) &&
-            this.isClientAtTheBottomOfElement(this.messagesContainer)
-          ) {
-            this.scrollTo(
-              this.messagesContainer,
-              this.messagesContainer.scrollHeight,
-              true,
-              true
-            );
-          } else {
-            this.scrollTo(
-              this.messagesContainer,
-              this.messagesContainer.scrollHeight,
-              false,
-              true
-            );
-          }
-
-          if (
-            this.allMessages.length === 0 &&
-            this.chatService.checkForOldestAndLastMessagesOverlapping(
-              this.currentChat.oldestMessages,
-              this.currentChat.lastMessages
-            )
-          ) {
-            this.allMessages = this.chatService.concatOldestAndLastMessages(
-              this.currentChat.oldestMessages,
-              this.currentChat.lastMessages
-            );
-          } else {
+          if (this.allMessages.length === 0) {
             this.allMessages = messages;
+            requestAnimationFrame(() =>
+              this.scrollTo(
+                this.messagesContainer,
+                this.messagesContainer.scrollHeight
+              )
+            );
           }
-
-          this.changeDetection.detectChanges();
         }
+
+        this.changeDetection.detectChanges();
       });
 
-    const selectOldestMessagesSubscription = this.store
-      .select(selectOldestMessages(this.currentChat.id!))
-      .subscribe((messages) => {
-        if (this.isOldestMessages) {
-          this.allMessages = messages;
-          this.changeDetection.detectChanges();
-        }
-      });
-
-    this.subscriptions$.push(selectLastMessagesSubscription);
-    this.subscriptions$.push(selectOldestMessagesSubscription);
+    this.subscriptions$.push(selectAllMessagesSubscription);
   }
 
   loadLastOrOldestMessages() {
@@ -172,7 +164,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     ) {
       this.lastOrOldestMessagesStateForButtonText = 'go to last messages';
 
-      if (this.currentChat?.oldestMessages.length! > 0) {
+      if (this.currentChat.oldestMessagesCounter > 0) {
         requestAnimationFrame(() => {
           this.loadOldestMessages();
         });
@@ -183,7 +175,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       this.lastOrOldestMessagesStateForButtonText = 'go to oldest messages';
       this.isOldestMessages = false;
 
-      if (this.currentChat!.lastMessages.length > 0) {
+      if (this.currentChat.lastMessagesCounter > 0) {
         requestAnimationFrame(() => {
           this.loadLastMessages();
         });
@@ -195,25 +187,44 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadOldestMessages() {
-    this.allMessages = this.currentChat!.oldestMessages;
+    if (this.currentChat.lastPage) {
+      this.allMessages = this.currentChat.allMessages;
+    } else {
+      this.allMessages = this.chatService.returnOldestMessages(
+        this.currentChat.allMessages,
+        this.currentChat.oldestMessagesCounter
+      );
+    }
+
     this.lastMessage = this.allMessages[this.allMessages.length - 1];
     this.isOldestMessages = true;
     this.scrollTo(this.messagesContainer, 0, false, true);
+    this.changeDetection.detectChanges();
   }
 
   loadLastMessages() {
-    this.allMessages = this.currentChat!.lastMessages;
+    if (this.currentChat.lastPage) {
+      this.allMessages = this.currentChat.allMessages;
+    } else {
+      this.allMessages = this.chatService.returnLastMessages(
+        this.currentChat.allMessages,
+        this.currentChat.lastMessagesCounter
+      );
+    }
+
     this.lastMessage = this.allMessages[0];
-    setTimeout(() => {
-      requestAnimationFrame(() => this.scrollTo(this.messagesContainer, this.messagesContainer.scrollHeight)); //doesn't work
-    })
-    
+    this.lastMessageOfLastMessagesId = this.lastMessage.id;
+    this.changeDetection.detectChanges();
+    requestAnimationFrame(() =>
+      this.scrollTo(this.messagesContainer, this.messagesContainer.scrollHeight)
+    );
   }
 
   isNewMessage(messages: IMessage[]): boolean {
-    if (this.allMessages.length > 0 &&
+    if (
+      this.allMessages.length > 0 &&
       messages[messages.length - 1] !==
-      this.allMessages[this.allMessages.length - 1]
+        this.allMessages[this.allMessages.length - 1]
     ) {
       return true;
     }
@@ -242,7 +253,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     requestAnimation: boolean = false
   ) {
     this.animatingScroll = animated;
-    
+
     if (requestAnimation) {
       requestAnimationFrame(() => {
         element.scrollTop = amountPx;
@@ -266,21 +277,21 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
       this.sendingMessage = message;
 
-      this.chatService.addMessage(message);
+      this.chatService.addMessage(this.currentChat.id!, message);
 
-      this.chatService.submitMessage(message);
+      this.chatService.submitMessage(this.currentChat.id!, message);
     } catch (err: any) {
-      this.chatService.setMessageError(err.message);
+      this.chatService.setMessageError(this.currentChat.id!, err.message);
     }
   }
 
   resendMesssage() {
-    this.chatService.setMessageError(null);
-    this.chatService.submitMessage(this.sendingMessage);
+    this.chatService.setMessageError(this.currentChat.id!, null);
+    this.chatService.submitMessage(this.currentChat.id!, this.sendingMessage);
   }
 
   readAllNewMessages(): void {
-    this.chatService.clearNewMessages();
+    this.chatService.clearNewMessages(this.currentChat.id!);
     this.scrollTo(
       this.messagesContainer,
       this.messagesContainer.scrollHeight,
@@ -291,16 +302,18 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   scrolling(): void {
     const currentScrollTop = this.messagesContainer.scrollTop;
-    
+
     if (!this.isOldestMessages && currentScrollTop < this.lastScrollTop) {
-      this.checkForTopMessageIsVisible();
-    } else if(currentScrollTop > this.lastScrollTop){
+      if (this.isLastElementVisible()) {
+        this.getLastMessages();
+      }
+    } else if (this.isOldestMessages && currentScrollTop > this.lastScrollTop) {
       this.checkForNewMessages();
-      
+
       if (
-        currentScrollTop + this.messagesContainer.clientHeight ===
-          this.messagesContainer.scrollHeight &&
-        this.isOldestMessages
+        this.messagesContainer.scrollTop +
+          this.messagesContainer.clientHeight ===
+        this.messagesContainer.scrollHeight
       ) {
         this.getOldestMessages();
       }
@@ -308,14 +321,11 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.lastScrollTop = currentScrollTop;
   }
 
-  checkForLastElementIsVisible(){
-
-  }
-
-  checkForTopMessageIsVisible() {
-    if (this.lastMessage && this.messagesContainer.scrollTop === 0) {
-      this.getLastMessages();
+  isLastElementVisible(): boolean {
+    if (this.lastMessage && this.messagesContainer.scrollTop == 0) {
+      return true;
     }
+    return false;
   }
 
   scrollToLastElement() {
@@ -323,11 +333,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       this.lastMessage!.id
     )!;
 
-    this.scrollTo(
-      this.messagesContainer,
-      lastMessageElement.offsetTop - 30,
-      false,
-    );
+    this.scrollTo(this.messagesContainer, lastMessageElement.offsetTop - 30);
   }
 
   getLastMessages() {
@@ -335,21 +341,26 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       !this.currentChat!.waitingForNewMessages &&
       !this.currentChat!.lastPage
     ) {
-      this.chatService.setWaitingForLastMessages(true);
+      this.chatService.setWaitingForLastMessages(this.currentChat.id!, true);
 
       const getLastMessagesSubscription: Subscription = this.chatService
         .getLastMessages(this.currentChat!.id!, this.lastMessage?.id)
         .subscribe(({ lastMessages }) => {
-          this.chatService.setWaitingForLastMessages(false);
+          this.chatService.setWaitingForLastMessages(
+            this.currentChat.id!,
+            false
+          );
+          if (this.currentChat.lastPage) {
+            this.allMessages = lastMessages;
+          } else {
+            this.allMessages = [...lastMessages, ...this.allMessages];
+          }
+          this.changeDetection.detectChanges();
 
-          requestAnimationFrame(() => {
-            if(this.currentChat.lastPage){
-              this.allMessages = lastMessages;
-            }
+          this.scrollToLastElement();
 
-            this.scrollToLastElement();
-            this.lastMessage = lastMessages[0];
-          });
+          this.lastMessage = lastMessages[0];
+          this.lastMessageOfLastMessagesId = this.lastMessage.id;
         });
 
       this.subscriptions$.push(getLastMessagesSubscription);
@@ -377,30 +388,41 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       !this.currentChat!.waitingForNewMessages &&
       !this.currentChat!.lastPage
     ) {
-      this.chatService.setWaitingForLastMessages(true);
+      this.chatService.setWaitingForLastMessages(this.currentChat.id!, true);
 
       if (!this.isOldestMessages) {
-        this.isOldestMessages = true;
         this.lastMessage = undefined;
       }
 
       const getOldestMessagesSubscription: Subscription = this.chatService
         .getOldestMessages(
           this.currentChat!.id!,
+          this.lastMessageOfLastMessagesId,
           this.lastMessage ? this.lastMessage?.id : undefined
         )
         .subscribe((oldestMessages) => {
-          this.chatService.setWaitingForLastMessages(false);
+          this.chatService.setWaitingForLastMessages(
+            this.currentChat.id!,
+            false
+          );
+          console.log(oldestMessages);
 
-          if(this.currentChat.lastPage){
-            this.allMessages = oldestMessages;
-          }else if (this.lastMessage) {
+          if (this.isOldestMessages) {
+            if (this.currentChat.lastPage) {
+              this.allMessages = oldestMessages;
+            } else {
+              this.allMessages = [...this.allMessages, ...oldestMessages];
+            }
+
             this.scrollToBottomOfLastElement();
           } else {
-            this.scrollTo(this.messagesContainer, 0);
+            this.allMessages = oldestMessages;
+            this.isOldestMessages = true;
+            this.scrollTo(this.messagesContainer, 0, false, true);
           }
 
           this.lastMessage = oldestMessages[oldestMessages.length - 1];
+          this.changeDetection.detectChanges();
         });
 
       this.subscriptions$.push(getOldestMessagesSubscription);
@@ -424,7 +446,7 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
       ] as HTMLElement;
 
       this.elementIsVisible(element) &&
-        this.chatService.substractOneNewMessage();
+        this.chatService.substractOneNewMessage(this.currentChat.id!);
     }
   }
 
@@ -450,7 +472,6 @@ export class CurrentChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.currentChatState = '';
         this.isOldestMessages = false;
         this.allMessages = [];
-        this.chatService.clearCurrentChat();
         this.closeCurrentChatEmitter.emit();
       },
       { once: true }
