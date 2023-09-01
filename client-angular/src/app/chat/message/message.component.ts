@@ -41,14 +41,20 @@ export class MessageComponent implements OnDestroy {
       this.message.time,
       this.timeService.getCurrentTimeInMinutes()
     );
-
-    this.messageSendingStatus = this.message.sending;
     
     const selectUserSubscription = this.store
       .select(selectUser)
       .subscribe((user) => (this.user = user));
 
+      this.messageSendingStatus = this.message.sending;
+
+    // const selectMessageSendingStatusSubscription = this.store.select(selectSendingStatusOfMessage(this.message.id))
+    // .subscribe((sendingStatus) => {
+    //   this.messageSendingStatus = sendingStatus;
+    // })
+
     this.subscriptions$.push(selectUserSubscription);
+    // this.subscriptions$.push(selectMessageSendingStatusSubscription);
   }
   deleteMessage(messageId: string) {
     this.chatService.deleteMessage(this.currentChatId, messageId);

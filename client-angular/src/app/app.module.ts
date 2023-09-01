@@ -33,7 +33,8 @@ export const metaReducers: MetaReducer<any>[] = [debug];
     ChatModule,
     CoreModule,
     AppRoutingModule,
-    StoreModule.forRoot(reducers, {metaReducers}),
+    StoreModule.forRoot({}, {metaReducers}),
+    StoreModule.forFeature("chat", reducers),
     StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: !isDevMode() }),
     SharedModule
   ],

@@ -39,10 +39,10 @@ export interface IChats {
   chats: IConversation[];
 }
 
-export interface ICurrentChatInfo extends IConversation {
-  lastMessagesCounter: number;
-  oldestMessagesCounter: number;
-  allMessages: IMessage[];
+export interface ICurrentChatInfo {
+  id: string;
+  lastMessagesIdsRead: string[];
+  oldestMessagesIdsRead: string[];
   newMessagesCount: number;
   messagesPerPage: number;
   lastPage: boolean;
@@ -63,7 +63,10 @@ export interface IChatsEntity extends EntityState<ICurrentChatInfo> {}
 export const chatsAdapter: EntityAdapter<ICurrentChatInfo> =
   createEntityAdapter<ICurrentChatInfo>();
 
-const chatsEntityState: IChatsEntity = chatsAdapter.getInitialState({});
+const chatsEntityState: IChatsEntity = chatsAdapter.getInitialState();
+
+export const messagesAdapter: EntityAdapter<IMessage> = createEntityAdapter<IMessage>();
+const messagesEntityState = messagesAdapter.getInitialState();
 
 const chatsState: IChats = {
   chats: [],
@@ -81,6 +84,40 @@ const userState: IUserState = {
 const errorState: IError = {
   error: '',
 };
+
+export const messagesEntityReducer = createReducer(
+  messagesEntityState,
+  on(addMessageToChatByChatId, (state, data: {chatId: string, message: IMessage}) => {
+    return messagesAdapter.addOne(data.message, state);
+  }),
+  on(setMessageSendingStatus, (state, data:{chatId:string, messageId: string, status: boolean}) => {
+    const updatedState: Update<IMessage> = {
+      id: data.messageId,
+      changes: {
+        sending: data.status
+      }
+    };
+    return messagesAdapter.updateOne(updatedState, state);
+  }),
+  on(replaceMessageById, (state, data:{chatId: string, messageId: string, message: IMessage}) => {
+    const updatedState: Update<IMessage> = {
+      id: data.messageId,
+      changes: {
+        id: data.message.id
+      }
+    };
+    return messagesAdapter.updateOne(updatedState, state);
+  }),
+  on(deleteMessage, (state, data:{chatId: string, messageId: string}) => {
+    return messagesAdapter.removeOne(data.messageId, state);
+  }),
+  on(addLastMessages, (state, data: {lastMessages: IMessage[]}) => {
+    return messagesAdapter.addMany(data.lastMessages, state);
+  }),
+  on(addOldestMessages, (state, data:{messages: IMessage[]}) => {
+    return messagesAdapter.addMany(data.messages, state);
+  })
+)
 
 export const chatsReducer = createReducer(
   chatsState,
@@ -111,9 +148,9 @@ export const chatsEntityReducer = createReducer(
     return chatsAdapter.addMany(
       chats.map((chat) => {
         return {
-          ...chat,
-          lastMessagesCounter: 0,
-          oldestMessagesCounter: 0,
+          id: chat.id!,
+          lastMessagesIdsRead: [],
+          oldestMessagesIdsRead: [],
           allMessages: [],
           newMessagesCount: 0,
           messagesPerPage: 0,
@@ -128,10 +165,9 @@ export const chatsEntityReducer = createReducer(
   on(addChat, (state, { chat }) => {
     return chatsAdapter.addOne(
       {
-        ...chat,
-        lastMessagesCounter: 0,
-        oldestMessagesCounter: 0,
-        allMessages: [],
+        id: chat.id!,
+        lastMessagesIdsRead: [],
+        oldestMessagesIdsRead: [],
         newMessagesCount: 0,
         messagesPerPage: 0,
         lastPage: false,
@@ -148,8 +184,7 @@ export const chatsEntityReducer = createReducer(
       const updatedChat: Update<ICurrentChatInfo> = {
         id: data.chatId,
         changes: {
-          allMessages: [...chat.allMessages, data.message],
-          lastMessagesCounter: chat.lastMessagesCounter + 1
+          lastMessagesIdsRead: [...chat.lastMessagesIdsRead, data.message.id],
         },
       };
       return chatsAdapter.updateOne(updatedChat, state);
@@ -159,41 +194,21 @@ export const chatsEntityReducer = createReducer(
     addLastMessages,
     (
       state,
-      data: { chatId: string; lastMessages: IMessage[], lastMessageId?: string }
+      data: { chatId: string; lastMessages: IMessage[]; lastMessageId?: string }
     ) => {
       const currentChat: ICurrentChatInfo = state.entities[data.chatId]!;
-      let updatedChat: Update<ICurrentChatInfo>;
+      let updatedChat: Update<ICurrentChatInfo> = {
+        id: currentChat.id!,
+        changes: {
+          lastMessagesIdsRead: [
+            ...data.lastMessages.map((m) => {
+              return m.id;
+            }),
+            ...currentChat.lastMessagesIdsRead
+          ],
+        },
+      };
 
-      if(data.lastMessageId){
-        const message: IMessage = currentChat.allMessages.find(
-          (m) => m.id === data.lastMessageId
-        )!;
-        const indexOfMessage = currentChat.allMessages.findIndex(
-          (m) => m.id === message.id
-        );
-        updatedChat = {
-          id: currentChat.id!,
-          changes: {
-            allMessages: [
-              ...currentChat.allMessages.slice(0, indexOfMessage),
-              ...data.lastMessages,
-              ...currentChat.allMessages.slice(indexOfMessage),
-            ],
-            lastMessagesCounter: currentChat.lastMessagesCounter + data.lastMessages.length
-          },
-        };
-      }else{
-        updatedChat = {
-          id: currentChat.id!,
-          changes: {
-            allMessages: [
-              ...data.lastMessages
-            ],
-            lastMessagesCounter: currentChat.lastMessagesCounter + data.lastMessages.length
-          }
-        }
-      }
-      
       return chatsAdapter.updateOne(updatedChat, state);
     }
   ),
@@ -204,21 +219,13 @@ export const chatsEntityReducer = createReducer(
       data: { chatId: string; lastMessageId: string; messages: IMessage[] }
     ) => {
       const currentChat = state.entities[data.chatId]!;
-      const message: IMessage = currentChat.allMessages.find(
-        (m) => m.id === data.lastMessageId
-      )!;
-      const indexOfMessage = currentChat.allMessages.findIndex(
-        (m) => m.id === message.id
-      );
       const updatedChat: Update<ICurrentChatInfo> = {
         id: currentChat.id!,
         changes: {
-          allMessages: [
-            ...currentChat.allMessages.slice(0, indexOfMessage),
-            ...data.messages,
-            ...currentChat.allMessages.slice(indexOfMessage),
+          oldestMessagesIdsRead: [
+            ...currentChat.oldestMessagesIdsRead,
+            ...data.messages.map((m) => m.id),
           ],
-          oldestMessagesCounter: currentChat.oldestMessagesCounter + data.messages.length
         },
       };
       return chatsAdapter.updateOne(updatedChat, state);
@@ -226,22 +233,21 @@ export const chatsEntityReducer = createReducer(
   ),
   on(deleteMessage, (state, data: { chatId: string; messageId: string }) => {
     const currentChat: ICurrentChatInfo = state.entities[data.chatId]!;
-    const indexOfMessage = currentChat.allMessages.findIndex(m => m.id === data.messageId);
     let updatedChat: Update<ICurrentChatInfo> = {
       id: currentChat.id!,
       changes: {
-        allMessages: currentChat.allMessages.filter(
-          (m) => m.id !== data.messageId
-        ),
+        lastMessagesIdsRead: currentChat.lastMessagesIdsRead.filter(id => id !== data.messageId)
       },
     };
 
-    if(indexOfMessage > currentChat.oldestMessagesCounter){
-      updatedChat.changes.lastMessagesCounter = currentChat.lastMessagesCounter - 1;
-    }else{
-      updatedChat.changes.oldestMessagesCounter = currentChat.oldestMessagesCounter - 1;
+    if (currentChat.lastMessagesIdsRead.includes(data.messageId)) {
+      const index = currentChat.lastMessagesIdsRead.findIndex(id => id === data.messageId);
+      updatedChat.changes.lastMessagesIdsRead?.splice(index, 1);
+    } else {
+      const index = currentChat.oldestMessagesIdsRead.findIndex(id => id === data.messageId);
+      updatedChat.changes.oldestMessagesIdsRead?.splice(index, 1);
     }
-    
+
     return chatsAdapter.updateOne(updatedChat, state);
   }),
   on(addNewMessage, (state, data: { chatId: string }) => {
@@ -279,12 +285,12 @@ export const chatsEntityReducer = createReducer(
     const updatedChat: Update<ICurrentChatInfo> = {
       id: currentChat.id!,
       changes: {
-        allMessages: currentChat.allMessages.map((messageInfo) => {
-          if (messageInfo.id === messageId) {
-            return message;
-          }
-          return messageInfo;
-        }),
+        lastMessagesIdsRead: currentChat.lastMessagesIdsRead.map(id => {
+          if(id === messageId){
+            return message.id;
+          };
+          return id;
+        })
       },
     };
     return chatsAdapter.updateOne(updatedChat, state);
@@ -344,27 +350,6 @@ export const chatsEntityReducer = createReducer(
     };
     return chatsAdapter.updateOne(updatedChat, state);
   }),
-  on(
-    setMessageSendingStatus,
-    (state, data: { chatId: string; messageId: string; status: boolean }) => {
-      const chat = state.entities[data.chatId]!;
-      const message: IMessage = chat.allMessages.find(
-        (m: IMessage) => m.id === data.messageId
-      )!;
-      const updatedChat: Update<ICurrentChatInfo> = {
-        id: chat.id!,
-        changes: {
-          allMessages: chat.allMessages.map((m) => {
-            if (m.id === message.id) {
-              return { ...message, sending: data.status };
-            }
-            return m;
-          }),
-        },
-      };
-      return chatsAdapter.updateOne(updatedChat, state);
-    }
-  )
 );
 
 export const userReducer = createReducer(

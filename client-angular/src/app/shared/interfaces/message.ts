@@ -1,5 +1,6 @@
 export type IMessage = {
     id: string,
+    chatId: string,
     writer: {
         username: string,
         level: number,

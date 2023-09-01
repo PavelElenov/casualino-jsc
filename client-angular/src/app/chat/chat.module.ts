@@ -9,6 +9,8 @@ import { CurrentChatComponent } from "./current-chat/current-chat.component";
 import { SharedModule } from "../shared/shared.module";
 import { ChatService } from "./chat.service";
 import { ShareDataDirective } from "./directives/share-user-data-directive.directive";
+import { SelectorClass } from "./selectorClass";
+import { ClientRequests } from "./clientRequests";
 
 
 @NgModule({
@@ -25,7 +27,7 @@ import { ShareDataDirective } from "./directives/share-user-data-directive.direc
     FormsModule,
     SharedModule,
   ],
-  providers: [ChatService]
+  providers: [ChatService, SelectorClass, ClientRequests]
 
 })
 export class ChatModule { }

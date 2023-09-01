@@ -15,6 +15,7 @@ export class ChatFactory {
   ): IMessageInfo {
     return {
       id: uuid(),
+      chatId,
       writer: {
         username: user.username,
         level: user.level,
@@ -27,9 +28,10 @@ export class ChatFactory {
     };
   }
 
-  createMessage(user: IUser, messageText: string): IMessage {
+  createMessage(user: IUser, messageText: string, chatId: string): IMessage {
     return {
       id: uuid(),
+      chatId,
       writer: {
         username: user.username,
         level: user.level,
@@ -57,11 +59,10 @@ export class ChatFactory {
 
   createCurrentChatInfo(chat: IConversation): ICurrentChatInfo {
     return {
-      ...chat,
-      lastMessagesCounter: 0,
-      oldestMessagesCounter: 0,
+      id: chat.id!,
+      lastMessagesIdsRead: [],
+      oldestMessagesIdsRead: [],
       newMessagesCount: 0,
-      allMessages: [],
       messagesPerPage: 0,
       lastPage: false,
       waitingForNewMessages: false,

@@ -1,12 +1,19 @@
 import { IState } from '.';
-import { createSelector } from '@ngrx/store';
-import { ICurrentChatInfo } from './reducers';
-import { IConversation } from '../shared/interfaces/message';
+import { createFeatureSelector, createSelector, MemoizedSelector, MemoizedSelectorWithProps } from '@ngrx/store';
+import { IChatsEntity, ICurrentChatInfo, messagesAdapter } from './reducers';
+import { IConversation, IMessage } from '../shared/interfaces/message';
+import { Dictionary, EntityState } from '@ngrx/entity';
 
-export const chatsSelector = (state: IState) => state.chatsState;
-export const chatsEntitySelector = (state: IState) => state.chatsEntityState;
-export const userSelector = (state: IState) => state.userState;
-export const errorSelector = (state: IState) => state.errorState;
+export const selectChat: MemoizedSelector<
+  IState,
+  IState
+> = createFeatureSelector("chat");
+export const chatsSelector = createSelector(selectChat, (state: IState) => state.chatsState);
+export const chatsEntitySelector: MemoizedSelector<IState, IChatsEntity> = createSelector(selectChat, (state: IState) => state.chatsEntityState);
+export const userSelector = createSelector(selectChat, (state: IState) => state.userState);
+export const errorSelector = createSelector(selectChat, (state: IState) => state.errorState);
+export const messagesEntitySelector = createSelector(selectChat, (state: IState) => state.messagesState);
+
 
 export const selectCurrentChat = (chatId: string) =>
   createSelector(chatsEntitySelector, (state) => {
@@ -19,12 +26,6 @@ export const selectChatById = (chatId: string) =>
   createSelector(chatsEntitySelector, (state) => {
     const chat = state.entities[chatId];
     return chat;
-  });
-
-export const selectAllMessages = (chatId: string) =>
-  createSelector(chatsEntitySelector, (state) => {
-    const chat = state.entities[chatId]!;
-    return chat.allMessages;
   });
 
 export const selectChats = createSelector(
@@ -87,28 +88,37 @@ export const selectMessageError = (chatId: string) =>
     return chat.messageError;
   });
 
-export const selectLastMessagesCounter = (chatId: string) => 
-createSelector(chatsEntitySelector, (state) => {
-  const chat = state.entities[chatId]!;
-  return chat.lastMessagesCounter;
-});
+const { selectAll, selectEntities, selectIds, selectTotal } =
+  messagesAdapter.getSelectors<IState>(messagesEntitySelector);
 
-export const selectOldestMessagesCounter = (chatId: string) => 
-createSelector(chatsEntitySelector, (state) => {
-  const chat = state.entities[chatId]!;
-  return chat.oldestMessagesCounter;
-});
+export const selectLastMessagesIdsRead: MemoizedSelectorWithProps<
+  IState,
+  string,
+  IMessage[]
+> = createSelector(
+  chatsEntitySelector,
+  selectEntities,
+  (state: IChatsEntity, messages: Dictionary<IMessage>, chatId:string): IMessage[] => {
+    const chat = state.entities[chatId]!;
+    return chat.lastMessagesIdsRead.map(id => messages[id]!);
+  }
+);
 
-export const selectLastMessages = (chatId: string) => 
-createSelector(chatsEntitySelector, (state) => {
+export const selectOldestMessagesIdsRead: MemoizedSelectorWithProps<
+IState,
+string,
+IMessage[]
+> = createSelector(
+chatsEntitySelector,
+selectEntities,
+(state: IChatsEntity, messages: Dictionary<IMessage>, chatId:string): IMessage[] => {
   const chat = state.entities[chatId]!;
-  const lastMessagesCounter = chat.lastMessagesCounter;
-  return chat.allMessages.slice(chat.allMessages.length - lastMessagesCounter - 1, chat.allMessages.length - 1)
-});
+  return chat.oldestMessagesIdsRead.map(id => messages[id]!);
+}
+);
 
-export const selectOldestMessages = (chatId: string) => 
-createSelector(chatsEntitySelector, (state) => {
-  const chat = state.entities[chatId]!;
-  const oldestMessagesCounter = chat.oldestMessagesCounter;
-  return chat.allMessages.slice(0, oldestMessagesCounter);
+export const selectMessagesByIds = (messagesIds: string[]) => 
+createSelector(selectEntities, (entities: Dictionary<IMessage>) => {
+  const messages = messagesIds.map(id => entities[id]!);
+  return messages;
 })

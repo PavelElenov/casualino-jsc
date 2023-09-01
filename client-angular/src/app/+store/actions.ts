@@ -134,7 +134,7 @@ export const addMessageToOldestMessages = createAction(
 export const setMessageSendingStatus = createAction(
   "Set message sending status",
   props<{chatId: string, messageId: string, status: boolean}>()
-);
+);//update message
 
 // export const increaseLastMessagesCounter = createAction(
 //   "Increase last messages counter",

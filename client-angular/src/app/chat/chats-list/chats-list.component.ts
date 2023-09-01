@@ -31,7 +31,7 @@ import { IUser } from 'src/app/shared/interfaces/user';
 export class ChatsListComponent implements OnInit, OnDestroy {
   @ViewChild('chatListPage', { read: ViewContainerRef })
   chats: IConversation[] | undefined;
-  currentChat: IConversation | undefined;
+  currentChatId: string | undefined;
   subscriptions$: Subscription[] = [];
   user!: IUser;
   chatListRef!: ViewContainerRef;
@@ -81,7 +81,9 @@ export class ChatsListComponent implements OnInit, OnDestroy {
 
   getCurrentChat(chat: Observable<IConversation>) {
     const getCurrentChatSubscription = chat.subscribe((chat) => {
-      this.currentChat = chat;
+      this.currentChatId = chat.id;
+      console.log(this.currentChatId);
+      
       this.changeDetection.detectChanges();
     });
 
@@ -99,7 +101,7 @@ export class ChatsListComponent implements OnInit, OnDestroy {
   }
 
   closeCurrentChat(): void {
-    this.currentChat = undefined;
+    this.currentChatId = undefined;
     this.store.dispatch(clearMessages());
   }
 

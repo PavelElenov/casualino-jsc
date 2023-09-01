@@ -21,10 +21,10 @@
     </section>
 
     <app-current-chat
-      *ngIf="currentChat"
+      *ngIf="currentChatId"
       class="current-chat-container"
       (closeCurrentChatEmitter)="closeCurrentChat()"
-      [currentChatId]="currentChat.id!"
+      [currentChatId]="currentChatId"
     ></app-current-chat>
   </div>
 </section>
